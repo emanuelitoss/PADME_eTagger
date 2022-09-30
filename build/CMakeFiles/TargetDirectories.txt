@@ -1,0 +1,8 @@
+/Users/emanuelerosi/PadmETag/build/CMakeFiles/padmETag.dir
+/Users/emanuelerosi/PadmETag/build/CMakeFiles/ElectronTagger.dir
+/Users/emanuelerosi/PadmETag/build/CMakeFiles/edit_cache.dir
+/Users/emanuelerosi/PadmETag/build/CMakeFiles/rebuild_cache.dir
+/Users/emanuelerosi/PadmETag/build/CMakeFiles/list_install_components.dir
+/Users/emanuelerosi/PadmETag/build/CMakeFiles/install.dir
+/Users/emanuelerosi/PadmETag/build/CMakeFiles/install/local.dir
+/Users/emanuelerosi/PadmETag/build/CMakeFiles/install/strip.dir
