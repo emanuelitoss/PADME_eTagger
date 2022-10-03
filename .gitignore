@@ -1,8 +1,15 @@
+# this file
+.gitignore
+
 # the build folder
-build/*
+build
 
 # output data folder
-eTag_data/*
+eTag_data
+
+# others
+.DS_Store
+.vscode
 
 # utility files
 run.mac
