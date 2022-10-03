@@ -76,25 +76,23 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   // Get nist material manager
   G4NistManager* nist = G4NistManager::Instance();
 
-  // Dimensions of BGO and plastic scintillators
-  const G4double shape_bgoXZ = 2.2*cm, shape_bgoY = 18*cm;
-  const G4double shape_plasticX = 5*cm, shape_plasticY = 1*cm, shape_plasticZ = 10*cm;
-  const G4double distance_scintillators = 0.5*cm;
-  const G4double distance_BGOscintillators = 10*cm;
-
-  // Dimensions of BGO photomultipliers
-  const G4double shape_PMT_XZ = shape_bgoXZ;
-  const G4double shape_PMT_Y = 0.5*cm; // the order of absorption length in BG crystals
-  
-  // minimal radius such that the experiment is circumscribed in a sphere
-  // we willl use minimal radius + 40%
-  G4double Yheight = 2*shape_PMT_Y + shape_bgoY;
-  G4double H = 2 * shape_plasticZ + distance_BGOscintillators + distance_scintillators;
-  minimal_radius = (4 * H*H + Yheight*Yheight) / (8*H);
-  G4double radius_sphere = minimal_radius * 1.4; // < sqrt(3) = 1.732..
-
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = true;
+
+  // Dimensions of BGO
+  const G4double shape_bgoX = 600.*mm, shape_bgoY = 44.*mm, shape_bgoZ = 5.*mm;
+  const G4double shape_PMT_Y = shape_bgoY, shape_PMT_Z = shape_bgoZ;
+  const G4double shape_PMT_X = 0.5*cm;
+
+  if (shape_bgoZ > shape_bgoY)
+  {
+    if (shape_bgoZ > shape_bgoX) minimal_radius = shape_bgoZ;
+    else minimal_radius = shape_bgoX;
+  }
+  else if (shape_bgoY > shape_bgoX) minimal_radius = shape_bgoY;
+  else minimal_radius = shape_bgoX;
+
+  G4double radius_sphere = minimal_radius;
 
   //
   // World
@@ -151,14 +149,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   G4Material* borosilicate = this->CreatePyrex();
 
   // position: choosen in order to minimize the envelope sphere
-  G4double pos_BGO = minimal_radius - 2 * shape_plasticZ - distance_BGOscintillators - distance_scintillators - shape_bgoXZ / 2;
-  G4ThreeVector bgo_position = G4ThreeVector(0, 0, pos_BGO);
-  G4ThreeVector pmt1_position = G4ThreeVector(0, 0.5*(shape_bgoY+shape_PMT_Y), pos_BGO);
-  G4ThreeVector pmt2_position = G4ThreeVector(0, -0.5*(shape_bgoY+shape_PMT_Y), pos_BGO);
+  G4ThreeVector bgo_position = G4ThreeVector(0, 0, 0);
+  G4ThreeVector pmt1_position = G4ThreeVector(0.5*(shape_bgoX+shape_PMT_X), 0, 0);
+  G4ThreeVector pmt2_position = G4ThreeVector(-0.5*(shape_bgoX+shape_PMT_X), 0, 0);
         
   // BGO & PMTs shape
-  G4Box* BGOShape = new G4Box("BGO Box", 0.5*shape_bgoXZ, 0.5*shape_bgoY, 0.5*shape_bgoXZ);
-  G4Box* PMTsShape = new G4Box("PMT Box", 0.5*shape_PMT_XZ, 0.5*shape_PMT_Y, 0.5*shape_PMT_XZ);
+  G4Box* BGOShape = new G4Box("BGO Box", 0.5*shape_bgoX, 0.5*shape_bgoY, 0.5*shape_bgoZ);
+  G4Box* PMTsShape = new G4Box("PMT Box", 0.5*shape_PMT_X, 0.5*shape_PMT_Y, 0.5*shape_PMT_Z);
 
   // logical volumes
   G4LogicalVolume* BGO_LogicalVolume = 
@@ -176,10 +173,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
   // delta vector useful to translate PMTs
   G4ThreeVector original_vector = G4ThreeVector(0, 0.5*(shape_bgoY+shape_PMT_Y), 0);
-  G4ThreeVector translated_vector = original_vector;
-
-  G4ThreeVector delta_vect = G4ThreeVector();
-  delta_vect = (translated_vector - original_vector);
 
   fScintillator = new G4PVPlacement(0,
                     bgo_position,                 //at position
@@ -191,7 +184,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
                     checkOverlaps);               //overlaps checking
   
   fCerenkovPMT = new G4PVPlacement(0,
-                    pmt1_position + delta_vect,   //at position
+                    pmt1_position,                 //at position
                     PMT_LogicalVolume,            //its logical volume
                     "Cherenkov PMT",              //its name
                     logicEnv,                     //its mother volume
@@ -200,7 +193,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
                     checkOverlaps);               //overlaps checking
 
   fScintillatorPMT = new G4PVPlacement(0,
-                    pmt2_position - delta_vect,   //at position
+                    pmt2_position,                 //at position
                     PMT_LogicalVolume,            //its logical volume
                     "Scintill. PMT",              //its name
                     logicEnv,                     //its mother volume
@@ -211,44 +204,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   // optical properties of BGO surface
   OpticalSurfacePlastic_SiPM(fScintillator, fCerenkovPMT);
   OpticalSurfacePlastic_SiPM(fScintillator, fScintillatorPMT);
-
-  //
-  // Plastic scintillator
-  //
-  // the position in choosen in order to minimize the envelope sphere
-  G4double pos_scint1 = minimal_radius - distance_scintillators - 1.5 * shape_plasticZ;
-  G4double pos_scint2 = minimal_radius - shape_plasticZ / 2;
-  G4Material* plastic_material = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
-  
-  // Plastic scintillators shape
-  G4Box* PlasticShape = new G4Box("BGO Box", 0.5*shape_plasticX, 0.5*shape_plasticY, 0.5*shape_plasticZ);
-
-  // Plastic scintillators positions
-  G4ThreeVector trigger_1_position = G4ThreeVector(0, 0, pos_scint1);
-  G4ThreeVector trigger_2_position = G4ThreeVector(0, 0, pos_scint2);
-
-  G4LogicalVolume* Plastic_LogicalVolume =                         
-    new G4LogicalVolume(PlasticShape,              //its solid
-                        plastic_material,          //its material
-                        "Plastic Scintillator");   //its name
-               
-  fPlasticScintillator_1 = new G4PVPlacement(0,    //no rotation
-                    trigger_1_position,            //at position
-                    Plastic_LogicalVolume,         //its logical volume
-                    "Plastic Scintillator",        //its name
-                    logicEnv,                      //its mother volume
-                    false,                         //no boolean operation
-                    0,                             //copy number
-                    checkOverlaps);                //overlaps checking
-
-  fPlasticScintillator_2 = new G4PVPlacement(0,    //no rotation
-                    trigger_2_position,            //at position
-                    Plastic_LogicalVolume,         //its logical volume
-                    "Plastic Scintillator",        //its name
-                    logicEnv,                      //its mother volume
-                    false,                         //no boolean operation
-                    0,                             //copy number
-                    checkOverlaps);                //overlaps checking
 
   fScoringVolume = logicEnv;
 
