@@ -98,17 +98,16 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
   // default particle kinematic
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
   G4String particleName;
-  G4ParticleDefinition* particle = particleTable->FindParticle(particleName="mu-");
+  G4ParticleDefinition* particle = particleTable->FindParticle(particleName="e-");
   fParticleGun->SetParticleDefinition(particle);
-  // typical energy of a cosmic muon at sea level (see PDG reference)
-  fParticleGun->SetParticleEnergy(3.*GeV);
+  fParticleGun->SetParticleEnergy(21.*MeV);
   
   const double radius = fEnvelopeSphere->GetOuterRadius()/1.4;
 
   // direction of the beam
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
+  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,-1,0));
  
   // set position of the particle
-  fParticleGun->SetParticlePosition(G4ThreeVector(0,0,radius));
+  fParticleGun->SetParticlePosition(G4ThreeVector(0,radius,0));
 
 }

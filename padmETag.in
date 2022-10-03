@@ -2,9 +2,9 @@
 
 /run/initialize
 
-# muons 3 GeV 
-/gun/particle mu-
-/gun/energy 3 GeV
+# electrons @ 21 MeV 
+/gun/particle e-
+/gun/energy 21 MeV
 #
 /run/printProgress 100
 /run/beamOn 1000
