@@ -1,3 +1,0 @@
-# Numbers of:
-# Detected C	Produced C	Detected S	Produced S
-

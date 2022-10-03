@@ -1,3 +1,0 @@
-# Energy losses in the three detectors (in MeV):
-# Total	BGO	Plastic_1	PLastic_2	CherenkovBGO	ScintillationBGO	NCherenkov	NScint
-
