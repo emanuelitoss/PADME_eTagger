@@ -54,9 +54,7 @@ void ActionInitialization::BuildForMaster() const {
 
 void ActionInitialization::Build() const {
 
-  G4String outputFile = "../eTag_data/positions.txt";
-
-  SetUserAction(new PrimaryGeneratorAction(outputFile));
+  SetUserAction(new PrimaryGeneratorAction());
 
   RunAction* runAction = new RunAction;
   SetUserAction(runAction);

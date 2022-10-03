@@ -58,8 +58,6 @@ void EventAction::BeginOfEventAction(const G4Event*){
   Nphotons_Scint = 0;
 
   IsInBGO = false;
-  IsInTrg1 = false;
-  IsInTrg2 = false;
   PMT1detection = false;
   PMT2detection = false;
 
@@ -83,7 +81,7 @@ void EventAction::EndOfEventAction(const G4Event* event){
   }
 
   // output printing <=> particle pass thorugh both the plastic scintillators
-  if ( IsInTrg1 && IsInTrg2 && IsInBGO ){
+  if ( IsInBGO ){
 
     std::cout << "... detecting a particle ..." << std::endl;
     
@@ -95,22 +93,6 @@ void EventAction::EndOfEventAction(const G4Event* event){
     
   }
 
-}
-
-void EventAction::PrintStatus(){
-  std::cout << OCYAN << "Status of the Event:\n"
-  << " ------------- Status of passage in detectors -------------\n"
-  << "\tBGO crystal:\t" << IsInBGO << "\n"
-  << "\tTrigger1:\t" << IsInTrg1 << "\n"
-  << "\tTrigger2:\t" << IsInTrg2 << "\n"
-  << " ------------- Energy deposited  -------------\n"
-  << "\tTotal:\t" << fEdep << "\n"
-  << "\tBGO:\t" << fEdep_BGO << ", in particular:\n"
-  << "\t\tCherenkov radiation:\t" << fEdep_BGO_Cherenkov << "\t with " << Nphotons_Cerenkov << "photons\n"
-  << "\t\tScintillation:\t" << fEdep_BGO_Scintillation << "\t with " << Nphotons_Scint << "photons\n"
-  << "\tTrigger1:\t" << fEdep_Scint1 << "\n"
-  << "\tTrigger1:\t" << fEdep_Scint2 << "\n"
-  << ORESET << std::endl;
 }
 
 void EventAction::AddEdep(G4double edep){

@@ -52,9 +52,9 @@
 #include "G4LogicalBorderSurface.hh"
 #include "G4LogicalSkinSurface.hh"
 
-const double hPlanck = 4.135655e-15;
-const double c_light = 3e+8;
-const double meters_to_nanometers = 1e9;
+const double hPlanck = 4.135655e-15; // [eV*s]
+const double c_light = 3e+8; // [m/s]
+const double meters_to_nanometers = 1e9; // 1 m = 1e9 nm
 
 DetectorConstruction::DetectorConstruction()
 : G4VUserDetectorConstruction(),
@@ -92,15 +92,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   G4double H = 2 * shape_plasticZ + distance_BGOscintillators + distance_scintillators;
   minimal_radius = (4 * H*H + Yheight*Yheight) / (8*H);
   G4double radius_sphere = minimal_radius * 1.4; // < sqrt(3) = 1.732..
-  
-  std::cout << OBOLDWHITE
-    << "Minimal radius of the envelope sphere:\t" << G4BestUnit(minimal_radius,"Length") << "\n"
-    << "Effective radius of the envelope sphere:\t" << G4BestUnit(radius_sphere,"Length")
-    << ORESET << std::endl;
-  
-  // Envelope material
-  G4Material* envelope_material = CreateOpticalAir();
-  
+
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = true;
 
@@ -130,6 +122,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   // Envelope
   //  
   G4Sphere* solidEnv = new G4Sphere("World", 0, radius_sphere, 0.*deg, 360.*deg, 0.*deg, 180.*deg);
+  G4Material* envelope_material = nist->FindOrBuildMaterial("G4_AIR");
       
   G4LogicalVolume* logicEnv =                         
     new G4LogicalVolume(solidEnv,            //its solid
@@ -215,8 +208,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
                     0,                            //copy number
                     checkOverlaps);               //overlaps checking
 
-  // optical properties of BGO
-  OpticalSurfaceBGO(fBGOcrystal, physEnvelope);
+  // optical properties of BGO surface
   OpticalSurfaceBGO_PMT(fBGOcrystal, fCerenkovPMT);
   OpticalSurfaceBGO_PMT(fBGOcrystal, fScintillatorPMT);
 
@@ -262,53 +254,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
   //always return the physical World
   return physWorld;
-}
-
-// optical surface of BGO
-void DetectorConstruction::OpticalSurfaceBGO(G4VPhysicalVolume* BGO_PV, G4VPhysicalVolume* Envelope_PV) const {
-
-  G4OpticalSurface* opBGOSurface = new G4OpticalSurface("BGO Surface");
-  // see here: https://geant4-userdoc.web.cern.ch/UsersGuides/ForApplicationDeveloper/BackupVersions/V10.7/html/TrackingAndPhysics/physicsProcess.html
-  opBGOSurface->SetType(dielectric_LUTDAVIS); // dielectric_LUTDAVIS->get table BGO, dielectric_dielectric
-  opBGOSurface->SetModel(DAVIS);  // fig 1.7 (link above) or glisur, DAVIS, unified
-  opBGOSurface->SetFinish(Rough_LUT); // Rough_LUT, Polished_LUT, ground
-
-  G4LogicalBorderSurface* LogicalBGOSurface = new G4LogicalBorderSurface(
-    "BGO Surface", BGO_PV, Envelope_PV, opBGOSurface);
-  
-  G4OpticalSurface* opticalSurface = dynamic_cast<G4OpticalSurface*>(
-    LogicalBGOSurface->GetSurface(BGO_PV, Envelope_PV)->GetSurfaceProperty());
-
-  if(opticalSurface)
-    opticalSurface->DumpInfo();
-
-  // Generate & Add Material Properties Table attached to the optical surface
-  // energy = hPlanck * (light speed) / wavelength
-  // reference for reflectivity https://aip.scitation.org/doi/10.1063/1.3272909
-  // reference for transmittance https://www.researchgate.net/publication/264828576_The_Radiation_Hard_BGO_Crystals_for_Astrophysics_Applications
-  G4int n10 = 10;
-  G4int n6 = 6;
-  G4double energies_photons[] = { 2.*eV, 2.5*eV, 3.*eV, 3.5*eV, 4.*eV,
-                                4.5*eV, 4.75*eV, 4.9*eV, 5.*eV, 5.4*eV };
-  G4double reflectivity[] = { 0.125, 0.13, 0.14, 0.155, 0.175,
-                              0.25, 0.29, 0.243, 0.21, 0.22 };
-  G4double energies_photons_bis[] = { hPlanck*c_light*meters_to_nanometers/310.*eV,
-                                      hPlanck*c_light*meters_to_nanometers/350.*eV,
-                                      hPlanck*c_light*meters_to_nanometers/400.*eV,
-                                      hPlanck*c_light*meters_to_nanometers/500.*eV,
-                                      hPlanck*c_light*meters_to_nanometers/600.*eV,
-                                      hPlanck*c_light*meters_to_nanometers/700.*eV };                      
-  //G4double transm[] = { 0.1, 0.70, 0.78, 0.79, 0.80, 0.80 };
-  G4double transm[] = { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 };
-
-  G4MaterialPropertiesTable* SurfaceTable = new G4MaterialPropertiesTable();
-
-  SurfaceTable->AddProperty("REFLECTIVITY", energies_photons, reflectivity, n10);
-  SurfaceTable->AddProperty("TRANSMITTANCE", energies_photons_bis, transm, n6);
-  
-  SurfaceTable->DumpTable();
-  opBGOSurface->SetMaterialPropertiesTable(SurfaceTable);
-
 }
 
 // optical between of BGO and PMTs
@@ -401,35 +346,6 @@ G4Material* DetectorConstruction::CreateBismuthGermaniumOxygen() const {
   bgo_material->GetIonisation()->SetBirksConstant(0.126*mm/MeV);
 
   return bgo_material;
-}
-
-// Air - material
-G4Material* DetectorConstruction::CreateOpticalAir() const {
-  
-  // Get nist material manager
-  G4NistManager* nist = G4NistManager::Instance();
-  
-  // Air material definition
-  G4Material* air_basic = nist->FindOrBuildMaterial("G4_AIR");
-  G4Material* air_optical = new G4Material("Air", 1.204*kg/m3, air_basic);
-  
-  // otpical properties
-  const G4int n3 = 3;
-  // energy = hPlanck * (light speed) / wavelength
-  G4double photonenergy[n3] = {hPlanck*c_light*meters_to_nanometers/320.*eV,  // lower wavelength cutoff 320 nm
-                            hPlanck*c_light*meters_to_nanometers/400.*eV,     // intermediate energy
-                            hPlanck*c_light*meters_to_nanometers/480.*eV};    // maximum emission at 480 nm
-  G4double rindex[n3]     = {1.000293, 1.000293, 1.000293};                   // google
-  // new instance of Material Properties
-  G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
-
-  // properties that depend on energy
-  MPT->AddProperty("RINDEX", photonenergy, rindex, n3);
-
-  // material
-  air_optical->SetMaterialPropertiesTable(MPT);
-
-  return air_optical;
 }
 
 // Birosilicate glass - material

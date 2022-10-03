@@ -78,8 +78,6 @@ RunAction::RunAction()
   analysisManager->CreateH1("EnergyPlastic2","Energy deposited in second plastic scintillator", 800, 0., 100*MeV);
   analysisManager->CreateH1("Cherenkov","Cherenkov energy production in BGO", 200, 0., 100*keV);
   analysisManager->CreateH1("Scintillation","Scintillation energy production in BGO", 200, 0., 100*keV);
-  analysisManager->CreateH1("Cherenkov number","Number of Cherenkov photons", 200, 0., 1000);
-  analysisManager->CreateH1("Scintillation number","Number of scintillation photons", 200, 0., 80000);
   // Creating ntuple
   analysisManager->CreateNtuple("eTagDataTuples", "EnengyDeposit");
   analysisManager->CreateNtupleDColumn("EnergyInBGO");
@@ -87,8 +85,6 @@ RunAction::RunAction()
   analysisManager->CreateNtupleDColumn("EnergyInScintillator2");
   analysisManager->CreateNtupleDColumn("EnergyInBGO_Cherenkov");
   analysisManager->CreateNtupleDColumn("EnergyInBGO_Scintillation");
-  analysisManager->CreateNtupleDColumn("Number_Cherenkov");
-  analysisManager->CreateNtupleDColumn("Number_Scintillation");
   analysisManager->FinishNtuple();
 
 
@@ -225,7 +221,7 @@ void RunAction::EndOfRunAction(const G4Run* run){
       << G4BestUnit(analysisManager->GetH1(4)->mean(), "Energy")
       << " rms = "
       << G4BestUnit(analysisManager->GetH1(4)->rms(),  "Energy") << G4endl;
-
+    /*
     G4cout << " NumberCherenkovBGO : mean = "
       << analysisManager->GetH1(5)->mean() << " Number of photons"
       << " rms = "
@@ -235,6 +231,7 @@ void RunAction::EndOfRunAction(const G4Run* run){
       << analysisManager->GetH1(6)->mean() << " number of photons"
       << " rms = "
       << analysisManager->GetH1(6)->rms() <<  " number of photons" << G4endl;
+    */
   }
 
   // number od detected events

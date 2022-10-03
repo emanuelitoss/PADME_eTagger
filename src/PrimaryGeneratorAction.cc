@@ -46,17 +46,15 @@ using namespace std;
 #include "Randomize.hh"
 #include "g4root.hh"
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(G4String outputName)
+PrimaryGeneratorAction::PrimaryGeneratorAction()
 : G4VUserPrimaryGeneratorAction(),
   fParticleGun(0), 
   fEnvelopeSphere(0)
 {
 
-  fUseRandomicGeneration = false;
-
-  this->setOutput(outputName);
   G4int n_particle = 1;
   fParticleGun  = new G4ParticleGun(n_particle);
+
 }
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction(){
@@ -107,45 +105,13 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
   fParticleGun->SetParticleDefinition(particle);
   // typical energy of a cosmic muon at sea level (see PDG reference)
   fParticleGun->SetParticleEnergy(3.*GeV);
-
-  // generation of randomic angles
-  double phi = G4UniformRand() * 2 * M_PI * radian;
-  double theta;
-  do{
-    theta = acos(pow(G4UniformRand(),1./3));
-  } while(theta > 0.6*radian); // for theta > 0.6 rad we don't detect any muon, so I generate again.
-
-  // in order to correct the envelope radius (+40% with respect minimal radius)
-  //const double radius = fEnvelopeSphere->GetOuterRadius();///1.4;
-  //  theta = acos(pow(G4UniformRand(),1./3));
-  //}while(theta > 0.7*radian); // contraint based on angular analysis
   
   const double radius = fEnvelopeSphere->GetOuterRadius()/1.4;
 
   // direction of the beam
-  G4ThreeVector* Direction_Beam = new G4ThreeVector(0, 0, -radius);
-  Direction_Beam->rotateY(theta);
-  Direction_Beam->rotateZ(phi);
-  if(fUseRandomicGeneration) fParticleGun->SetParticleMomentumDirection(*Direction_Beam);
-  else fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
-  
-  // tangent plane position generation
-  double position_x;
-  double position_y;
-
-  position_x = (G4UniformRand() - 0.5) * 2 * radius;
-  position_y = (G4UniformRand() - 0.5) * 2 * radius;
-
-  G4ThreeVector* Position_Beam = new G4ThreeVector(position_x, position_y, radius);
-  Position_Beam->rotateY(theta);
-  Position_Beam->rotateZ(phi);
+  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
  
   // set position of the particle
-  if(fUseRandomicGeneration)  fParticleGun->SetParticlePosition(*Position_Beam);
-  else  fParticleGun->SetParticlePosition(G4ThreeVector(0,0,radius));
-
-  //delete output;
-  delete Position_Beam;
-  delete Direction_Beam;
+  fParticleGun->SetParticlePosition(G4ThreeVector(0,0,radius));
 
 }

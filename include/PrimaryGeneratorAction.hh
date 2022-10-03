@@ -46,14 +46,10 @@ class G4Sphere;
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
-    PrimaryGeneratorAction(G4String fileName);   
+    PrimaryGeneratorAction();   
     virtual ~PrimaryGeneratorAction();
 
     virtual void GeneratePrimaries(G4Event*);
-
-    // output file
-    void setOutput(G4String aString){ fileName = aString; }
-    G4String getOutput(){ return fileName;}
     
     // generator of particle kinematic
     void ParticleKinematicsGenerator();
@@ -64,12 +60,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
   private:
     G4ParticleGun* fParticleGun;
     G4Sphere* fEnvelopeSphere;
-    // output file
-    G4String fileName;
-    G4bool fUseRandomicGeneration;
 
-    // to get a random distribution proportional to cos^2
-    G4double GetRandomicTheta3CosCos();
 };
 
 #endif

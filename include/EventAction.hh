@@ -49,12 +49,8 @@ class EventAction : public G4UserEventAction
 
   // to check the passage in the detectors
   void PassedThroughBGO();
-  void PassedThroughScint1();
-  void PassedThroughScint2();
   void DetectionInPMT1();
   void DetectionInPMT2();
-  G4bool BoolTrigger1() const { return IsInTrg1; }
-  G4bool BoolTrigger2() const { return IsInTrg2; }
   G4bool BoolPMT1() const { return PMT1detection; }
   G4bool BoolPMT2() const { return PMT2detection; }
   G4bool Bool() const { return IsInBGO; }
@@ -69,8 +65,6 @@ class EventAction : public G4UserEventAction
 
   void AddProducedCerenkovPhoton() { ++Nproduced_Cerenkov; }
   void AddProducedScintillationPhoton() { ++Nproduced_Scintillation; }
-
-  void PrintStatus();
 
   private:
 
@@ -90,8 +84,6 @@ class EventAction : public G4UserEventAction
   
   // boolean variables to check if the particle passes through physical volumes
   G4bool IsInBGO = false;
-  G4bool IsInTrg1 = false;
-  G4bool IsInTrg2 = false;
   G4bool PMT1detection = false;
   G4bool PMT2detection = false;
   
@@ -102,14 +94,6 @@ class EventAction : public G4UserEventAction
 inline void EventAction::PassedThroughBGO(){
   // old: if(PMT1detection && PMT2detection) IsInBGO = true;
   if(PMT1detection) IsInBGO = true;
-}
-
-inline void EventAction::PassedThroughScint1(){
-  IsInTrg1 = true;
-}
-
-inline void EventAction::PassedThroughScint2(){
-  IsInTrg2 = true;
 }
 
 inline void EventAction::DetectionInPMT1(){

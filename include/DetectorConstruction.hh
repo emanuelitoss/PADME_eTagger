@@ -80,7 +80,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     // materials of the experiment
     G4Material* CreateBismuthGermaniumOxygen() const;
-    G4Material* CreateOpticalAir() const;
     G4Material* CreatePyrex() const;
 
     // set the optical surface of BGO

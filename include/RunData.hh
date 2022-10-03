@@ -43,9 +43,9 @@ const G4int kScint1 = 1;
 const G4int kScint2 = 2;
 const G4int kBGO_Cherenkov = 3;
 const G4int kBGO_Scintillation = 4;
-const G4int kNum_Cerenkov = 5;
-const G4int kNum_Scint = 6;
-const G4int kDim = 7;
+//const G4int kNum_Cerenkov = 5;
+//const G4int kNum_Scint = 6;
+const G4int kDim = 5;//7;
 
 const G4int kDimVolumes = 5;
 
@@ -79,7 +79,7 @@ class RunData : public G4Run
 
     private:
         std::array<G4String, kDimVolumes> fVolumeNames = { "BGO", "Scintillator_1", "Scintillator_2", "Cherenkov PMT", "Scintillation PMT"};
-        std::array<G4double, kDim> fEdep = { 0., 0., 0., 0., 0., 0., 0. };
+        std::array<G4double, kDim> fEdep = { 0., 0., 0., 0., 0. }; //, 0., 0. };
 };
 
 // inline functions

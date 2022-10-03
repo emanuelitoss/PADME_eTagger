@@ -55,9 +55,7 @@ SteppingAction::SteppingAction(EventAction* eventAction, const DetectorConstruct
   fEventAction(eventAction),
   fScoringVolume(0),
   fDetConstruction(detConstruction)
-{
-  z_minimum = detConstruction->GetPlasticScintillator_1()->GetObjectTranslation().getZ() - 0.51*10.*cm;
-}
+{}
 
 SteppingAction::~SteppingAction(){}
 
@@ -79,9 +77,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
   // check that it is a muon
   G4Track* primary = step->GetTrack();
   G4bool check_muon = primary->GetParticleDefinition()->GetParticleName() == "mu-";
-  if(check_muon){
-    if(EstinguishParticleIfNotTrigger(step)) return;
-  }
 
   //////////////////////////////////////////// SCORE ENERGY ////////////////////////////////////////////
 
@@ -96,18 +91,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
     fEventAction->PassedThroughBGO();
     runData->Add(kBGO, edepStep);
     fEventAction->AddEdepBGO(edepStep);
-  }
-
-  if ( physicalVolume == fDetConstruction->GetPlasticScintillator_1() ) {
-    fEventAction->PassedThroughScint1();
-    runData->Add(kScint1, edepStep);
-    fEventAction->AddEdepScint1(edepStep);
-  }
-
-  if ( physicalVolume == fDetConstruction->GetPlasticScintillator_2() ) {
-    fEventAction->PassedThroughScint2();
-    runData->Add(kScint2, edepStep);
-    fEventAction->AddEdepScint2(edepStep);
   }
 
   // Cherenkov and scintillation photons in the two PMTs
@@ -134,7 +117,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
       // add a photon and its energy
       G4double cher_photon_energy = primary->GetKineticEnergy();
       runData->Add(kBGO_Cherenkov, cher_photon_energy);
-      runData->Add(kNum_Cerenkov, 1);
       fEventAction->AddEdepBGOCerenkov(cher_photon_energy);
 
       // delete the photon in order to avoid double counting
@@ -149,7 +131,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
       // add a photon and its energy
       G4double scint_photon_energy = primary->GetKineticEnergy();
       runData->Add(kBGO_Scintillation, scint_photon_energy);
-      runData->Add(kNum_Scint, 1);
       fEventAction->AddEdepBGOScint(scint_photon_energy);
 
       // delete the photon in order to avoid double counting
@@ -176,23 +157,4 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
   // else score
   fEventAction->AddEdep(edepStep);
 
-}
-
-G4bool SteppingAction::EstinguishParticleIfNotTrigger(const G4Step* step)
-{
-  // get z position of the muon and check if it is < than the last z compatible with a plastic scintillator:
-  G4double z_muon = step->GetPreStepPoint()->GetPosition().getZ();
-  G4bool check_z = z_muon < z_minimum;
-
-  // passage through plastics
-  G4bool plastics = fEventAction->BoolTrigger1() && fEventAction->BoolTrigger2();
-
-  // in the case of: mu-, not triggered, and pass the plastics,
-  // kill the particle to avoid unuseful steps
-  if(check_z && (!plastics)){
-    G4Track* primary = step->GetTrack();
-    primary->SetTrackStatus(fStopAndKill);
-    return true;
-  }
-  else return false;
 }

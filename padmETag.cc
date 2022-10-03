@@ -26,7 +26,6 @@
 #include "include/DetectorConstruction.hh"
 #include "include/ActionInitialization.hh"
 #include "include/RunData.hh"
-//#include "include/PhysicsList.hh"
 
 #include "G4RunManagerFactory.hh"
 #include "G4EmStandardPhysics_option4.hh"
