@@ -74,9 +74,9 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
 
   /////////////////////////////////////////////// TRIGGER //////////////////////////////////////////////
   
-  // check that it is a muon
+  // check that it is a e-
   G4Track* primary = step->GetTrack();
-  G4bool check_muon = primary->GetParticleDefinition()->GetParticleName() == "mu-";
+  G4bool check_electron = primary->GetParticleDefinition()->GetParticleName() == "e-";
 
   //////////////////////////////////////////// SCORE ENERGY ////////////////////////////////////////////
 
@@ -95,7 +95,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
 
   // Cherenkov and scintillation photons in the two PMTs
   
-  if(!check_muon) // if it is not a muon
+  if(!check_electron) // if it is not an e-
   {
     G4String creator_process_thisparticle = primary->GetCreatorProcess()->GetProcessName();
 
