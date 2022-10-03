@@ -1,8 +1,0 @@
-/run/initialize
-#
-/control/verbose 0
-/run/verbose 0
-#
-#/run/numberOfThreads 2
-#
-/run/beamOn 5
