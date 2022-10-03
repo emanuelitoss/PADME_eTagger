@@ -47,17 +47,6 @@ RunAction::RunAction()
   fEdep(0.),
   fEdep2(0.)
 {
-  // add new units for dose
-  const G4double milligray = 1.e-3*gray;
-  const G4double microgray = 1.e-6*gray;
-  const G4double nanogray  = 1.e-9*gray;
-  const G4double picogray  = 1.e-12*gray;
-
-  new G4UnitDefinition("milligray", "milliGy" , "Dose", milligray);
-  new G4UnitDefinition("microgray", "microGy" , "Dose", microgray);
-  new G4UnitDefinition("nanogray" , "nanoGy"  , "Dose", nanogray);
-  new G4UnitDefinition("picogray" , "picoGy"  , "Dose", picogray);
-
   // set printing event number per each event
   // G4RunManager::GetRunManager()->SetPrintProgress(1);
 
@@ -74,15 +63,16 @@ RunAction::RunAction()
 
   // Creating histograms
   analysisManager->CreateH1("EnergyBGO","Energy deposited in BGO crystal", 800, 0., 100, "MeV");
-  analysisManager->CreateH1("EnergyPlastic1","Energy deposited in first plastic scintillator", 800, 0., 100*MeV);
-  analysisManager->CreateH1("EnergyPlastic2","Energy deposited in second plastic scintillator", 800, 0., 100*MeV);
+  //analysisManager->CreateH1("EnergyPlastic1","Energy deposited in first plastic scintillator", 800, 0., 100*MeV);
+  //analysisManager->CreateH1("EnergyPlastic2","Energy deposited in second plastic scintillator", 800, 0., 100*MeV);
   analysisManager->CreateH1("Cherenkov","Cherenkov energy production in BGO", 200, 0., 100*keV);
   analysisManager->CreateH1("Scintillation","Scintillation energy production in BGO", 200, 0., 100*keV);
+  
   // Creating ntuple
   analysisManager->CreateNtuple("eTagDataTuples", "EnengyDeposit");
   analysisManager->CreateNtupleDColumn("EnergyInBGO");
-  analysisManager->CreateNtupleDColumn("EnergyInScintillator1");
-  analysisManager->CreateNtupleDColumn("EnergyInScintillator2");
+  //analysisManager->CreateNtupleDColumn("EnergyInScintillator1");
+  //analysisManager->CreateNtupleDColumn("EnergyInScintillator2");
   analysisManager->CreateNtupleDColumn("EnergyInBGO_Cherenkov");
   analysisManager->CreateNtupleDColumn("EnergyInBGO_Scintillation");
   analysisManager->FinishNtuple();
@@ -201,7 +191,8 @@ void RunAction::EndOfRunAction(const G4Run* run){
       << G4BestUnit(analysisManager->GetH1(0)->mean(), "Energy")
       << " rms = "
       << G4BestUnit(analysisManager->GetH1(0)->rms(),  "Energy") << G4endl;
-  
+
+    /*
     G4cout << " EnergyScintillator1 : mean = "
       << G4BestUnit(analysisManager->GetH1(1)->mean(), "Energy")
       << " rms = "
@@ -211,16 +202,17 @@ void RunAction::EndOfRunAction(const G4Run* run){
       << G4BestUnit(analysisManager->GetH1(2)->mean(), "Energy")
       << " rms = "
       << G4BestUnit(analysisManager->GetH1(2)->rms(),  "Energy") << G4endl;
+    */
     
     G4cout << " EnergyCherenkovBGO : mean = "
-      << G4BestUnit(analysisManager->GetH1(3)->mean(), "Energy")
+      << G4BestUnit(analysisManager->GetH1(1)->mean(), "Energy")
       << " rms = "
-      << G4BestUnit(analysisManager->GetH1(3)->rms(),  "Energy") << G4endl;
+      << G4BestUnit(analysisManager->GetH1(1)->rms(),  "Energy") << G4endl;
     
     G4cout << " EnergyScintillationBGO : mean = "
-      << G4BestUnit(analysisManager->GetH1(4)->mean(), "Energy")
+      << G4BestUnit(analysisManager->GetH1(2)->mean(), "Energy")
       << " rms = "
-      << G4BestUnit(analysisManager->GetH1(4)->rms(),  "Energy") << G4endl;
+      << G4BestUnit(analysisManager->GetH1(2)->rms(),  "Energy") << G4endl;
     /*
     G4cout << " NumberCherenkovBGO : mean = "
       << analysisManager->GetH1(5)->mean() << " Number of photons"

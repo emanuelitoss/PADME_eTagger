@@ -78,10 +78,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     if ( envLV ) fEnvelopeSphere = dynamic_cast<G4Sphere*>(envLV->GetSolid());
   }
 
-  if ( fEnvelopeSphere ) {
-    // in order to correct the envelope radius (+40% with respect minimal radius) we divide by 140%.
-    envSizeR = fEnvelopeSphere->GetOuterRadius()/1.4;
-  }
+  if ( fEnvelopeSphere )  envSizeR = fEnvelopeSphere->GetOuterRadius();
   else {
     G4ExceptionDescription msg;
     msg << "Envelope volume of box shape not found.\n";

@@ -50,8 +50,6 @@ void EventAction::BeginOfEventAction(const G4Event*){
 
   fEdep = 0.;
   fEdep_BGO = 0.;
-  fEdep_Scint1 = 0.;
-  fEdep_Scint2 = 0.;
   fEdep_BGO_Cherenkov = 0.;
   fEdep_BGO_Scintillation = 0.;
   Nphotons_Cerenkov = 0;
@@ -101,14 +99,6 @@ void EventAction::AddEdep(G4double edep){
 
 void EventAction::AddEdepBGO(G4double edep){
   fEdep_BGO += edep;
-}
-
-void EventAction::AddEdepScint1(G4double edep){
-  fEdep_Scint1 += edep;
-}
-
-void EventAction::AddEdepScint2(G4double edep){
-  fEdep_Scint2 += edep;
 }
 
 void EventAction::AddEdepBGOCerenkov(G4double edep){ 

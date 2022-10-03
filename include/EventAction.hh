@@ -58,8 +58,6 @@ class EventAction : public G4UserEventAction
   // add energy losses in materials 
   void AddEdep(G4double edep);
   void AddEdepBGO(G4double edep);
-  void AddEdepScint1(G4double edep);
-  void AddEdepScint2(G4double edep);
   void AddEdepBGOCerenkov(G4double edep);
   void AddEdepBGOScint(G4double edep);
 
@@ -73,8 +71,6 @@ class EventAction : public G4UserEventAction
   // deposited energies in: ScoringVolume, BGO crystal and two plastic Scintillators
   G4double fEdep;
   G4double fEdep_BGO;
-  G4double fEdep_Scint1;
-  G4double fEdep_Scint2;
   G4double fEdep_BGO_Cherenkov;
   G4double fEdep_BGO_Scintillation;
   G4int Nphotons_Cerenkov;

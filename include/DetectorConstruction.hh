@@ -56,8 +56,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     const G4VPhysicalVolume* GetCerenkovVolume() const;
     const G4VPhysicalVolume* GetScintillatorVolume() const;
 
-    G4double GetRadiusEnvelope() {return minimal_radius;}
-
     // return the scoring volume
     G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
 
