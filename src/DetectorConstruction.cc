@@ -94,16 +94,23 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
   G4double radius_sphere = minimal_radius;
 
+  // create vacuum material
+  G4double atomicNumber = 1.;
+  G4double massOfMole = 1.008*g/mole;
+  G4double density = 1.e-25*g/cm3;
+  G4double temperature = 2.73*kelvin;
+  G4double pressure = 3.e-18*pascal;
+  G4Material* VacuumMaterial = new G4Material("LowDensityVacuum", atomicNumber,massOfMole, density, kStateGas,temperature, pressure);
+
   //
   // World
   //
-  G4Material* world_material = nist->FindOrBuildMaterial("G4_AIR");
   
   G4Sphere* solidWorld = new G4Sphere("World", 0, sqrt(3)*radius_sphere, 0.*deg, 360.*deg, 0.*deg, 180.*deg);
       
   G4LogicalVolume* logicWorld =                         
     new G4LogicalVolume(solidWorld,          //its solid
-                        world_material,      //its material
+                        VacuumMaterial,      //its material
                         "World");            //its name
 
   G4VPhysicalVolume* physWorld = 
@@ -120,11 +127,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   // Envelope
   //  
   G4Sphere* solidEnv = new G4Sphere("World", 0, radius_sphere, 0.*deg, 360.*deg, 0.*deg, 180.*deg);
-  G4Material* envelope_material = nist->FindOrBuildMaterial("G4_AIR");
       
   G4LogicalVolume* logicEnv =                         
     new G4LogicalVolume(solidEnv,            //its solid
-                        envelope_material,   //its material
+                        VacuumMaterial,   //its material
                         "Envelope");         //its name
 
   G4VPhysicalVolume* physEnvelope = new G4PVPlacement(0,                       //no rotation
@@ -169,7 +175,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
                         "PMT made up of borosilicate glass");    //its name
 
   // in order to ensure at least one step in the PMT
-  PMT_LogicalVolume->SetUserLimits(new G4UserLimits(shape_PMT_Y/2));
+  PMT_LogicalVolume->SetUserLimits(new G4UserLimits(shape_PMT_X/2));
 
   // delta vector useful to translate PMTs
   G4ThreeVector original_vector = G4ThreeVector(0, 0.5*(shape_bgoY+shape_PMT_Y), 0);
@@ -280,7 +286,7 @@ G4Material* DetectorConstruction::CreatePlasticMaterial() const {
 
   // from BGO FermiLab .pptx
   G4double rindex[n10] = {2.75, 2.42, 2.30, 2.25, 2.21, 2.17, 2.16, 2.15, 2.15, 2.15};
-  G4double absorption[n10] = {0.1*mm, 75.*mm, 82.*mm, 90.*mm, 100.*mm, 105.*mm, 112.*mm, 120.*mm, 125.*mm, 130.*mm};
+  G4double absorption[n10] = {0.1*cm, 75.*cm, 82.*cm, 90.*cm, 100.*cm, 105.*cm, 112.*cm, 120.*cm, 125.*cm, 130.*cm};
   G4double scintillation_spectrum[n10] = {0, 0.1/100, 3.4/100, 11.5/100, 14.5/100, 10.8/100, 5.5/100, 3/100, 1.7/100, 0.7/100}; // percent
 
   // new instance of Material Properties
