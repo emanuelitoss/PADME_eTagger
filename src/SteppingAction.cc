@@ -87,7 +87,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
 
   // for each PV:
   // modify a boolean value to check the passage of particle through PV and add energy
-  if ( physicalVolume == fDetConstruction->GetBGOcrystal() ) {
+  if ( physicalVolume == fDetConstruction->GetScintillator() ) {
     fEventAction->PassedThroughBGO();
     runData->Add(kBGO, edepStep);
     fEventAction->AddEdepBGO(edepStep);
@@ -106,7 +106,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
     G4bool check_cerenkov = !creator_process_thisparticle.compare("Cerenkov");
     G4bool check_scintillation = !creator_process_thisparticle.compare("Scintillation");
 
-    G4bool prestep = step->GetPreStepPoint()->GetPhysicalVolume() == fDetConstruction->GetBGOcrystal();
+    G4bool prestep = step->GetPreStepPoint()->GetPhysicalVolume() == fDetConstruction->GetScintillator();
     G4bool poststep_cerenkovPMT = step->GetPostStepPoint()->GetPhysicalVolume() == fDetConstruction->GetCerenkovVolume();
     G4bool poststep_scintillationPMT = step->GetPostStepPoint()->GetPhysicalVolume() == fDetConstruction->GetScintillatorVolume();
 
@@ -139,7 +139,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
     }
   } else {
     // if we are in the BGO
-    if(step->GetPreStepPoint()->GetPhysicalVolume() == fDetConstruction->GetBGOcrystal()){
+    if(step->GetPreStepPoint()->GetPhysicalVolume() == fDetConstruction->GetScintillator()){
     const std::vector <const G4Track*> * secondaries = step->GetSecondaryInCurrentStep();
       // loop over secondaries
       for( auto sec : *secondaries ){

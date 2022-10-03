@@ -50,7 +50,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     virtual G4VPhysicalVolume* Construct();
 
     // getters for physical volumes of the apparatus
-    const G4VPhysicalVolume* GetBGOcrystal() const;
+    const G4VPhysicalVolume* GetScintillator() const;
     const G4VPhysicalVolume* GetPlasticScintillator_1() const;
     const G4VPhysicalVolume* GetPlasticScintillator_2() const;
     const G4VPhysicalVolume* GetCerenkovVolume() const;
@@ -62,7 +62,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   private:
 
     // physical volumes of detector
-    G4VPhysicalVolume* fBGOcrystal;
+    G4VPhysicalVolume* fScintillator;
     G4VPhysicalVolume* fPlasticScintillator_1;
     G4VPhysicalVolume* fPlasticScintillator_2;
     G4VPhysicalVolume* fCerenkovPMT;
@@ -77,19 +77,18 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4LogicalVolume* fScoringVolume;
 
     // materials of the experiment
-    G4Material* CreateBismuthGermaniumOxygen() const;
+    G4Material* CreatePlasticMaterial() const;
     G4Material* CreatePyrex() const;
 
-    // set the optical surface of BGO
-    void OpticalSurfaceBGO(G4VPhysicalVolume*, G4VPhysicalVolume*) const;
-    void OpticalSurfaceBGO_PMT(G4VPhysicalVolume*, G4VPhysicalVolume*) const;
+    // set the optical surface between the scintillator and SiPMs
+    void OpticalSurfacePlastic_SiPM(G4VPhysicalVolume*, G4VPhysicalVolume*) const;
 
 };
 
 // inline functions
 
-inline const G4VPhysicalVolume* DetectorConstruction::GetBGOcrystal() const { 
-  return fBGOcrystal; 
+inline const G4VPhysicalVolume* DetectorConstruction::GetScintillator() const { 
+  return fScintillator; 
 }
 
 inline const G4VPhysicalVolume* DetectorConstruction::GetPlasticScintillator_1() const { 

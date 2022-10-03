@@ -58,7 +58,7 @@ const double meters_to_nanometers = 1e9; // 1 m = 1e9 nm
 
 DetectorConstruction::DetectorConstruction()
 : G4VUserDetectorConstruction(),
-  fBGOcrystal(nullptr),
+  fScintillator(nullptr),
   fPlasticScintillator_1(nullptr),
   fPlasticScintillator_2(nullptr),
   fCerenkovPMT(nullptr),
@@ -147,7 +147,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   //     
   // BGO Crystal + Photomultipliers
   //  
-  G4Material* bgo_material = this->CreateBismuthGermaniumOxygen();
+  G4Material* bgo_material = this->CreatePlasticMaterial();
   G4Material* borosilicate = this->CreatePyrex();
 
   // position: choosen in order to minimize the envelope sphere
@@ -181,7 +181,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   G4ThreeVector delta_vect = G4ThreeVector();
   delta_vect = (translated_vector - original_vector);
 
-  fBGOcrystal = new G4PVPlacement(0,
+  fScintillator = new G4PVPlacement(0,
                     bgo_position,                 //at position
                     BGO_LogicalVolume,            //its logical volume
                     "BGO Crystal",                //its name
@@ -209,8 +209,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
                     checkOverlaps);               //overlaps checking
 
   // optical properties of BGO surface
-  OpticalSurfaceBGO_PMT(fBGOcrystal, fCerenkovPMT);
-  OpticalSurfaceBGO_PMT(fBGOcrystal, fScintillatorPMT);
+  OpticalSurfacePlastic_SiPM(fScintillator, fCerenkovPMT);
+  OpticalSurfacePlastic_SiPM(fScintillator, fScintillatorPMT);
 
   //
   // Plastic scintillator
@@ -257,7 +257,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 }
 
 // optical between of BGO and PMTs
-void DetectorConstruction::OpticalSurfaceBGO_PMT(G4VPhysicalVolume* BGO_PV, G4VPhysicalVolume* TheOtherPV) const {
+void DetectorConstruction::OpticalSurfacePlastic_SiPM(G4VPhysicalVolume* BGO_PV, G4VPhysicalVolume* TheOtherPV) const {
 
   G4OpticalSurface* opBGOSurface = new G4OpticalSurface("BGO Surface");
   // see here: https://geant4-userdoc.web.cern.ch/UsersGuides/ForApplicationDeveloper/BackupVersions/V10.7/html/TrackingAndPhysics/physicsProcess.html
@@ -294,7 +294,7 @@ void DetectorConstruction::OpticalSurfaceBGO_PMT(G4VPhysicalVolume* BGO_PV, G4VP
 }
 
 // BGO - material
-G4Material* DetectorConstruction::CreateBismuthGermaniumOxygen() const {
+G4Material* DetectorConstruction::CreatePlasticMaterial() const {
   
   // Get nist material manager
   G4NistManager* nist = G4NistManager::Instance();
