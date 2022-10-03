@@ -56,7 +56,7 @@ const double hPlanck = 4.135655e-15;
 const double c_light = 3e+8;
 const double meters_to_nanometers = 1e9;
 
-DetectorConstruction::DetectorConstruction(G4double angle_degrees)
+DetectorConstruction::DetectorConstruction()
 : G4VUserDetectorConstruction(),
   fBGOcrystal(nullptr),
   fPlasticScintillator_1(nullptr),
@@ -65,9 +65,7 @@ DetectorConstruction::DetectorConstruction(G4double angle_degrees)
   fScintillatorPMT(nullptr),
   fStepLimit(nullptr),
   fScoringVolume(0)
-{
-  rotation_angle = angle_degrees * M_PI / 180. * radian;
-}
+{}
 
 DetectorConstruction::~DetectorConstruction(){
   delete fStepLimit;
@@ -183,19 +181,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   // in order to ensure at least one step in the PMT
   PMT_LogicalVolume->SetUserLimits(new G4UserLimits(shape_PMT_Y/2));
 
-  // rotation matrix
-  G4RotationMatrix* rotationMatrix = new G4RotationMatrix();
-  rotationMatrix->rotateX(rotation_angle);
-
   // delta vector useful to translate PMTs
   G4ThreeVector original_vector = G4ThreeVector(0, 0.5*(shape_bgoY+shape_PMT_Y), 0);
   G4ThreeVector translated_vector = original_vector;
-  translated_vector.rotateX(-rotation_angle);
 
   G4ThreeVector delta_vect = G4ThreeVector();
   delta_vect = (translated_vector - original_vector);
 
-  fBGOcrystal = new G4PVPlacement(rotationMatrix,
+  fBGOcrystal = new G4PVPlacement(0,
                     bgo_position,                 //at position
                     BGO_LogicalVolume,            //its logical volume
                     "BGO Crystal",                //its name
@@ -204,7 +197,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
                     0,                            //copy number
                     checkOverlaps);               //overlaps checking
   
-  fCerenkovPMT = new G4PVPlacement(rotationMatrix,
+  fCerenkovPMT = new G4PVPlacement(0,
                     pmt1_position + delta_vect,   //at position
                     PMT_LogicalVolume,            //its logical volume
                     "Cherenkov PMT",              //its name
@@ -213,7 +206,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
                     0,                            //copy number
                     checkOverlaps);               //overlaps checking
 
-  fScintillatorPMT = new G4PVPlacement(rotationMatrix,
+  fScintillatorPMT = new G4PVPlacement(0,
                     pmt2_position - delta_vect,   //at position
                     PMT_LogicalVolume,            //its logical volume
                     "Scintill. PMT",              //its name

@@ -44,7 +44,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
 
-    DetectorConstruction(G4double);
+    DetectorConstruction();
     virtual ~DetectorConstruction();
 
     virtual G4VPhysicalVolume* Construct();
@@ -71,7 +71,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4VPhysicalVolume* fScintillatorPMT;
     
     G4double minimal_radius;
-    G4double rotation_angle;
     
     G4UserLimits* fStepLimit;            // pointer to user step limits
 

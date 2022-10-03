@@ -26,7 +26,7 @@
 #include "include/DetectorConstruction.hh"
 #include "include/ActionInitialization.hh"
 #include "include/RunData.hh"
-#include "include/PhysicsList.hh"
+//#include "include/PhysicsList.hh"
 
 #include "G4RunManagerFactory.hh"
 #include "G4EmStandardPhysics_option4.hh"
@@ -67,8 +67,7 @@ int main(int argc,char** argv)
   auto* runManager = G4RunManagerFactory::CreateRunManager(G4RunManagerType::Default);
 
   // Detector construction
-  G4double angle_degrees = 30.;
-  auto detConstruction = new DetectorConstruction(angle_degrees);
+  auto detConstruction = new DetectorConstruction();
   runManager->SetUserInitialization(detConstruction);
   runManager->SetNumberOfThreads(1);
 
