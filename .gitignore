@@ -1,0 +1,9 @@
+# the build folder
+build/*
+
+# output data folder
+eTag_data/*
+
+# utility files
+run.mac
+visualize.mac
