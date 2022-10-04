@@ -33,6 +33,7 @@
 #include "G4VUserDetectorConstruction.hh"
 #include "G4LogicalVolume.hh"
 #include "globals.hh"
+#include <vector>
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
@@ -51,8 +52,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     // getters for physical volumes of the apparatus
     const G4VPhysicalVolume* GetScintillator() const;
-    const G4VPhysicalVolume* GetPlasticScintillator_1() const;
-    const G4VPhysicalVolume* GetPlasticScintillator_2() const;
+    const std::vector <G4VPhysicalVolume*> GetSiPMs() const;
     const G4VPhysicalVolume* GetCerenkovVolume() const;
     const G4VPhysicalVolume* GetScintillatorVolume() const;
 
@@ -63,11 +63,13 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     // physical volumes of detector
     G4VPhysicalVolume* fScintillator;
-    G4VPhysicalVolume* fPlasticScintillator_1;
-    G4VPhysicalVolume* fPlasticScintillator_2;
     G4VPhysicalVolume* fCerenkovPMT;
     G4VPhysicalVolume* fScintillatorPMT;
-    
+
+    // our SiPMs
+    const std::vector <G4VPhysicalVolume*> fSiPMs
+      = {nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr};
+
     G4double minimal_radius;
     
     G4UserLimits* fStepLimit;            // pointer to user step limits
@@ -91,12 +93,8 @@ inline const G4VPhysicalVolume* DetectorConstruction::GetScintillator() const {
   return fScintillator; 
 }
 
-inline const G4VPhysicalVolume* DetectorConstruction::GetPlasticScintillator_1() const { 
-  return fPlasticScintillator_1; 
-}
-
-inline const G4VPhysicalVolume* DetectorConstruction::GetPlasticScintillator_2() const { 
-  return fPlasticScintillator_2; 
+inline const std::vector <G4VPhysicalVolume*> DetectorConstruction::GetSiPMs() const {
+  return fSiPMs;
 }
 
 inline const G4VPhysicalVolume* DetectorConstruction::GetCerenkovVolume() const { 

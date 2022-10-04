@@ -30,8 +30,6 @@
 #include "../include/DetectorConstruction.hh"
 #include "../include/OutputColors.hh"
 
-#include "G4RotationMatrix.hh"
-
 #include "G4RunManager.hh" 
 #include "G4NistManager.hh"
 #include "G4Box.hh"
@@ -59,8 +57,6 @@ const double meters_to_nanometers = 1e9; // 1 m = 1e9 nm
 DetectorConstruction::DetectorConstruction()
 : G4VUserDetectorConstruction(),
   fScintillator(nullptr),
-  fPlasticScintillator_1(nullptr),
-  fPlasticScintillator_2(nullptr),
   fCerenkovPMT(nullptr),
   fScintillatorPMT(nullptr),
   fStepLimit(nullptr),
@@ -73,7 +69,8 @@ DetectorConstruction::~DetectorConstruction(){
 
 G4VPhysicalVolume* DetectorConstruction::Construct(){ 
   
-  // Get nist material manager
+  // Get nist material manager:
+  // (per prendere materiali già preparati da geant. Ma tanto noi li costruiamo)
   G4NistManager* nist = G4NistManager::Instance();
 
   // Option to switch on/off checking of volumes overlaps
@@ -81,9 +78,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
   // Dimensions of BGO
   const G4double shape_bgoX = 600.*mm, shape_bgoY = 44.*mm, shape_bgoZ = 5.*mm;
-  const G4double shape_PMT_Y = shape_bgoY, shape_PMT_Z = shape_bgoZ;
-  const G4double shape_PMT_X = 0.5*cm;
+  const G4double shape_PMT_X = 5.*mm, shape_PMT_Y = shape_bgoY, shape_PMT_Z = shape_bgoZ;
 
+  // envelope and world radius
   if (shape_bgoZ > shape_bgoY)
   {
     if (shape_bgoZ > shape_bgoX) minimal_radius = shape_bgoZ;
@@ -128,20 +125,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   //  
   G4Sphere* solidEnv = new G4Sphere("World", 0, radius_sphere, 0.*deg, 360.*deg, 0.*deg, 180.*deg);
       
-  G4LogicalVolume* logicEnv =                         
-    new G4LogicalVolume(solidEnv,            //its solid
-                        VacuumMaterial,   //its material
-                        "Envelope");         //its name
+  G4LogicalVolume* logicEnv = new G4LogicalVolume(solidEnv, VacuumMaterial, "Envelope");
 
-  G4VPhysicalVolume* physEnvelope = new G4PVPlacement(0,                       //no rotation
-                    G4ThreeVector(),         //at (0,0,0)
-                    logicEnv,                //its logical volume
-                    "Envelope",              //its name
-                    logicWorld,              //its mother  volume
-                    false,                   //no boolean operation
-                    0,                       //copy number
-                    checkOverlaps);          //overlaps checking
   
+  G4VPhysicalVolume* physEnvelope
+    = new G4PVPlacement(0, G4ThreeVector(), logicEnv, "Envelope", logicWorld, false, 0, checkOverlaps);
+  
+
   // limit stepLength to 4.8cm in order to optimize rejecting logic of non-detected events 
   // (see SteppingAction.cc SteppingAction::EstinguishParticleIfNotTrigger )
   G4double maxStep = 4.8*cm;
@@ -164,15 +154,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   G4Box* PMTsShape = new G4Box("PMT Box", 0.5*shape_PMT_X, 0.5*shape_PMT_Y, 0.5*shape_PMT_Z);
 
   // logical volumes
-  G4LogicalVolume* BGO_LogicalVolume = 
-    new G4LogicalVolume(BGOShape,                 //its solid
-                        bgo_material,             //its material
-                        "BGO Crystal");           //its name
+  G4LogicalVolume* BGO_LogicalVolume 
+    = new G4LogicalVolume(BGOShape, bgo_material, "BGO Crystal");
   
-  G4LogicalVolume* PMT_LogicalVolume = 
-    new G4LogicalVolume(PMTsShape,                               //its solid
-                        borosilicate,                            //its material
-                        "PMT made up of borosilicate glass");    //its name
+  G4LogicalVolume* PMT_LogicalVolume 
+    = new G4LogicalVolume(PMTsShape, borosilicate, "PMT made up of borosilicate glass");
 
   // in order to ensure at least one step in the PMT
   PMT_LogicalVolume->SetUserLimits(new G4UserLimits(shape_PMT_X/2));
@@ -180,32 +166,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   // delta vector useful to translate PMTs
   G4ThreeVector original_vector = G4ThreeVector(0, 0.5*(shape_bgoY+shape_PMT_Y), 0);
 
-  fScintillator = new G4PVPlacement(0,
-                    bgo_position,                 //at position
-                    BGO_LogicalVolume,            //its logical volume
-                    "BGO Crystal",                //its name
-                    logicEnv,                     //its mother volume
-                    false,                        //no boolean operation
-                    0,                            //copy number
-                    checkOverlaps);               //overlaps checking
+  fScintillator = 
+    new G4PVPlacement(0, bgo_position, BGO_LogicalVolume, "BGO Crystal", logicEnv, false, 0, checkOverlaps);
   
-  fCerenkovPMT = new G4PVPlacement(0,
-                    pmt1_position,                 //at position
-                    PMT_LogicalVolume,            //its logical volume
-                    "Cherenkov PMT",              //its name
-                    logicEnv,                     //its mother volume
-                    false,                        //no boolean operation
-                    0,                            //copy number
-                    checkOverlaps);               //overlaps checking
+  fCerenkovPMT 
+   = new G4PVPlacement(0, pmt1_position, PMT_LogicalVolume, "Cherenkov PMT", logicEnv, false, 0, checkOverlaps);
 
-  fScintillatorPMT = new G4PVPlacement(0,
-                    pmt2_position,                 //at position
-                    PMT_LogicalVolume,            //its logical volume
-                    "Scintill. PMT",              //its name
-                    logicEnv,                     //its mother volume
-                    false,                        //no boolean operation
-                    0,                            //copy number
-                    checkOverlaps);               //overlaps checking
+  fScintillatorPMT = new G4PVPlacement(0, pmt2_position, PMT_LogicalVolume, "Scintill. PMT", logicEnv, false, 0, checkOverlaps);
 
   // optical properties of BGO surface
   OpticalSurfacePlastic_SiPM(fScintillator, fCerenkovPMT);
