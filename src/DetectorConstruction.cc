@@ -97,7 +97,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   G4double density = 1.e-25*g/cm3;
   G4double temperature = 2.73*kelvin;
   G4double pressure = 3.e-18*pascal;
-  G4Material* VacuumMaterial = new G4Material("LowDensityVacuum", atomicNumber,massOfMole, density, kStateGas,temperature, pressure);
+  G4Material* VacuumMaterial = new G4Material("LowDensityVacuum", atomicNumber, massOfMole, density, kStateGas,temperature, pressure);
 
   //
   // World
@@ -141,7 +141,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   //     
   // BGO Crystal + Photomultipliers
   //  
-  G4Material* bgo_material = this->CreatePlasticMaterial();
+  G4Material* plastic_material = this->CreatePlasticMaterial();
   G4Material* borosilicate = this->CreatePyrex();
 
   // position: choosen in order to minimize the envelope sphere
@@ -155,7 +155,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
   // logical volumes
   G4LogicalVolume* BGO_LogicalVolume 
-    = new G4LogicalVolume(BGOShape, bgo_material, "BGO Crystal");
+    = new G4LogicalVolume(BGOShape, plastic_material, "BGO Crystal");
   
   G4LogicalVolume* PMT_LogicalVolume 
     = new G4LogicalVolume(PMTsShape, borosilicate, "PMT made up of borosilicate glass");
@@ -226,54 +226,56 @@ G4Material* DetectorConstruction::CreatePlasticMaterial() const {
   
   // Get nist material manager
   G4NistManager* nist = G4NistManager::Instance();
-  
-  // BGO material definition
-  // references: Bi4-Ge3-O12
-  // https://iopscience.iop.org/article/10.1088/1361-6560/aa6a49/pdf
-  // https://www.gammadata.se/assets/Uploads/BGO-data-sheet.pdf
+
+  /*
+  G4double atomicNumber = 1.;
+  G4double massOfMole = 1.008*g/mole;
+  G4double density = 1.e-25*g/cm3;
+  G4double temperature = 2.73*kelvin;
+  G4double pressure = 3.e-18*pascal;
+  G4Material* VacuumMaterial = new G4Material("LowDensityVacuum", atomicNumber, massOfMole, density, kStateGas,temperature, pressure);
+  */
 
   // Composition
-  G4Material* bgo_basic = nist->FindOrBuildMaterial("G4_BGO");
-  G4Material* bgo_material = new G4Material("BismuthGermaniumOxygen Crystal", 7.13*g/cm3, bgo_basic);
-
-  // Optical properties
-  const G4int n10 = 10;
+  G4Material* plastic_basic_material = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
+  G4Material* plastic_material = new G4Material("BismuthGermaniumOxygen Crystal", 1.023*g/cm3, plastic_basic_material);
 
   // energy = hPlanck * (light speed) / wavelength
-  G4double energies_photons[n10] = {hPlanck*c_light*meters_to_nanometers/300.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/350.*eV,
+  G4double energies_photons[10] = {hPlanck*c_light*meters_to_nanometers/380.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/390.*eV,
                                     hPlanck*c_light*meters_to_nanometers/400.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/450.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/500.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/550.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/600.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/650.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/700.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/750.*eV,};
+                                    hPlanck*c_light*meters_to_nanometers/410.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/420.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/430.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/440.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/460.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/480.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/500.*eV};
 
-  // from BGO FermiLab .pptx
-  G4double rindex[n10] = {2.75, 2.42, 2.30, 2.25, 2.21, 2.17, 2.16, 2.15, 2.15, 2.15};
-  G4double absorption[n10] = {0.1*cm, 75.*cm, 82.*cm, 90.*cm, 100.*cm, 105.*cm, 112.*cm, 120.*cm, 125.*cm, 130.*cm};
-  G4double scintillation_spectrum[n10] = {0, 0.1/100, 3.4/100, 11.5/100, 14.5/100, 10.8/100, 5.5/100, 3/100, 1.7/100, 0.7/100}; // percent
+  // from our documents
+  G4double rindex[10] = {1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58};
+  G4double absorption[10] = {140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm};
+  G4double scintillation_spectrum[10] = {0.04, 0.3, 0.87, 0.92, 0.55, 0.45, 0.34, 0.13, 0.05, 0.01};
 
   // new instance of Material Properties
   G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
  
   // properties independent of energy
-  MPT->AddConstProperty("FASTTIMECONSTANT", 300.*ns);
+  MPT->AddConstProperty("FASTTIMECONSTANT", 1.8*ns);
   MPT->AddConstProperty("RESOLUTIONSCALE", 1.0);
-  MPT->AddConstProperty("SCINTILLATIONYIELD", 8200./MeV);
+  G4double light_yield_Anthracene = 17400./MeV;
+  MPT->AddConstProperty("SCINTILLATIONYIELD", 0.68*light_yield_Anthracene);
 
   // properties that depend on energy
-  MPT->AddProperty("RINDEX", energies_photons, rindex, n10)->SetSpline(true);
-  MPT->AddProperty("ABSLENGTH", energies_photons, absorption, n10);
-  MPT->AddProperty("FASTCOMPONENT", energies_photons, scintillation_spectrum, n10)->SetSpline(true);
+  MPT->AddProperty("RINDEX", energies_photons, rindex, 10)->SetSpline(true);
+  MPT->AddProperty("ABSLENGTH", energies_photons, absorption, 10);
+  MPT->AddProperty("FASTCOMPONENT", energies_photons, scintillation_spectrum, 10)->SetSpline(true);
 
   // bgo material
-  bgo_material->SetMaterialPropertiesTable(MPT);
-  bgo_material->GetIonisation()->SetBirksConstant(0.126*mm/MeV);
+  plastic_material->SetMaterialPropertiesTable(MPT);
+  plastic_material->GetIonisation()->SetBirksConstant(0.126*mm/MeV);
 
-  return bgo_material;
+  return plastic_material;
 }
 
 // Birosilicate glass - material
