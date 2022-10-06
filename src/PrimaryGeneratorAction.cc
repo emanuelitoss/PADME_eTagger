@@ -46,10 +46,11 @@ using namespace std;
 #include "Randomize.hh"
 #include "g4root.hh"
 
-PrimaryGeneratorAction::PrimaryGeneratorAction()
+PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* detConstruction)
 : G4VUserPrimaryGeneratorAction(),
   fParticleGun(0), 
-  fEnvelopeSphere(0)
+  fEnvelopeSphere(0),
+  fDetConstruction(detConstruction)
 {
 
   G4int n_particle = 1;
@@ -84,7 +85,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     msg << "Envelope volume of box shape not found.\n";
     msg << "Perhaps you have changed geometry.\n";
     msg << "The gun will be place at the center.";
-    G4Exception("PrimaryGeneratorAction::GeneratePrimaries()", "MyCode0002",JustWarning,msg);
+    G4Exception("PrimaryGeneratorAction::GeneratePrimaries()", "MyCode0002", JustWarning, msg);
   }
 
   ParticleKinematicsGenerator();
@@ -105,9 +106,9 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
   const double radius = fEnvelopeSphere->GetOuterRadius()/1.4;
 
   // direction of the beam
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,-1,0));
+  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
  
   // set position of the particle
-  fParticleGun->SetParticlePosition(G4ThreeVector(0,radius,0));
+  fParticleGun->SetParticlePosition(G4ThreeVector(0,0,radius));
 
 }

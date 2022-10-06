@@ -34,6 +34,7 @@
 using namespace std;
 
 #include "../include/OutputColors.hh"
+#include "../include/DetectorConstruction.hh"
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ParticleGun.hh"
@@ -46,7 +47,7 @@ class G4Sphere;
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
-    PrimaryGeneratorAction();   
+    PrimaryGeneratorAction(DetectorConstruction*);   
     virtual ~PrimaryGeneratorAction();
 
     virtual void GeneratePrimaries(G4Event*);
@@ -60,6 +61,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
   private:
     G4ParticleGun* fParticleGun;
     G4Sphere* fEnvelopeSphere;
+    DetectorConstruction* fDetConstruction;
 
 };
 
