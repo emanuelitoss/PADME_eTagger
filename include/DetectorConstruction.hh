@@ -68,7 +68,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     std::vector <G4VPhysicalVolume*> fSiPMs
       = {nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr};
 
-    G4double minimal_radius;
     G4UserLimits* fStepLimit;            // pointer to user step limits
 
   protected:

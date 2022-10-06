@@ -37,7 +37,6 @@ using namespace std;
 #include "G4LogicalVolumeStore.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Box.hh"
-#include "G4Sphere.hh"
 #include "G4RunManager.hh"
 #include "G4ParticleGun.hh"
 #include "G4ParticleTable.hh"
@@ -46,11 +45,10 @@ using namespace std;
 #include "Randomize.hh"
 #include "g4root.hh"
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* detConstruction)
+PrimaryGeneratorAction::PrimaryGeneratorAction()
 : G4VUserPrimaryGeneratorAction(),
   fParticleGun(0), 
-  fEnvelopeSphere(0),
-  fDetConstruction(detConstruction)
+  fEnvelope(0)
 {
 
   G4int n_particle = 1;
@@ -69,17 +67,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // In order to avoid dependence of PrimaryGeneratorAction
   // on DetectorConstruction class we get Envelope volume
   // from G4LogicalVolumeStore.
-  
-  G4double envSizeR = 0;
 
-  if (!fEnvelopeSphere)
+  if (!fEnvelope)
   {
-    G4LogicalVolume* envLV
-      = G4LogicalVolumeStore::GetInstance()->GetVolume("Envelope");
-    if ( envLV ) fEnvelopeSphere = dynamic_cast<G4Sphere*>(envLV->GetSolid());
+    G4LogicalVolume* envLV = G4LogicalVolumeStore::GetInstance()->GetVolume("Envelope");
+    if ( envLV ) fEnvelope = dynamic_cast<G4Box*>(envLV->GetSolid());
   }
 
-  if ( fEnvelopeSphere )  envSizeR = fEnvelopeSphere->GetOuterRadius();
   else {
     G4ExceptionDescription msg;
     msg << "Envelope volume of box shape not found.\n";
@@ -103,12 +97,12 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
   fParticleGun->SetParticleDefinition(particle);
   fParticleGun->SetParticleEnergy(21.*MeV);
   
-  const double radius = fEnvelopeSphere->GetOuterRadius()/1.4;
+  const double initial_position = fEnvelope->GetZHalfLength();
 
   // direction of the beam
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
  
   // set position of the particle
-  fParticleGun->SetParticlePosition(G4ThreeVector(0,0,radius));
+  fParticleGun->SetParticlePosition(G4ThreeVector(0,0,initial_position));
 
 }

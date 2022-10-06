@@ -81,17 +81,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   const G4double shape_PMT_X = shape_plasticX, shape_PMT_Y = 5.*mm, shape_PMT_Z = shape_plasticZ;
   const G4double shape_SiPMX = 1.*mm, shape_SiPMY = 3.*mm, shape_SiPMZ = shape_SiPMY;
 
-  // envelope and world radius
-  if (shape_plasticZ > shape_plasticY)
-  {
-    if (shape_plasticZ > shape_plasticX) minimal_radius = shape_plasticZ;
-    else minimal_radius = shape_plasticX;
-  }
-  else if (shape_plasticY > shape_plasticX) minimal_radius = shape_plasticY;
-  else minimal_radius = shape_plasticX;
-
-  G4double radius_sphere = minimal_radius;
-
   // create vacuum material
   G4double atomicNumber = 1.;
   G4double massOfMole = 1.008*g/mole;
@@ -105,8 +94,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   // World
   //
   
-  G4Sphere* solidWorld = new G4Sphere("World", 0, sqrt(3)*radius_sphere, 0.*deg, 360.*deg, 0.*deg, 180.*deg);
-      
+  G4Box* solidWorld = new G4Box("World", 1.1*shape_plasticX, 1.1*shape_plasticY, 1.1*shape_plasticZ);
+  
   G4LogicalVolume* logicWorld =                         
     new G4LogicalVolume(solidWorld,          //its solid
                         VacuumMaterial,      //its material
@@ -125,7 +114,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   //     
   // Envelope
   //  
-  G4Sphere* solidEnv = new G4Sphere("World", 0, radius_sphere, 0.*deg, 360.*deg, 0.*deg, 180.*deg);
+  G4Box* solidEnv = new G4Box("Envelope", shape_plasticX, shape_plasticY, shape_plasticZ);
       
   G4LogicalVolume* logicEnv = new G4LogicalVolume(solidEnv, VacuumMaterial, "Envelope");
 

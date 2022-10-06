@@ -54,7 +54,7 @@ void ActionInitialization::BuildForMaster() const {
 
 void ActionInitialization::Build() const {
 
-  SetUserAction(new PrimaryGeneratorAction(fDetConstruction));
+  SetUserAction(new PrimaryGeneratorAction());
 
   RunAction* runAction = new RunAction;
   SetUserAction(runAction);
