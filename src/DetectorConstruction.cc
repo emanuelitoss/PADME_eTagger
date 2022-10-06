@@ -76,18 +76,19 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = true;
 
-  // Dimensions of BGO
-  const G4double shape_bgoX = 600.*mm, shape_bgoY = 44.*mm, shape_bgoZ = 5.*mm;
-  const G4double shape_PMT_X = 5.*mm, shape_PMT_Y = shape_bgoY, shape_PMT_Z = shape_bgoZ;
+  // Dimensions of my solids
+  const G4double shape_plasticX = 600.*mm, shape_plasticY = 44.*mm, shape_plasticZ = 5.*mm;
+  const G4double shape_PMT_X = shape_plasticX, shape_PMT_Y = 5.*mm, shape_PMT_Z = shape_plasticZ;
+  const G4double shape_SiPMX = 1.*mm, shape_SiPMY = 3.*mm, shape_SiPMZ = shape_SiPMY;
 
   // envelope and world radius
-  if (shape_bgoZ > shape_bgoY)
+  if (shape_plasticZ > shape_plasticY)
   {
-    if (shape_bgoZ > shape_bgoX) minimal_radius = shape_bgoZ;
-    else minimal_radius = shape_bgoX;
+    if (shape_plasticZ > shape_plasticX) minimal_radius = shape_plasticZ;
+    else minimal_radius = shape_plasticX;
   }
-  else if (shape_bgoY > shape_bgoX) minimal_radius = shape_bgoY;
-  else minimal_radius = shape_bgoX;
+  else if (shape_plasticY > shape_plasticX) minimal_radius = shape_plasticY;
+  else minimal_radius = shape_plasticX;
 
   G4double radius_sphere = minimal_radius;
 
@@ -97,7 +98,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   G4double density = 1.e-25*g/cm3;
   G4double temperature = 2.73*kelvin;
   G4double pressure = 3.e-18*pascal;
-  G4Material* VacuumMaterial = new G4Material("LowDensityVacuum", atomicNumber, massOfMole, density, kStateGas,temperature, pressure);
+  G4Material* VacuumMaterial 
+    = new G4Material("LowDensityVacuum", atomicNumber, massOfMole, density, kStateGas ,temperature, pressure);
 
   //
   // World
@@ -132,30 +134,29 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
     = new G4PVPlacement(0, G4ThreeVector(), logicEnv, "Envelope", logicWorld, false, 0, checkOverlaps);
   
 
-  // limit stepLength to 4.8cm in order to optimize rejecting logic of non-detected events 
+  // limit stepLength to 50mm in order to optimize rejecting logic of non-detected events 
   // (see SteppingAction.cc SteppingAction::EstinguishParticleIfNotTrigger )
-  G4double maxStep = 4.8*cm;
+  G4double maxStep = 50.*mm;
   fStepLimit = new G4UserLimits(maxStep);
   logicEnv->SetUserLimits(fStepLimit);
 
   //     
-  // BGO Crystal + Photomultipliers
+  // Plastic scintillator + Photomultipliers
   //  
   G4Material* plastic_material = this->CreatePlasticMaterial();
   G4Material* borosilicate = this->CreatePyrex();
 
   // position: choosen in order to minimize the envelope sphere
-  G4ThreeVector bgo_position = G4ThreeVector(0, 0, 0);
-  G4ThreeVector pmt1_position = G4ThreeVector(0.5*(shape_bgoX+shape_PMT_X), 0, 0);
-  G4ThreeVector pmt2_position = G4ThreeVector(-0.5*(shape_bgoX+shape_PMT_X), 0, 0);
+  G4ThreeVector pmt1_position = G4ThreeVector(0, 0.5*(shape_plasticY+shape_PMT_Y), 0);
+  G4ThreeVector pmt2_position = G4ThreeVector(0, -0.5*(shape_plasticY+shape_PMT_Y), 0);
         
-  // BGO & PMTs shape
-  G4Box* BGOShape = new G4Box("BGO Box", 0.5*shape_bgoX, 0.5*shape_bgoY, 0.5*shape_bgoZ);
+  // Plastic scintillator & PMTs shape
+  G4Box* PlasticShape = new G4Box("Plastic Box", 0.5*shape_plasticX, 0.5*shape_plasticY, 0.5*shape_plasticZ);
   G4Box* PMTsShape = new G4Box("PMT Box", 0.5*shape_PMT_X, 0.5*shape_PMT_Y, 0.5*shape_PMT_Z);
 
   // logical volumes
-  G4LogicalVolume* BGO_LogicalVolume 
-    = new G4LogicalVolume(BGOShape, plastic_material, "BGO Crystal");
+  G4LogicalVolume* Plastic_LogicalVolume 
+    = new G4LogicalVolume(PlasticShape, plastic_material, "Plastic Logical Volume");
   
   G4LogicalVolume* PMT_LogicalVolume 
     = new G4LogicalVolume(PMTsShape, borosilicate, "PMT made up of borosilicate glass");
@@ -163,50 +164,74 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   // in order to ensure at least one step in the PMT
   PMT_LogicalVolume->SetUserLimits(new G4UserLimits(shape_PMT_X/2));
 
-  // delta vector useful to translate PMTs
-  G4ThreeVector original_vector = G4ThreeVector(0, 0.5*(shape_bgoY+shape_PMT_Y), 0);
-
   fScintillator = 
-    new G4PVPlacement(0, bgo_position, BGO_LogicalVolume, "BGO Crystal", logicEnv, false, 0, checkOverlaps);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), Plastic_LogicalVolume, "Plastic Scinitllator", logicEnv, false, 0, checkOverlaps);
   
   fCerenkovPMT 
    = new G4PVPlacement(0, pmt1_position, PMT_LogicalVolume, "Cherenkov PMT", logicEnv, false, 0, checkOverlaps);
 
   fScintillatorPMT = new G4PVPlacement(0, pmt2_position, PMT_LogicalVolume, "Scintill. PMT", logicEnv, false, 0, checkOverlaps);
 
-  // optical properties of BGO surface
+  // optical properties of Scinitllator surface
   OpticalSurfacePlastic_SiPM(fScintillator, fCerenkovPMT);
   OpticalSurfacePlastic_SiPM(fScintillator, fScintillatorPMT);
 
+  //     
+  // Silicon Photo-multipliers SiPMs:
+  //
+
+  G4Box* SiPM_Shape = new G4Box("SiPM Box", 0.5*shape_SiPMX, 0.5*shape_SiPMY, 0.5*shape_SiPMZ);
+  
+  G4LogicalVolume* SiPM_LogicalVolume 
+    = new G4LogicalVolume(SiPM_Shape, borosilicate, "SiPM Logical Volume");
+  
+  SiPM_LogicalVolume->SetUserLimits(new G4UserLimits(shape_SiPMX/2));
+
+  G4int counter = 0;
+  G4ThreeVector positions_sipms[8];
+  G4double starting_position = -0.5*(shape_plasticY - shape_SiPMY);
+  G4double deltaPos = 0.25*shape_plasticY - shape_SiPMY;
+  for( auto& sipm : fSiPMs )
+  {
+    if (counter < 4)
+    {
+      positions_sipms[counter] = G4ThreeVector(0.5*(shape_plasticX+shape_SiPMX), starting_position + counter*(deltaPos + shape_SiPMY), 0);
+    }
+    else
+    {
+      positions_sipms[counter] = G4ThreeVector(-0.5*(shape_plasticX+shape_SiPMX), starting_position + (counter-4)*(deltaPos + shape_SiPMY), 0);
+    }
+    sipm = new G4PVPlacement(0, positions_sipms[counter], SiPM_LogicalVolume, "SiPM detector", logicEnv, false, 0, checkOverlaps);
+    counter++;
+  }
+
+  // for convenience
   fScoringVolume = logicEnv;
 
   //always return the physical World
   return physWorld;
 }
 
-// optical between of BGO and PMTs
-void DetectorConstruction::OpticalSurfacePlastic_SiPM(G4VPhysicalVolume* BGO_PV, G4VPhysicalVolume* TheOtherPV) const {
+// optical between of Plastic scintillator and PMTs
+void DetectorConstruction::OpticalSurfacePlastic_SiPM(G4VPhysicalVolume* Plastic_PV, G4VPhysicalVolume* TheOtherPV) const {
 
-  G4OpticalSurface* opBGOSurface = new G4OpticalSurface("BGO Surface");
-  // see here: https://geant4-userdoc.web.cern.ch/UsersGuides/ForApplicationDeveloper/BackupVersions/V10.7/html/TrackingAndPhysics/physicsProcess.html
-  opBGOSurface->SetType(dielectric_LUTDAVIS);
-  opBGOSurface->SetModel(DAVIS);
-  opBGOSurface->SetFinish(PolishedESRGrease_LUT); // Using optical grease between PMTs and BGO
+  G4OpticalSurface* opPlasticSurface = new G4OpticalSurface("Plastic Surface");
+  opPlasticSurface->SetType(dielectric_LUTDAVIS);
+  opPlasticSurface->SetModel(DAVIS);
+  opPlasticSurface->SetFinish(PolishedESRGrease_LUT);
 
-  G4LogicalBorderSurface* LogicalBGOSurface = new G4LogicalBorderSurface(
-    "BGO Surface", BGO_PV, TheOtherPV, opBGOSurface);
+  G4LogicalBorderSurface* LogicalPlasticSurface = new G4LogicalBorderSurface(
+    "Plastic Surface", Plastic_PV, TheOtherPV, opPlasticSurface);
   
   G4OpticalSurface* opticalSurface = dynamic_cast<G4OpticalSurface*>(
-    LogicalBGOSurface->GetSurface(BGO_PV, TheOtherPV)->GetSurfaceProperty());
+    LogicalPlasticSurface->GetSurface(Plastic_PV, TheOtherPV)->GetSurfaceProperty());
 
   if(opticalSurface) opticalSurface->DumpInfo();
 
   // Generate & Add Material Properties Table attached to the optical surface
   // energy = hPlanck * (light speed) / wavelength
-  // reference for reflectivity https://aip.scitation.org/doi/10.1063/1.3272909
-  // reference for transmittance https://www.researchgate.net/publication/264828576_The_Radiation_Hard_BGO_Crystals_for_Astrophysics_Applications
   G4int n10 = 10;
-  // G4int n6 = 6;
+
   G4double energies_photons[] = { 2.*eV, 2.5*eV, 3.*eV, 3.5*eV, 4.*eV,
                                 4.5*eV, 4.75*eV, 4.9*eV, 5.*eV, 5.4*eV };
   G4double reflectivity[] = { 0.125, 0.13, 0.14, 0.155, 0.175,
@@ -217,11 +242,11 @@ void DetectorConstruction::OpticalSurfacePlastic_SiPM(G4VPhysicalVolume* BGO_PV,
   SurfaceTable->AddProperty("REFLECTIVITY", energies_photons, reflectivity, n10);
   
   SurfaceTable->DumpTable();
-  opBGOSurface->SetMaterialPropertiesTable(SurfaceTable);
+  opPlasticSurface->SetMaterialPropertiesTable(SurfaceTable);
 
 }
 
-// BGO - material
+// Plastic scintillator - material
 G4Material* DetectorConstruction::CreatePlasticMaterial() const {
   
   // Get nist material manager
@@ -271,7 +296,7 @@ G4Material* DetectorConstruction::CreatePlasticMaterial() const {
   MPT->AddProperty("ABSLENGTH", energies_photons, absorption, 10);
   MPT->AddProperty("FASTCOMPONENT", energies_photons, scintillation_spectrum, 10)->SetSpline(true);
 
-  // bgo material
+  // Plastic material
   plastic_material->SetMaterialPropertiesTable(MPT);
   plastic_material->GetIonisation()->SetBirksConstant(0.126*mm/MeV);
 
@@ -284,7 +309,7 @@ G4Material* DetectorConstruction::CreatePyrex() const {
   // Get nist material manager
   G4NistManager* nist = G4NistManager::Instance();
   
-  // BGO material definition
+  // Plastic material definition
   G4Material* pyrex_basic = nist->FindOrBuildMaterial("G4_Pyrex_Glass");
   G4Material* pyrex = new G4Material("Borosilicate_Glass", 2.23*g/cm3, pyrex_basic);
   

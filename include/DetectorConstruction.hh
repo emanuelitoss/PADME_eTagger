@@ -65,13 +65,10 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4VPhysicalVolume* fScintillator;
     G4VPhysicalVolume* fCerenkovPMT;
     G4VPhysicalVolume* fScintillatorPMT;
-
-    // our SiPMs
-    const std::vector <G4VPhysicalVolume*> fSiPMs
+    std::vector <G4VPhysicalVolume*> fSiPMs
       = {nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr};
 
     G4double minimal_radius;
-    
     G4UserLimits* fStepLimit;            // pointer to user step limits
 
   protected:
@@ -90,7 +87,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 // inline functions
 
 inline const G4VPhysicalVolume* DetectorConstruction::GetScintillator() const { 
-  return fScintillator; 
+  return fScintillator;
 }
 
 inline const std::vector <G4VPhysicalVolume*> DetectorConstruction::GetSiPMs() const {
