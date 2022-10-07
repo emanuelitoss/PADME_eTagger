@@ -291,7 +291,7 @@ void DetectorConstruction::OpticalSurfacePlastic_SiPM(G4VPhysicalVolume* Plastic
 
   G4MaterialPropertiesTable* SurfaceTable = new G4MaterialPropertiesTable();
 
-  SurfaceTable->AddProperty("REFLECTIVITY", energies_photons, reflectivity, n10)->SetSpline(true);
+  SurfaceTable->AddProperty("REFLECTIVITY", energies_photons, reflectivity, 10)->SetSpline(true);
   
   SurfaceTable->DumpTable();
   opPlasticSurface->SetMaterialPropertiesTable(SurfaceTable);
