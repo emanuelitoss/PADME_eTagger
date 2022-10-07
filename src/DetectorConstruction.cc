@@ -68,10 +68,6 @@ DetectorConstruction::~DetectorConstruction(){
 }
 
 G4VPhysicalVolume* DetectorConstruction::Construct(){ 
-  
-  // Get nist material manager:
-  // (per prendere materiali già preparati da geant. Ma tanto noi li costruiamo)
-  G4NistManager* nist = G4NistManager::Instance();
 
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = true;
@@ -81,19 +77,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   const G4double shape_PMT_X = shape_plasticX, shape_PMT_Y = 5.*mm, shape_PMT_Z = shape_plasticZ;
   const G4double shape_SiPMX = 1.*mm, shape_SiPMY = 3.*mm, shape_SiPMZ = shape_SiPMY;
 
-  // create vacuum material
-  G4double atomicNumber = 1.;
-  G4double massOfMole = 1.008*g/mole;
-  G4double density = 1.e-25*g/cm3;
-  G4double temperature = 2.73*kelvin;
-  G4double pressure = 3.e-18*pascal;
-  G4Material* VacuumMaterial 
-    = new G4Material("LowDensityVacuum", atomicNumber, massOfMole, density, kStateGas ,temperature, pressure);
+  /*************** WORLD ***************/
 
-  //
-  // World
-  //
-  
+  G4Material* VacuumMaterial = CreateLowVacuumAir();
+
   G4Box* solidWorld = new G4Box("World", 1.1*shape_plasticX, 1.1*shape_plasticY, 1.1*shape_plasticZ);
   
   G4LogicalVolume* logicWorld =                         
@@ -111,63 +98,48 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
                       0,                     //copy number
                       checkOverlaps);        //overlaps checking
                    
-  //     
-  // Envelope
-  //  
+  /*************** ENVELOPE ***************/
+
   G4Box* solidEnv = new G4Box("Envelope", shape_plasticX, shape_plasticY, shape_plasticZ);
       
   G4LogicalVolume* logicEnv = new G4LogicalVolume(solidEnv, VacuumMaterial, "Envelope");
 
-  
   G4VPhysicalVolume* physEnvelope
     = new G4PVPlacement(0, G4ThreeVector(), logicEnv, "Envelope", logicWorld, false, 0, checkOverlaps);
-  
 
-  // limit stepLength to 50mm in order to optimize rejecting logic of non-detected events 
-  // (see SteppingAction.cc SteppingAction::EstinguishParticleIfNotTrigger )
-  G4double maxStep = 50.*mm;
-  fStepLimit = new G4UserLimits(maxStep);
-  logicEnv->SetUserLimits(fStepLimit);
+  /*************** PLASTIC SCINTILLATOR ***************/
 
-  //     
-  // Plastic scintillator + Photomultipliers
-  //  
   G4Material* plastic_material = this->CreatePlasticMaterial();
+
+  G4Box* PlasticShape = new G4Box("Plastic Box", 0.5*shape_plasticX, 0.5*shape_plasticY, 0.5*shape_plasticZ);
+
+  G4LogicalVolume* Plastic_LogicalVolume 
+    = new G4LogicalVolume(PlasticShape, plastic_material, "Plastic Logical Volume");
+
+  fScintillator = 
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), Plastic_LogicalVolume, "Plastic Scinitllator", logicEnv, false, 0, checkOverlaps);
+  
+  /*************** PMTs ***************/
+
   G4Material* borosilicate = this->CreatePyrex();
 
-  // position: choosen in order to minimize the envelope sphere
   G4ThreeVector pmt1_position = G4ThreeVector(0, 0.5*(shape_plasticY+shape_PMT_Y), 0);
   G4ThreeVector pmt2_position = G4ThreeVector(0, -0.5*(shape_plasticY+shape_PMT_Y), 0);
         
-  // Plastic scintillator & PMTs shape
-  G4Box* PlasticShape = new G4Box("Plastic Box", 0.5*shape_plasticX, 0.5*shape_plasticY, 0.5*shape_plasticZ);
   G4Box* PMTsShape = new G4Box("PMT Box", 0.5*shape_PMT_X, 0.5*shape_PMT_Y, 0.5*shape_PMT_Z);
-
-  // logical volumes
-  G4LogicalVolume* Plastic_LogicalVolume 
-    = new G4LogicalVolume(PlasticShape, plastic_material, "Plastic Logical Volume");
   
   G4LogicalVolume* PMT_LogicalVolume 
     = new G4LogicalVolume(PMTsShape, borosilicate, "PMT made up of borosilicate glass");
 
   // in order to ensure at least one step in the PMT
   PMT_LogicalVolume->SetUserLimits(new G4UserLimits(shape_PMT_X/2));
-
-  fScintillator = 
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), Plastic_LogicalVolume, "Plastic Scinitllator", logicEnv, false, 0, checkOverlaps);
   
   fCerenkovPMT 
    = new G4PVPlacement(0, pmt1_position, PMT_LogicalVolume, "Cherenkov PMT", logicEnv, false, 0, checkOverlaps);
 
   fScintillatorPMT = new G4PVPlacement(0, pmt2_position, PMT_LogicalVolume, "Scintill. PMT", logicEnv, false, 0, checkOverlaps);
 
-  // optical properties of Scinitllator surface
-  OpticalSurfacePlastic_SiPM(fScintillator, fCerenkovPMT);
-  OpticalSurfacePlastic_SiPM(fScintillator, fScintillatorPMT);
-
-  //     
-  // Silicon Photo-multipliers SiPMs:
-  //
+  /*************** SILICON PHOTOMULTIPLIERS ***************/
 
   G4Box* SiPM_Shape = new G4Box("SiPM Box", 0.5*shape_SiPMX, 0.5*shape_SiPMY, 0.5*shape_SiPMZ);
   
@@ -177,31 +149,125 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   SiPM_LogicalVolume->SetUserLimits(new G4UserLimits(shape_SiPMX/2));
 
   G4int counter = 0;
-  G4ThreeVector positions_sipms[8];
-  G4double starting_position = -0.5*(shape_plasticY - shape_SiPMY);
-  G4double deltaPos = 0.25*shape_plasticY - shape_SiPMY;
+  G4ThreeVector positions_sipm;
+  G4double starting_position = 0.5*(shape_SiPMY - shape_plasticY);
+  G4double deltaPos = (shape_plasticY - 4.*shape_SiPMY)/3 + shape_SiPMY;
   for( auto& sipm : fSiPMs )
   {
     if (counter < 4)
     {
-      positions_sipms[counter] = G4ThreeVector(0.5*(shape_plasticX+shape_SiPMX), starting_position + counter*(deltaPos + shape_SiPMY), 0);
+      positions_sipm = G4ThreeVector(0.5*(shape_plasticX+shape_SiPMX), starting_position + (counter%4)*deltaPos, 0);
     }
     else
     {
-      positions_sipms[counter] = G4ThreeVector(-0.5*(shape_plasticX+shape_SiPMX), starting_position + (counter-4)*(deltaPos + shape_SiPMY), 0);
+      positions_sipm = G4ThreeVector(-0.5*(shape_plasticX+shape_SiPMX), starting_position + (counter-4)*deltaPos, 0);
     }
-    sipm = new G4PVPlacement(0, positions_sipms[counter], SiPM_LogicalVolume, "SiPM detector", logicEnv, false, 0, checkOverlaps);
+
+    sipm = new G4PVPlacement(0, positions_sipm, SiPM_LogicalVolume, "SiPM detector", logicEnv, false, 0, checkOverlaps); 
+    OpticalSurfacePlastic_SiPM(fScintillator, sipm);
+    
     counter++;
   }
 
-  // for convenience
+  /*************** END ***************/
+
   fScoringVolume = logicEnv;
 
-  //always return the physical World
   return physWorld;
+
 }
 
-// optical between of Plastic scintillator and PMTs
+G4Material* DetectorConstruction::CreateLowVacuumAir() const {
+
+  G4NistManager* nist = G4NistManager::Instance();
+  G4Material* basic_air = nist->FindOrBuildMaterial("G4_AIR");
+
+  double p_atm = 1.013, p_vacuum = 0.001; // pressure [bar]
+  G4double density_atm = 1.204*kg/m3;
+  G4double density_vacuum = density_atm*p_vacuum/p_atm;
+
+  G4Material* vacuum_air = new G4Material("Low Vacuum Air", density_vacuum, basic_air);
+
+  // photon energy = hPlanck * (speed of light) / wavelength
+  G4double photonenergy[3] = {hPlanck*c_light*meters_to_nanometers/380.*eV,
+                            hPlanck*c_light*meters_to_nanometers/440.*eV, 
+                            hPlanck*c_light*meters_to_nanometers/500.*eV};
+  G4double rindex[3] = {1.000293, 1.000293, 1.000293};
+
+  G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
+  MPT->AddProperty("RINDEX", photonenergy, rindex, 3);
+
+  vacuum_air->SetMaterialPropertiesTable(MPT);
+
+  return vacuum_air;
+
+}
+
+G4Material* DetectorConstruction::CreatePlasticMaterial() const {
+  
+  G4NistManager* nist = G4NistManager::Instance();
+
+  G4Material* plastic_basic_material = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
+  G4Material* plastic_material = new G4Material("BismuthGermaniumOxygen Crystal", 1.023*g/cm3, plastic_basic_material);
+
+  // photon energy = hPlanck * (speed of light) / wavelength
+  G4double energies_photons[10] = {hPlanck*c_light*meters_to_nanometers/380.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/390.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/400.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/410.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/420.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/430.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/440.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/460.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/480.*eV,
+                                    hPlanck*c_light*meters_to_nanometers/500.*eV};
+
+  G4double rindex[10] = {1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58};
+  G4double absorption[10] = {140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm};
+  G4double scintillation_spectrum[10] = {0.04, 0.3, 0.87, 0.92, 0.55, 0.45, 0.34, 0.13, 0.05, 0.01};
+
+  G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
+ 
+  // properties independent of energy
+  MPT->AddConstProperty("FASTTIMECONSTANT", 1.8*ns);
+  MPT->AddConstProperty("RESOLUTIONSCALE", 1.0);
+  G4double light_yield_Anthracene = 17400./MeV;
+  MPT->AddConstProperty("SCINTILLATIONYIELD", 0.68*light_yield_Anthracene);
+
+  // properties that depend on energy
+  MPT->AddProperty("RINDEX", energies_photons, rindex, 10)->SetSpline(true);
+  MPT->AddProperty("ABSLENGTH", energies_photons, absorption, 10)->SetSpline(true);
+  MPT->AddProperty("FASTCOMPONENT", energies_photons, scintillation_spectrum, 10)->SetSpline(true);
+
+  plastic_material->SetMaterialPropertiesTable(MPT);
+  plastic_material->GetIonisation()->SetBirksConstant(0.126*mm/MeV);
+
+  return plastic_material;
+}
+
+G4Material* DetectorConstruction::CreatePyrex() const {
+  
+  G4NistManager* nist = G4NistManager::Instance();
+  
+  G4Material* pyrex_basic = nist->FindOrBuildMaterial("G4_Pyrex_Glass");
+  G4Material* pyrex = new G4Material("Borosilicate_Glass", 2.23*g/cm3, pyrex_basic);
+  
+  // photon energy = hPlanck * (speed of light) / wavelength
+  G4double photonenergy[3] = {hPlanck*c_light*meters_to_nanometers/320.*eV,
+                            hPlanck*c_light*meters_to_nanometers/400.*eV,  
+                            hPlanck*c_light*meters_to_nanometers/480.*eV};
+                            
+  G4double rindex[3] = {1.471, 	1.471, 	1.471};
+
+  G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
+
+  MPT->AddProperty("RINDEX", photonenergy, rindex, 3);
+
+  pyrex->SetMaterialPropertiesTable(MPT);
+
+  return pyrex;
+}
+
 void DetectorConstruction::OpticalSurfacePlastic_SiPM(G4VPhysicalVolume* Plastic_PV, G4VPhysicalVolume* TheOtherPV) const {
 
   G4OpticalSurface* opPlasticSurface = new G4OpticalSurface("Plastic Surface");
@@ -217,105 +283,18 @@ void DetectorConstruction::OpticalSurfacePlastic_SiPM(G4VPhysicalVolume* Plastic
 
   if(opticalSurface) opticalSurface->DumpInfo();
 
-  // Generate & Add Material Properties Table attached to the optical surface
-  // energy = hPlanck * (light speed) / wavelength
-  G4int n10 = 10;
-
-  G4double energies_photons[] = { 2.*eV, 2.5*eV, 3.*eV, 3.5*eV, 4.*eV,
-                                4.5*eV, 4.75*eV, 4.9*eV, 5.*eV, 5.4*eV };
-  G4double reflectivity[] = { 0.125, 0.13, 0.14, 0.155, 0.175,
-                              0.25, 0.29, 0.243, 0.21, 0.22 };
+  // Photon energy = hPlanck * (speed of light) / wavelength
+  G4double energies_photons[10] = { 2.*eV, 2.5*eV, 3.*eV, 3.5*eV, 4.*eV,
+                                    4.5*eV, 4.75*eV, 4.9*eV, 5.*eV, 5.4*eV };
+  G4double reflectivity[10] = { 0.125, 0.13, 0.14, 0.155, 0.175,
+                                0.25, 0.29, 0.243, 0.21, 0.22 };
 
   G4MaterialPropertiesTable* SurfaceTable = new G4MaterialPropertiesTable();
 
-  SurfaceTable->AddProperty("REFLECTIVITY", energies_photons, reflectivity, n10);
+  SurfaceTable->AddProperty("REFLECTIVITY", energies_photons, reflectivity, n10)->SetSpline(true);
   
   SurfaceTable->DumpTable();
   opPlasticSurface->SetMaterialPropertiesTable(SurfaceTable);
 
 }
 
-// Plastic scintillator - material
-G4Material* DetectorConstruction::CreatePlasticMaterial() const {
-  
-  // Get nist material manager
-  G4NistManager* nist = G4NistManager::Instance();
-
-  /*
-  G4double atomicNumber = 1.;
-  G4double massOfMole = 1.008*g/mole;
-  G4double density = 1.e-25*g/cm3;
-  G4double temperature = 2.73*kelvin;
-  G4double pressure = 3.e-18*pascal;
-  G4Material* VacuumMaterial = new G4Material("LowDensityVacuum", atomicNumber, massOfMole, density, kStateGas,temperature, pressure);
-  */
-
-  // Composition
-  G4Material* plastic_basic_material = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
-  G4Material* plastic_material = new G4Material("BismuthGermaniumOxygen Crystal", 1.023*g/cm3, plastic_basic_material);
-
-  // energy = hPlanck * (light speed) / wavelength
-  G4double energies_photons[10] = {hPlanck*c_light*meters_to_nanometers/380.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/390.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/400.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/410.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/420.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/430.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/440.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/460.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/480.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/500.*eV};
-
-  // from our documents
-  G4double rindex[10] = {1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58};
-  G4double absorption[10] = {140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm};
-  G4double scintillation_spectrum[10] = {0.04, 0.3, 0.87, 0.92, 0.55, 0.45, 0.34, 0.13, 0.05, 0.01};
-
-  // new instance of Material Properties
-  G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
- 
-  // properties independent of energy
-  MPT->AddConstProperty("FASTTIMECONSTANT", 1.8*ns);
-  MPT->AddConstProperty("RESOLUTIONSCALE", 1.0);
-  G4double light_yield_Anthracene = 17400./MeV;
-  MPT->AddConstProperty("SCINTILLATIONYIELD", 0.68*light_yield_Anthracene);
-
-  // properties that depend on energy
-  MPT->AddProperty("RINDEX", energies_photons, rindex, 10)->SetSpline(true);
-  MPT->AddProperty("ABSLENGTH", energies_photons, absorption, 10);
-  MPT->AddProperty("FASTCOMPONENT", energies_photons, scintillation_spectrum, 10)->SetSpline(true);
-
-  // Plastic material
-  plastic_material->SetMaterialPropertiesTable(MPT);
-  plastic_material->GetIonisation()->SetBirksConstant(0.126*mm/MeV);
-
-  return plastic_material;
-}
-
-// Birosilicate glass - material
-G4Material* DetectorConstruction::CreatePyrex() const {
-  
-  // Get nist material manager
-  G4NistManager* nist = G4NistManager::Instance();
-  
-  // Plastic material definition
-  G4Material* pyrex_basic = nist->FindOrBuildMaterial("G4_Pyrex_Glass");
-  G4Material* pyrex = new G4Material("Borosilicate_Glass", 2.23*g/cm3, pyrex_basic);
-  
-  const G4int n3 = 3;
-  // energy = hPlanck * (light speed) / wavelength
-  G4double photonenergy[n3] = {hPlanck*c_light*meters_to_nanometers/320.*eV,  // lower wavelength cutoff 320 nm
-                            hPlanck*c_light*meters_to_nanometers/400.*eV,     // intermediate energy
-                            hPlanck*c_light*meters_to_nanometers/480.*eV};    // maximum emission at 480 nm
-  G4double rindex[n3]     = {1.471, 	1.471, 	1.471};                   // google
-  // new instance of Material Properties
-  G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
-
-  // properties that depend on energy
-  MPT->AddProperty("RINDEX", photonenergy, rindex, n3);
-
-  // material
-  pyrex->SetMaterialPropertiesTable(MPT);
-
-  return pyrex;
-}

@@ -39,8 +39,6 @@ class G4VPhysicalVolume;
 class G4LogicalVolume;
 class G4UserLimits;
 
-/// Detector construction class to define materials and geometry.
-
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
@@ -50,35 +48,34 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     virtual G4VPhysicalVolume* Construct();
 
-    // getters for physical volumes of the apparatus
+    // getters for physical volumes
     const G4VPhysicalVolume* GetScintillator() const;
     const std::vector <G4VPhysicalVolume*> GetSiPMs() const;
     const G4VPhysicalVolume* GetCerenkovVolume() const;
     const G4VPhysicalVolume* GetScintillatorVolume() const;
 
-    // return the scoring volume
+    // scoring volume
     G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
 
   private:
 
-    // physical volumes of detector
+    // physical volumes
     G4VPhysicalVolume* fScintillator;
     G4VPhysicalVolume* fCerenkovPMT;
     G4VPhysicalVolume* fScintillatorPMT;
     std::vector <G4VPhysicalVolume*> fSiPMs
       = {nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr};
 
-    G4UserLimits* fStepLimit;            // pointer to user step limits
+    G4UserLimits* fStepLimit;
 
   protected:
 
     G4LogicalVolume* fScoringVolume;
 
-    // materials of the experiment
     G4Material* CreatePlasticMaterial() const;
     G4Material* CreatePyrex() const;
+    G4Material* CreateLowVacuumAir() const;
 
-    // set the optical surface between the scintillator and SiPMs
     void OpticalSurfacePlastic_SiPM(G4VPhysicalVolume*, G4VPhysicalVolume*) const;
 
 };
