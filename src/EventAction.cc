@@ -27,9 +27,9 @@
 /// \file EventAction.cc
 /// \brief Implementation of the EventAction class
 
-#include "../include/EventAction.hh"
-#include "../include/RunAction.hh"
-#include "../include/RunData.hh"
+#include "EventAction.hh"
+#include "RunAction.hh"
+#include "RunData.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"

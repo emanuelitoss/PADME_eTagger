@@ -27,10 +27,10 @@
 /// \file RunAction.cc
 /// \brief Implementation of the RunAction class
 
-#include "../include/RunAction.hh"
-#include "../include/PrimaryGeneratorAction.hh"
-#include "../include/DetectorConstruction.hh"
-#include "../include/RunData.hh"
+#include "RunAction.hh"
+#include "PrimaryGeneratorAction.hh"
+#include "DetectorConstruction.hh"
+#include "RunData.hh"
 
 #include "G4RunManager.hh"
 #include "G4Run.hh"
@@ -59,22 +59,13 @@ RunAction::RunAction()
   // Create directories
   analysisManager->SetVerboseLevel(0);
   analysisManager->SetNtupleMerging(true);
-  // Note: merging ntuples is available only with Root output
 
   // Creating histograms
-  analysisManager->CreateH1("EnergyBGO","Energy deposited in BGO crystal", 800, 0., 100, "MeV");
-  //analysisManager->CreateH1("EnergyPlastic1","Energy deposited in first plastic scintillator", 800, 0., 100*MeV);
-  //analysisManager->CreateH1("EnergyPlastic2","Energy deposited in second plastic scintillator", 800, 0., 100*MeV);
-  analysisManager->CreateH1("Cherenkov","Cherenkov energy production in BGO", 200, 0., 100*keV);
-  analysisManager->CreateH1("Scintillation","Scintillation energy production in BGO", 200, 0., 100*keV);
-  
+  analysisManager->CreateH1("EnergyPlasticScintillator","Energy deposited in plastic scintillator", 800, 0., 100, "MeV");
+
   // Creating ntuple
   analysisManager->CreateNtuple("eTagDataTuples", "EnengyDeposit");
-  analysisManager->CreateNtupleDColumn("EnergyInBGO");
-  //analysisManager->CreateNtupleDColumn("EnergyInScintillator1");
-  //analysisManager->CreateNtupleDColumn("EnergyInScintillator2");
-  analysisManager->CreateNtupleDColumn("EnergyInBGO_Cherenkov");
-  analysisManager->CreateNtupleDColumn("EnergyInBGO_Scintillation");
+  analysisManager->CreateNtupleDColumn("EnergyPlasticScintillator");
   analysisManager->FinishNtuple();
 
 
@@ -187,43 +178,11 @@ void RunAction::EndOfRunAction(const G4Run* run){
       G4cout << "for the entire run " << G4endl << G4endl;
     }
   
-    G4cout << " EnergyBGO : mean = "
+    G4cout << " EnergyPlastic : mean = "
       << G4BestUnit(analysisManager->GetH1(0)->mean(), "Energy")
       << " rms = "
       << G4BestUnit(analysisManager->GetH1(0)->rms(),  "Energy") << G4endl;
 
-    /*
-    G4cout << " EnergyScintillator1 : mean = "
-      << G4BestUnit(analysisManager->GetH1(1)->mean(), "Energy")
-      << " rms = "
-      << G4BestUnit(analysisManager->GetH1(1)->rms(),  "Energy") << G4endl;
-
-    G4cout << " EnergyScintillator2 : mean = "
-      << G4BestUnit(analysisManager->GetH1(2)->mean(), "Energy")
-      << " rms = "
-      << G4BestUnit(analysisManager->GetH1(2)->rms(),  "Energy") << G4endl;
-    */
-    
-    G4cout << " EnergyCherenkovBGO : mean = "
-      << G4BestUnit(analysisManager->GetH1(1)->mean(), "Energy")
-      << " rms = "
-      << G4BestUnit(analysisManager->GetH1(1)->rms(),  "Energy") << G4endl;
-    
-    G4cout << " EnergyScintillationBGO : mean = "
-      << G4BestUnit(analysisManager->GetH1(2)->mean(), "Energy")
-      << " rms = "
-      << G4BestUnit(analysisManager->GetH1(2)->rms(),  "Energy") << G4endl;
-    /*
-    G4cout << " NumberCherenkovBGO : mean = "
-      << analysisManager->GetH1(5)->mean() << " Number of photons"
-      << " rms = "
-      << analysisManager->GetH1(5)->rms() <<  " Number of photons" << G4endl;
-
-    G4cout << " NumberScintillationBGO : mean = "
-      << analysisManager->GetH1(6)->mean() << " number of photons"
-      << " rms = "
-      << analysisManager->GetH1(6)->rms() <<  " number of photons" << G4endl;
-    */
   }
 
   // number od detected events

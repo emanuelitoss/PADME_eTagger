@@ -81,8 +81,8 @@
 # s=surface, w=wireframe, c=cloud
 /vis/viewer/set/style surface
 /vis/viewer/set/hiddenMarker true
-/vis/viewer/set/viewpointThetaPhi 80 175
-/vis/viewer/zoom 3.5
+/vis/viewer/set/viewpointThetaPhi 160 175
+/vis/viewer/zoom 2.5
 
 # Re-establish auto refreshing and verbosity:
 /vis/viewer/set/autoRefresh true

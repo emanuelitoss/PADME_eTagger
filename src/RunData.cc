@@ -27,8 +27,8 @@
 /// \file RunData.cc
 /// \brief Implementation of the B4b::RunData class
   
-#include "../include/RunData.hh"
-#include "../include/OutputColors.hh"
+#include "RunData.hh"
+#include "OutputColors.hh"
 
 #include "g4root.hh"
 #include "G4RunManager.hh"

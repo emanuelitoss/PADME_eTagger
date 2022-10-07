@@ -27,11 +27,11 @@
 /// \file SteppingAction.cc
 /// \brief Implementation of the SteppingAction class
 
-#include "../include/SteppingAction.hh"
-#include "../include/EventAction.hh"
-#include "../include/DetectorConstruction.hh"
-#include "../include/RunData.hh"
-#include "../include/OutputColors.hh"
+#include "SteppingAction.hh"
+#include "EventAction.hh"
+#include "DetectorConstruction.hh"
+#include "RunData.hh"
+#include "OutputColors.hh"
 
 #include "G4Step.hh"
 #include "G4Event.hh"
@@ -53,7 +53,7 @@
 SteppingAction::SteppingAction(EventAction* eventAction, const DetectorConstruction* detConstruction)
 : G4UserSteppingAction(),
   fEventAction(eventAction),
-  fScoringVolume(0),
+  fScoringVolume(nullptr),
   fDetConstruction(detConstruction)
 {}
 
@@ -67,16 +67,29 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
     fScoringVolume = detectorConstruction->GetScoringVolume();   
   }
 
+  auto runData = static_cast<RunData*> (G4RunManager::GetRunManager()->GetNonConstCurrentRun());
+
   // get volume of the current step
   G4LogicalVolume* volume = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetLogicalVolume();
-  G4VPhysicalVolume* physicalVolume = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
+  G4VPhysicalVolume* PreStepPV = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
+  G4VPhysicalVolume* PostStepPV = step->GetPostStepPoint()->GetTouchableHandle()->GetVolume();
 
   // collect energy deposited in this step
   G4double edepStep = step->GetTotalEnergyDeposit();
 
-  auto runData = static_cast<RunData*> (G4RunManager::GetRunManager()->GetNonConstCurrentRun());
+  G4bool IsPhotDetected = (PreStepPV == fDetConstruction->GetScintillator()) && (PostStepPV == fDetConstruction->GetSiPMs()[0]);
+  if (IsPhotDetected)
+  {
+    G4double L_arrival_time = step->GetTrack()->GetLocalTime();
+    G4double G_arrival_time = step->GetTrack()->GetGlobalTime();
+    std::cout << OBOLDCYAN
+      << "Local arrival time:\t" << G4BestUnit(L_arrival_time,"Time")
+      << "\tGlobal arrival time:\t" << G4BestUnit(G_arrival_time,"Time") << ORESET << std::endl;
+  }
+  else {
+  }
 
-  if ( physicalVolume == fDetConstruction->GetScintillator() ) {
+  if ( PreStepPV == fDetConstruction->GetScintillator() ) {
     fEventAction->PassedThroughScintillator();
     runData->Add(kBGO, edepStep);
     fEventAction->AddEdepScintillator(edepStep);

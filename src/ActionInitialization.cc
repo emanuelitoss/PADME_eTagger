@@ -27,11 +27,11 @@
 /// \file ActionInitialization.cc
 /// \brief Implementation of the ActionInitialization class
 
-#include "../include/ActionInitialization.hh"
-#include "../include/PrimaryGeneratorAction.hh"
-#include "../include/RunAction.hh"
-#include "../include/EventAction.hh"
-#include "../include/SteppingAction.hh"
+#include "ActionInitialization.hh"
+#include "PrimaryGeneratorAction.hh"
+#include "RunAction.hh"
+#include "EventAction.hh"
+#include "SteppingAction.hh"
 
 #include "DetectorConstruction.hh"
 #include "G4MTRunManager.hh"
