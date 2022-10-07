@@ -74,21 +74,15 @@ class RunData : public G4Run
         void Reset();
 
         // Get methods
-        G4String GetVolumeName(G4int id) const;
         G4double GetEdep(G4int id) const;
 
     private:
-        std::array<G4String, kDimVolumes> fVolumeNames = { "BGO", "Scintillator_1", "Scintillator_2", "Cherenkov PMT", "Scintillation PMT"};
         std::array<G4double, kDim> fEdep = { 0., 0., 0.}; //, 0., 0., 0., 0. };
 };
 
 // inline functions
 inline void RunData::Add(G4int id, G4double de) {
     fEdep[id] += de;
-}
-
-inline G4String RunData::GetVolumeName(G4int id) const {
-    return fVolumeNames[id];
 }
 
 inline G4double RunData::GetEdep(G4int id) const {

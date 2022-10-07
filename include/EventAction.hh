@@ -47,57 +47,31 @@ class EventAction : public G4UserEventAction
   virtual void BeginOfEventAction(const G4Event* event);
   virtual void EndOfEventAction(const G4Event* event);
 
-  // to check the passage in the detectors
-  void PassedThroughBGO();
-  void DetectionInPMT1();
-  void DetectionInPMT2();
-  G4bool BoolPMT1() const { return PMT1detection; }
-  G4bool BoolPMT2() const { return PMT2detection; }
+  void PassedThroughScintillator();
   G4bool Bool() const { return IsInBGO; }
 
-  // add energy losses in materials 
   void AddEdep(G4double edep);
-  void AddEdepBGO(G4double edep);
-  void AddEdepBGOCerenkov(G4double edep);
-  void AddEdepBGOScint(G4double edep);
-
-  void AddProducedCerenkovPhoton() { ++Nproduced_Cerenkov; }
-  void AddProducedScintillationPhoton() { ++Nproduced_Scintillation; }
-
+  void AddEdepScintillator(G4double edep);
+  
   private:
 
   RunAction* fRunAction;
   
-  // deposited energies in: ScoringVolume, BGO crystal and two plastic Scintillators
   G4double fEdep;
   G4double fEdep_BGO;
   G4double fEdep_BGO_Cherenkov;
   G4double fEdep_BGO_Scintillation;
   G4int Nphotons_Cerenkov;
   G4int Nphotons_Scint;
-  G4int Nproduced_Cerenkov;
-  G4int Nproduced_Scintillation;
   
-  // boolean variables to check if the particle passes through physical volumes
   G4bool IsInBGO = false;
-  G4bool PMT1detection = false;
-  G4bool PMT2detection = false;
   
 };
 
 // inline functions
 
-inline void EventAction::PassedThroughBGO(){
-  // old: if(PMT1detection && PMT2detection) IsInBGO = true;
-  if(PMT1detection) IsInBGO = true;
-}
-
-inline void EventAction::DetectionInPMT1(){
-  PMT1detection = true;
-}
-
-inline void EventAction::DetectionInPMT2(){
-  PMT2detection = true;
+inline void EventAction::PassedThroughScintillator(){
+  IsInBGO = true;
 }
 
 #endif

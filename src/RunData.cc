@@ -35,8 +35,7 @@
 #include "G4UnitsTable.hh"
 
 RunData::RunData()
-    : G4Run(),
-    fVolumeNames{ {"BGO", "Scintillator_1", "Scintillator_2", "Cherenkov PMT", "Scintillation PMT"} }
+: G4Run()
 {
     for ( auto& edep : fEdep ) edep = 0.;
 }

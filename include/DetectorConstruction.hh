@@ -51,8 +51,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     // getters for physical volumes
     const G4VPhysicalVolume* GetScintillator() const;
     const std::vector <G4VPhysicalVolume*> GetSiPMs() const;
-    const G4VPhysicalVolume* GetCerenkovVolume() const;
-    const G4VPhysicalVolume* GetScintillatorVolume() const;
 
     // scoring volume
     G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
@@ -61,8 +59,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     // physical volumes
     G4VPhysicalVolume* fScintillator;
-    G4VPhysicalVolume* fCerenkovPMT;
-    G4VPhysicalVolume* fScintillatorPMT;
     std::vector <G4VPhysicalVolume*> fSiPMs
       = {nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr};
 
@@ -88,14 +84,6 @@ inline const G4VPhysicalVolume* DetectorConstruction::GetScintillator() const {
 
 inline const std::vector <G4VPhysicalVolume*> DetectorConstruction::GetSiPMs() const {
   return fSiPMs;
-}
-
-inline const G4VPhysicalVolume* DetectorConstruction::GetCerenkovVolume() const { 
-  return fCerenkovPMT; 
-}
-
-inline const G4VPhysicalVolume* DetectorConstruction::GetScintillatorVolume() const { 
-  return fScintillatorPMT; 
 }
 
 #endif

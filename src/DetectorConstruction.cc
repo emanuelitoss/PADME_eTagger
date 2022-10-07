@@ -57,8 +57,6 @@ const double meters_to_nanometers = 1e9; // 1 m = 1e9 nm
 DetectorConstruction::DetectorConstruction()
 : G4VUserDetectorConstruction(),
   fScintillator(nullptr),
-  fCerenkovPMT(nullptr),
-  fScintillatorPMT(nullptr),
   fStepLimit(nullptr),
   fScoringVolume(0)
 {}
@@ -74,7 +72,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
   // Dimensions of my solids
   const G4double shape_plasticX = 600.*mm, shape_plasticY = 44.*mm, shape_plasticZ = 5.*mm;
-  const G4double shape_PMT_X = shape_plasticX, shape_PMT_Y = 5.*mm, shape_PMT_Z = shape_plasticZ;
   const G4double shape_SiPMX = 1.*mm, shape_SiPMY = 3.*mm, shape_SiPMZ = shape_SiPMY;
 
   /*************** WORLD ***************/
@@ -118,28 +115,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
   fScintillator = 
     new G4PVPlacement(0, G4ThreeVector(0, 0, 0), Plastic_LogicalVolume, "Plastic Scinitllator", logicEnv, false, 0, checkOverlaps);
-  
-  /*************** PMTs ***************/
-
-  G4Material* borosilicate = this->CreatePyrex();
-
-  G4ThreeVector pmt1_position = G4ThreeVector(0, 0.5*(shape_plasticY+shape_PMT_Y), 0);
-  G4ThreeVector pmt2_position = G4ThreeVector(0, -0.5*(shape_plasticY+shape_PMT_Y), 0);
-        
-  G4Box* PMTsShape = new G4Box("PMT Box", 0.5*shape_PMT_X, 0.5*shape_PMT_Y, 0.5*shape_PMT_Z);
-  
-  G4LogicalVolume* PMT_LogicalVolume 
-    = new G4LogicalVolume(PMTsShape, borosilicate, "PMT made up of borosilicate glass");
-
-  // in order to ensure at least one step in the PMT
-  PMT_LogicalVolume->SetUserLimits(new G4UserLimits(shape_PMT_X/2));
-  
-  fCerenkovPMT 
-   = new G4PVPlacement(0, pmt1_position, PMT_LogicalVolume, "Cherenkov PMT", logicEnv, false, 0, checkOverlaps);
-
-  fScintillatorPMT = new G4PVPlacement(0, pmt2_position, PMT_LogicalVolume, "Scintill. PMT", logicEnv, false, 0, checkOverlaps);
 
   /*************** SILICON PHOTOMULTIPLIERS ***************/
+
+  G4Material* borosilicate = this->CreatePyrex();
 
   G4Box* SiPM_Shape = new G4Box("SiPM Box", 0.5*shape_SiPMX, 0.5*shape_SiPMY, 0.5*shape_SiPMZ);
   

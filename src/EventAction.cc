@@ -56,11 +56,6 @@ void EventAction::BeginOfEventAction(const G4Event*){
   Nphotons_Scint = 0;
 
   IsInBGO = false;
-  PMT1detection = false;
-  PMT2detection = false;
-
-  Nproduced_Cerenkov = 0;
-  Nproduced_Scintillation = 0;
 
   auto runData = static_cast<RunData*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
   runData->Reset();
@@ -72,16 +67,12 @@ void EventAction::EndOfEventAction(const G4Event* event){
   // accumulate statistics in run action
   fRunAction->AddEdep(fEdep);
 
-  //print per event (modulo n)
   auto eventID = event->GetEventID();
   if (( eventID % 10000 == 0 )) {
     G4cout << "-------> End of event: " << eventID << G4endl;
   }
 
-  // output printing <=> particle pass thorugh both the plastic scintillators
   if ( IsInBGO ){
-
-    std::cout << "... detecting a particle ..." << std::endl;
     
     auto runData = static_cast<RunData*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
     runData->FillPerEvent();
@@ -97,16 +88,6 @@ void EventAction::AddEdep(G4double edep){
   fEdep += edep;
 }
 
-void EventAction::AddEdepBGO(G4double edep){
+void EventAction::AddEdepScintillator(G4double edep){
   fEdep_BGO += edep;
-}
-
-void EventAction::AddEdepBGOCerenkov(G4double edep){ 
-  fEdep_BGO_Cherenkov += edep;
-  Nphotons_Cerenkov ++;
-}
-
-void EventAction::AddEdepBGOScint(G4double edep){
-  fEdep_BGO_Scintillation += edep;
-  Nphotons_Scint ++;
 }
