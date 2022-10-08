@@ -89,12 +89,13 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
   fParticleGun->SetParticleDefinition(particle);
   fParticleGun->SetParticleEnergy(21.*MeV);
   
-  const double initial_position = fEnvelope->GetZHalfLength();
+  const G4double initial_position = fEnvelope->GetZHalfLength();
+  const G4double initial_x = (fEnvelope->GetXHalfLength())*0.45, initial_y = (fEnvelope->GetYHalfLength())*0.45;
 
   // direction of the beam
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
  
   // set position of the particle
-  fParticleGun->SetParticlePosition(G4ThreeVector(0,0,initial_position));
+  fParticleGun->SetParticlePosition(G4ThreeVector(initial_x,initial_y,initial_position));
 
 }
