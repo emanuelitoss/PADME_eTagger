@@ -51,16 +51,12 @@ class EventAction : public G4UserEventAction
   G4bool Bool() const { return IsInBGO; }
 
   void AddEdep(G4double edep);
-  void AddEdepScintillator(G4double edep);
   
   private:
 
   RunAction* fRunAction;
   
   G4double fEdep;
-  G4double fEdep_BGO;
-  G4double fEdep_BGO_Cherenkov;
-  G4double fEdep_BGO_Scintillation;
   G4int Nphotons_Cerenkov;
   G4int Nphotons_Scint;
   

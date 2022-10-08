@@ -58,6 +58,18 @@ void RunData::FillPerEvent()
     analysisManager->AddNtupleRow();
 }
 
+void RunData::FillTimePerPhoton(G4double time)
+{
+    // get analysis manager
+    auto analysisManager = G4AnalysisManager::Instance();
+    
+    int counter = 0;
+    analysisManager->FillH1(counter + 1, time);
+    analysisManager->FillNtupleDColumn(counter +1, time);
+    
+    analysisManager->AddNtupleRow();
+}
+
 void RunData::Reset(){
 
     for ( auto& edep : fEdep ) edep = 0.;

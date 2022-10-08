@@ -69,30 +69,34 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
 
   auto runData = static_cast<RunData*> (G4RunManager::GetRunManager()->GetNonConstCurrentRun());
 
-  // get volume of the current step
-  G4LogicalVolume* volume = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetLogicalVolume();
-  G4VPhysicalVolume* PreStepPV = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
   G4VPhysicalVolume* PostStepPV = step->GetPostStepPoint()->GetTouchableHandle()->GetVolume();
+  G4VPhysicalVolume* PreStepPV = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
+  G4LogicalVolume* volume = PreStepPV->GetLogicalVolume();
 
-  // collect energy deposited in this step
-  G4double edepStep = step->GetTotalEnergyDeposit();
-
+  // Store of arrival time for optical photons
+  G4bool IsOpticalPhoton = ( step->GetTrack()->GetParticleDefinition() == G4OpticalPhoton::OpticalPhotonDefinition() );
   G4bool IsPhotDetected = (PreStepPV == fDetConstruction->GetScintillator()) && (PostStepPV == fDetConstruction->GetSiPMs()[0]);
-  if (IsPhotDetected)
+  
+  if (IsPhotDetected && IsOpticalPhoton)
   {
-    G4double L_arrival_time = step->GetTrack()->GetLocalTime();
     G4double G_arrival_time = step->GetTrack()->GetGlobalTime();
     std::cout << OBOLDCYAN
-      << "Local arrival time:\t" << G4BestUnit(L_arrival_time,"Time")
-      << "\tGlobal arrival time:\t" << G4BestUnit(G_arrival_time,"Time") << ORESET << std::endl;
+      << "\tGlobal arrival time: " << G4BestUnit(G_arrival_time,"Time") 
+      << "\tParticle definition: " << step->GetTrack()->GetParticleDefinition()->GetParticleName()
+      << "\tCreator process: " << step->GetTrack()->GetCreatorProcess()->GetProcessName()
+      << ORESET << std::endl;
+    
+    runData->FillTimePerPhoton(G_arrival_time);
   }
   else {
   }
 
+  // collect energy deposited in this step
+  G4double edepStep = step->GetTotalEnergyDeposit();
+
   if ( PreStepPV == fDetConstruction->GetScintillator() ) {
     fEventAction->PassedThroughScintillator();
-    runData->Add(kBGO, edepStep);
-    fEventAction->AddEdepScintillator(edepStep);
+    runData->AddEnergy(kBGO, edepStep);
   }
 
   // check if we are not in scoring volume

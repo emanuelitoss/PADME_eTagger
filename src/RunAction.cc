@@ -61,11 +61,13 @@ RunAction::RunAction()
   analysisManager->SetNtupleMerging(true);
 
   // Creating histograms
-  analysisManager->CreateH1("EnergyPlasticScintillator","Energy deposited in plastic scintillator", 800, 0., 100, "MeV");
+  analysisManager->CreateH1("EnergyPlasticScintillator","Energy deposited in plastic scintillator", 100, 0., 100, "MeV");
+  analysisManager->CreateH1("PhotonsTime[0]","Arival time of photons", 20, 0., 30, "ns");
 
   // Creating ntuple
   analysisManager->CreateNtuple("eTagDataTuples", "EnengyDeposit");
   analysisManager->CreateNtupleDColumn("EnergyPlasticScintillator");
+  analysisManager->CreateNtupleDColumn("PhotonsTime[0]");
   analysisManager->FinishNtuple();
 
 

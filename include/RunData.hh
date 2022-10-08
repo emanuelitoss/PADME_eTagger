@@ -68,8 +68,9 @@ class RunData : public G4Run
         RunData();
         virtual ~RunData();
 
-        void Add(G4int id, G4double de);
+        void AddEnergy(G4int id, G4double de);
         void FillPerEvent();
+        void FillTimePerPhoton(G4double t);
 
         void Reset();
 
@@ -81,7 +82,7 @@ class RunData : public G4Run
 };
 
 // inline functions
-inline void RunData::Add(G4int id, G4double de) {
+inline void RunData::AddEnergy(G4int id, G4double de) {
     fEdep[id] += de;
 }
 
