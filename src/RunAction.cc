@@ -63,14 +63,14 @@ RunAction::RunAction()
   // Creating histograms
   // virtual G4int 	CreateH1 (const G4String &name, const G4String &title, G4int nbins, G4double xmin, G4double xmax, const G4String &unitName="none", const G4String &fcnName="none")=0
   analysisManager->CreateH1("EnergyPlasticScintillator","Energy deposited in plastic scintillator", 100, 0., 100, "MeV");
-  analysisManager->CreateH1("PhotonsTime[1]","Arival time of photons[1]", 50, 0., 30, "ns");
-  analysisManager->CreateH1("PhotonsTime[2]","Arival time of photons[2]", 50, 0., 30, "ns");
-  analysisManager->CreateH1("PhotonsTime[3]","Arival time of photons[3]", 50, 0., 30, "ns");
-  analysisManager->CreateH1("PhotonsTime[4]","Arival time of photons[4]", 50, 0., 30, "ns");
-  analysisManager->CreateH1("PhotonsTime[5]","Arival time of photons[5]", 50, 0., 30, "ns");
-  analysisManager->CreateH1("PhotonsTime[6]","Arival time of photons[6]", 50, 0., 30, "ns");
-  analysisManager->CreateH1("PhotonsTime[7]","Arival time of photons[7]", 50, 0., 30, "ns");
-  analysisManager->CreateH1("PhotonsTime[8]","Arival time of photons[8]", 50, 0., 30, "ns");
+  analysisManager->CreateH1("PhotonsTime[1]","Arival time of photons[1]", 100, 0, 30, "ns");
+  analysisManager->CreateH1("PhotonsTime[2]","Arival time of photons[2]", 100, 0, 30, "ns");
+  analysisManager->CreateH1("PhotonsTime[3]","Arival time of photons[3]", 100, 0, 30, "ns");
+  analysisManager->CreateH1("PhotonsTime[4]","Arival time of photons[4]", 100, 0, 30, "ns");
+  analysisManager->CreateH1("PhotonsTime[5]","Arival time of photons[5]", 100, 0, 30, "ns");
+  analysisManager->CreateH1("PhotonsTime[6]","Arival time of photons[6]", 100, 0, 30, "ns");
+  analysisManager->CreateH1("PhotonsTime[7]","Arival time of photons[7]", 100, 0, 30, "ns");
+  analysisManager->CreateH1("PhotonsTime[8]","Arival time of photons[8]", 100, 0, 30, "ns");
 
   // Creating ntuple
   analysisManager->CreateNtuple("eTagDataTuples", "EnengyDeposit");

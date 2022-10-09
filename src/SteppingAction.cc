@@ -84,13 +84,18 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
     if (IsPhotDetectedInSiPM && IsOpticalPhoton)
     {
       G4double G_arrival_time = step->GetTrack()->GetGlobalTime();
+      
+      /*
       std::cout << OBOLDCYAN
         << "\tGlobal arrival time: " << G4BestUnit(G_arrival_time,"Time") 
         << "\tParticle definition: " << step->GetTrack()->GetParticleDefinition()->GetParticleName()
         << "\tCreator process: " << step->GetTrack()->GetCreatorProcess()->GetProcessName()
         << ORESET << std::endl;
+      */
 
       runData->FillTimePerPhoton(id, G_arrival_time);
+      step->GetTrack()->SetTrackStatus(fStopAndKill);
+
     }
   }
 

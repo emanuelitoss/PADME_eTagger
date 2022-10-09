@@ -51,7 +51,8 @@ void RunData::FillPerEvent()
     // accumulate statistic
     // in the order od the histograms, ntuple columns declarations
     G4int counter = 0;
-    for ( auto edep : fEdep ) {
+    for ( auto edep : fEdep )
+    {
         analysisManager->FillH1(counter, edep);
         analysisManager->FillNtupleDColumn(counter++, edep);
     }
@@ -64,7 +65,7 @@ void RunData::FillTimePerPhoton(G4int id, G4double time)
     auto analysisManager = G4AnalysisManager::Instance();
     
     analysisManager->FillH1(id + 1, time);
-    analysisManager->FillNtupleDColumn(id +1, time);
+    analysisManager->FillNtupleDColumn(id + 1, time);
     
     analysisManager->AddNtupleRow();
 }
