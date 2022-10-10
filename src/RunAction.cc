@@ -114,7 +114,7 @@ void RunAction::BeginOfRunAction(const G4Run* run)
   auto analysisManager = G4AnalysisManager::Instance();
 
   // Open an output file
-  G4String fileName = "../eTag_data/eTag_data.root";
+  G4String fileName = "../data_eTag/data_eTag.root";
   analysisManager->OpenFile(fileName);
   
   // reset accumulables to their initial values

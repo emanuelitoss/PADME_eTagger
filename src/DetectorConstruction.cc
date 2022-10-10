@@ -190,7 +190,7 @@ G4Material* DetectorConstruction::CreatePlasticMaterial() const {
   G4NistManager* nist = G4NistManager::Instance();
 
   G4Material* plastic_basic_material = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
-  G4Material* plastic_material = new G4Material("BismuthGermaniumOxygen Crystal", 1.023*g/cm3, plastic_basic_material);
+  G4Material* plastic_material = new G4Material("-- Crystal", 1.023*g/cm3, plastic_basic_material);
 
   // photon energy = hPlanck * (speed of light) / wavelength
   G4double energies_photons[10] = {hPlanck*c_light*meters_to_nanometers/380.*eV,
@@ -236,8 +236,8 @@ G4Material* DetectorConstruction::CreatePyrex() const {
   
   // photon energy = hPlanck * (speed of light) / wavelength
   G4double photonenergy[3] = {hPlanck*c_light*meters_to_nanometers/320.*eV,
-                            hPlanck*c_light*meters_to_nanometers/400.*eV,  
-                            hPlanck*c_light*meters_to_nanometers/480.*eV};
+                              hPlanck*c_light*meters_to_nanometers/400.*eV,  
+                              hPlanck*c_light*meters_to_nanometers/480.*eV};
                             
   G4double rindex[3] = {1.471, 	1.471, 	1.471};
 
