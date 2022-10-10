@@ -58,7 +58,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   private:
 
     // physical volumes
-    G4VPhysicalVolume* fScintillator;
+    G4VPhysicalVolume* fTagger;
     std::vector <G4VPhysicalVolume*> fSiPMs
       = {nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr};
 
@@ -72,14 +72,14 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4Material* CreatePyrex() const;
     G4Material* CreateLowVacuumAir() const;
 
-    void OpticalSurfacePlastic_SiPM(G4VPhysicalVolume*, G4VPhysicalVolume*) const;
+    void OpticalSurfaceTagger_SiPM(G4VPhysicalVolume*, G4VPhysicalVolume*) const;
 
 };
 
 // inline functions
 
 inline const G4VPhysicalVolume* DetectorConstruction::GetScintillator() const { 
-  return fScintillator;
+  return fTagger;
 }
 
 inline const std::vector <G4VPhysicalVolume*> DetectorConstruction::GetSiPMs() const {

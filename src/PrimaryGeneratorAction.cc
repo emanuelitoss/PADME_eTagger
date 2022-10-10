@@ -44,11 +44,13 @@ using namespace std;
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 #include "g4root.hh"
+#include "G4UnitsTable.hh"
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
 : G4VUserPrimaryGeneratorAction(),
-  fParticleGun(0), 
-  fEnvelope(0)
+  fParticleGun(nullptr), 
+  fEnvelope(nullptr),
+  fTagger(nullptr)
 {
 
   G4int n_particle = 1;
@@ -72,6 +74,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   {
     G4LogicalVolume* envLV = G4LogicalVolumeStore::GetInstance()->GetVolume("Envelope");
     if ( envLV ) fEnvelope = dynamic_cast<G4Box*>(envLV->GetSolid());
+
+    G4LogicalVolume* tagLV = G4LogicalVolumeStore::GetInstance()->GetVolume("Tagger LV");
+    if ( tagLV ) fTagger = dynamic_cast<G4Box*>(tagLV->GetSolid());
   }
 
   ParticleKinematicsGenerator();
@@ -89,13 +94,13 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
   fParticleGun->SetParticleDefinition(particle);
   fParticleGun->SetParticleEnergy(21.*MeV);
   
-  const G4double initial_position = fEnvelope->GetZHalfLength();
-  const G4double initial_x = (fEnvelope->GetXHalfLength())*0.45, initial_y = (fEnvelope->GetYHalfLength())*0.45;
+  const G4double initial_z = fEnvelope->GetZHalfLength();
+  G4double max_x = (fTagger->GetXHalfLength()), max_y = (fTagger->GetYHalfLength());
 
   // direction of the beam
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
  
   // set position of the particle
-  fParticleGun->SetParticlePosition(G4ThreeVector(initial_x,initial_y,initial_position));
+  fParticleGun->SetParticlePosition(G4ThreeVector(0.9*max_x, 0.9*max_y, initial_z));
 
 }

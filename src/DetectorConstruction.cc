@@ -56,7 +56,7 @@ const double meters_to_nanometers = 1e9; // 1 m = 1e9 nm
 
 DetectorConstruction::DetectorConstruction()
 : G4VUserDetectorConstruction(),
-  fScintillator(nullptr),
+  fTagger(nullptr),
   fStepLimit(nullptr),
   fScoringVolume(0)
 {}
@@ -71,14 +71,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   G4bool checkOverlaps = true;
 
   // Dimensions of my solids
-  const G4double shape_plasticX = 600.*mm, shape_plasticY = 44.*mm, shape_plasticZ = 5.*mm;
+  const G4double shape_taggerX = 600.*mm, shape_taggerY = 44.*mm, shape_taggerZ = 5.*mm;
   const G4double shape_SiPMX = 1.*mm, shape_SiPMY = 3.*mm, shape_SiPMZ = shape_SiPMY;
+  G4double deltaShape = 5.*cm;
+  const G4double shapeEnvelopeX = 0.5*shape_taggerX + deltaShape, shapeEnvelopeY = 0.5*shape_taggerY + deltaShape,
+    shapeEnvelopeZ = 0.5*shape_taggerZ + deltaShape;
 
   /*************** WORLD ***************/
 
   G4Material* VacuumMaterial = CreateLowVacuumAir();
 
-  G4Box* solidWorld = new G4Box("World", 1.1*shape_plasticX, 1.1*shape_plasticY, 1.1*shape_plasticZ);
+  G4Box* solidWorld = new G4Box("World", 1.1*shapeEnvelopeX, 1.1*shapeEnvelopeY, 1.1*shapeEnvelopeZ);
   
   G4LogicalVolume* logicWorld =                         
     new G4LogicalVolume(solidWorld,          //its solid
@@ -93,12 +96,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
                       0,                     //its mother  volume
                       false,                 //no boolean operation
                       0,                     //copy number
-                      checkOverlaps);        //overlaps checking
-                   
+                      false);                //overlaps checking
+  
   /*************** ENVELOPE ***************/
 
-  G4Box* solidEnv = new G4Box("Envelope", shape_plasticX, shape_plasticY, shape_plasticZ);
-      
+  G4Box* solidEnv = new G4Box("Envelope", shapeEnvelopeX, shapeEnvelopeY, shapeEnvelopeZ);
+  
   G4LogicalVolume* logicEnv = new G4LogicalVolume(solidEnv, VacuumMaterial, "Envelope");
 
   G4VPhysicalVolume* physEnvelope
@@ -108,13 +111,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
   G4Material* plastic_material = this->CreatePlasticMaterial();
 
-  G4Box* PlasticShape = new G4Box("Plastic Box", 0.5*shape_plasticX, 0.5*shape_plasticY, 0.5*shape_plasticZ);
+  G4Box* TaggerShape = new G4Box("Tagger Box", 0.5*shape_taggerX, 0.5*shape_taggerY, 0.5*shape_taggerZ);
 
-  G4LogicalVolume* Plastic_LogicalVolume 
-    = new G4LogicalVolume(PlasticShape, plastic_material, "Plastic Logical Volume");
+  G4LogicalVolume* Tagger_LogicalVolume 
+    = new G4LogicalVolume(TaggerShape, plastic_material, "Tagger LV");
 
-  fScintillator = 
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), Plastic_LogicalVolume, "Plastic Scinitllator", logicEnv, false, 0, checkOverlaps);
+  fTagger = 
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), Tagger_LogicalVolume, "Tagger PV", logicEnv, false, 0, checkOverlaps);
 
   /*************** SILICON PHOTOMULTIPLIERS ***************/
 
@@ -129,21 +132,21 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
   G4int counter = 0;
   G4ThreeVector positions_sipm;
-  G4double starting_position = 0.5*(shape_SiPMY - shape_plasticY);
-  G4double deltaPos = (shape_plasticY - 4.*shape_SiPMY)/3 + shape_SiPMY;
+  G4double starting_position = 0.5*(shape_SiPMY - shape_taggerY);
+  G4double deltaPos = (shape_taggerY - 4.*shape_SiPMY)/3 + shape_SiPMY;
   for( auto& sipm : fSiPMs )
   {
     if (counter < 4)
     {
-      positions_sipm = G4ThreeVector(0.5*(shape_plasticX+shape_SiPMX), starting_position + (counter%4)*deltaPos, 0);
+      positions_sipm = G4ThreeVector(0.5*(shape_taggerX+shape_SiPMX), starting_position + (counter%4)*deltaPos, 0);
     }
     else
     {
-      positions_sipm = G4ThreeVector(-0.5*(shape_plasticX+shape_SiPMX), starting_position + (counter-4)*deltaPos, 0);
+      positions_sipm = G4ThreeVector(-0.5*(shape_taggerX+shape_SiPMX), starting_position + (counter-4)*deltaPos, 0);
     }
 
     sipm = new G4PVPlacement(0, positions_sipm, SiPM_LogicalVolume, "SiPM detector", logicEnv, false, 0, checkOverlaps); 
-    OpticalSurfacePlastic_SiPM(fScintillator, sipm);
+    OpticalSurfaceTagger_SiPM(fTagger, sipm);
     
     counter++;
   }
@@ -247,7 +250,7 @@ G4Material* DetectorConstruction::CreatePyrex() const {
   return pyrex;
 }
 
-void DetectorConstruction::OpticalSurfacePlastic_SiPM(G4VPhysicalVolume* Plastic_PV, G4VPhysicalVolume* TheOtherPV) const {
+void DetectorConstruction::OpticalSurfaceTagger_SiPM(G4VPhysicalVolume* Tagger_PV, G4VPhysicalVolume* TheOtherPV) const {
 
   G4OpticalSurface* opPlasticSurface = new G4OpticalSurface("Plastic Surface");
   opPlasticSurface->SetType(dielectric_LUTDAVIS);
@@ -255,10 +258,10 @@ void DetectorConstruction::OpticalSurfacePlastic_SiPM(G4VPhysicalVolume* Plastic
   opPlasticSurface->SetFinish(PolishedESRGrease_LUT);
 
   G4LogicalBorderSurface* LogicalPlasticSurface = new G4LogicalBorderSurface(
-    "Plastic Surface", Plastic_PV, TheOtherPV, opPlasticSurface);
+    "Plastic Surface", Tagger_PV, TheOtherPV, opPlasticSurface);
   
   G4OpticalSurface* opticalSurface = dynamic_cast<G4OpticalSurface*>(
-    LogicalPlasticSurface->GetSurface(Plastic_PV, TheOtherPV)->GetSurfaceProperty());
+    LogicalPlasticSurface->GetSurface(Tagger_PV, TheOtherPV)->GetSurfaceProperty());
 
   if(opticalSurface) opticalSurface->DumpInfo();
 

@@ -62,6 +62,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
   private:
     G4ParticleGun* fParticleGun;
     G4Box* fEnvelope;
+    G4Box* fTagger;
 
 };
 

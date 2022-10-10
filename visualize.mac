@@ -81,7 +81,7 @@
 # s=surface, w=wireframe, c=cloud
 /vis/viewer/set/style surface
 /vis/viewer/set/hiddenMarker true
-/vis/viewer/set/viewpointThetaPhi 170 175
+/vis/viewer/set/viewpointThetaPhi 160 75
 /vis/viewer/zoom 2.5
 
 # Re-establish auto refreshing and verbosity:
@@ -96,7 +96,7 @@
 # Name
 /vis/set/textColour yellow
 /vis/set/textLayout right
-/vis/scene/add/text2D 0.7 -.9 18 ! ! PADME - Electron Tagger
+/vis/scene/add/text2D 0.5 -.9 18 ! ! PADME - Electron Tagger
 # or, if your system does not support right-adjustment
 #/vis/scene/add/text2D 0 -.9 24 ! ! Electron Tagger
 #/vis/set/textLayout    # Revert to normal (left adjusted) layout
