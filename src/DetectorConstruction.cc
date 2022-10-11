@@ -43,7 +43,6 @@
 #include "G4SystemOfUnits.hh"
 #include "G4Element.hh"
 #include "G4Material.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 #include "G4UserLimits.hh"
 #include "G4OpticalSurface.hh"
@@ -190,7 +189,7 @@ G4Material* DetectorConstruction::CreatePlasticMaterial() const {
   G4NistManager* nist = G4NistManager::Instance();
 
   G4Material* plastic_basic_material = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
-  G4Material* plastic_material = new G4Material("-- Crystal", 1.023*g/cm3, plastic_basic_material);
+  G4Material* plastic_material = new G4Material("PlasticScintillator", 1.023*g/cm3, plastic_basic_material);
 
   // photon energy = hPlanck * (speed of light) / wavelength
   G4double energies_photons[10] = {hPlanck*c_light*meters_to_nanometers/380.*eV,
@@ -252,16 +251,19 @@ G4Material* DetectorConstruction::CreatePyrex() const {
 
 void DetectorConstruction::OpticalSurfaceTagger_SiPM(G4VPhysicalVolume* Tagger_PV, G4VPhysicalVolume* TheOtherPV) const {
 
-  G4OpticalSurface* opPlasticSurface = new G4OpticalSurface("Plastic Surface");
-  opPlasticSurface->SetType(dielectric_LUTDAVIS);
-  opPlasticSurface->SetModel(DAVIS);
+  G4OpticalSurface* opPlasticSurface = new G4OpticalSurface("Plastic scintillator surface");
+  opPlasticSurface->SetType(dielectric_dielectric);
   opPlasticSurface->SetFinish(PolishedESRGrease_LUT);
+  opPlasticSurface->SetModel(DAVIS);
 
   G4LogicalBorderSurface* LogicalPlasticSurface = new G4LogicalBorderSurface(
     "Plastic Surface", Tagger_PV, TheOtherPV, opPlasticSurface);
   
   G4OpticalSurface* opticalSurface = dynamic_cast<G4OpticalSurface*>(
     LogicalPlasticSurface->GetSurface(Tagger_PV, TheOtherPV)->GetSurfaceProperty());
+
+  // VEDI ANCHE G4LogicalSkinSurface QUI: 
+  // https://geant4-userdoc.web.cern.ch/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/physicsProcess.html#davis-look-up-tables-lutdavis
 
   if(opticalSurface) opticalSurface->DumpInfo();
 

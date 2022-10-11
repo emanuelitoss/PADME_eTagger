@@ -45,7 +45,6 @@ RunData::~RunData()
 
 void RunData::FillPerEvent()
 {
-    // get analysis manager
     auto analysisManager = G4AnalysisManager::Instance();
 
     // accumulate statistic
@@ -54,20 +53,29 @@ void RunData::FillPerEvent()
     for ( auto edep : fEdep )
     {
         analysisManager->FillH1(counter, edep);
-        analysisManager->FillNtupleDColumn(counter++, edep);
+        analysisManager->FillNtupleDColumn(0, counter, edep);
     }
-    analysisManager->AddNtupleRow();
+    analysisManager->AddNtupleRow(0);
 }
 
 void RunData::FillTimePerPhoton(G4int id, G4double time)
 {
-    // get analysis manager
     auto analysisManager = G4AnalysisManager::Instance();
     
     analysisManager->FillH1(id + 1, time);
-    analysisManager->FillNtupleDColumn(id + 1, time);
+    analysisManager->FillNtupleDColumn(1, id, time);
     
-    analysisManager->AddNtupleRow();
+    analysisManager->AddNtupleRow(1);
+
+}
+
+void RunData::FIllFirstTimes(G4int id, G4double time){
+
+    auto analysisManager = G4AnalysisManager::Instance();
+
+    analysisManager->FillNtupleDColumn(2, id, time);
+    analysisManager->AddNtupleRow(2);
+
 }
 
 void RunData::Reset(){

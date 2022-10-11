@@ -32,6 +32,7 @@
 
 #include "G4UserEventAction.hh"
 #include "globals.hh"
+#include <vector>
 
 class RunAction;
 
@@ -47,27 +48,16 @@ class EventAction : public G4UserEventAction
   virtual void BeginOfEventAction(const G4Event* event);
   virtual void EndOfEventAction(const G4Event* event);
 
-  void PassedThroughScintillator();
-  G4bool Bool() const { return IsInBGO; }
-
   void AddEdep(G4double edep);
+  void SetMinTimeIfLess(G4int channel, G4double time);
+  G4double GetMinTime(G4int channel) { return min_times[channel]; }
   
   private:
 
   RunAction* fRunAction;
-  
   G4double fEdep;
-  G4int Nphotons_Cerenkov;
-  G4int Nphotons_Scint;
-  
-  G4bool IsInBGO = false;
+  std::vector <G4double> min_times;
   
 };
-
-// inline functions
-
-inline void EventAction::PassedThroughScintillator(){
-  IsInBGO = true;
-}
 
 #endif

@@ -71,6 +71,7 @@ class RunData : public G4Run
         void AddEnergy(G4int id, G4double de);
         void FillPerEvent();
         void FillTimePerPhoton(G4int id, G4double t);
+        void FIllFirstTimes(G4int id, G4double time);
 
         void Reset();
 

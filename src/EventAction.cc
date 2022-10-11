@@ -34,6 +34,7 @@
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 #include "G4UnitsTable.hh"
+#include "G4SystemOfUnits.hh"
 
 #include "Randomize.hh"
 #include <iomanip>
@@ -42,20 +43,21 @@ EventAction::EventAction(RunAction* runAction)
 : G4UserEventAction(),
   fRunAction(runAction),
   fEdep(0.)
-{}
+{
+  min_times = {0.,0.,0.,0.,0.,0.,0.,0.};
+}
 
 EventAction::~EventAction(){}
 
 void EventAction::BeginOfEventAction(const G4Event*){
 
   fEdep = 0.;
-  Nphotons_Cerenkov = 0;
-  Nphotons_Scint = 0;
-
-  IsInBGO = false;
 
   auto runData = static_cast<RunData*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
   runData->Reset();
+
+  G4double max_t = 2000.*ns;
+  min_times = {max_t,max_t,max_t,max_t,max_t,max_t,max_t,max_t};
 
 }
 
@@ -69,18 +71,25 @@ void EventAction::EndOfEventAction(const G4Event* event){
     G4cout << "-------> End of event: " << eventID << G4endl;
   }
 
-  if ( IsInBGO ){
-    
-    auto runData = static_cast<RunData*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
-    runData->FillPerEvent();
+  auto runData = static_cast<RunData*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
+
+  for(int i = 0; i<8; ++i){
+    runData->FIllFirstTimes(i, min_times[i]);
+  }
+
+  if ( 1 ){
+        runData->FillPerEvent();
 
     // adding a particle
     fRunAction->addDetectedParticle();
-    
   }
 
 }
 
 void EventAction::AddEdep(G4double edep){
   fEdep += edep;
+}
+
+void EventAction::SetMinTimeIfLess(G4int channel, G4double time){
+  if(time != 0 && time < min_times[channel])  min_times[channel] = time;
 }

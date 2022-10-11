@@ -72,9 +72,12 @@ RunAction::RunAction()
   analysisManager->CreateH1("PhotonsTime[7]","Arival time of photons[7]", 100, 0, 30, "ns");
   analysisManager->CreateH1("PhotonsTime[8]","Arival time of photons[8]", 100, 0, 30, "ns");
 
-  // Creating ntuple
-  analysisManager->CreateNtuple("eTagDataTuples", "EnengyDeposit");
+  // Creating ntuples
+  analysisManager->CreateNtuple("energyLoss", "Energy loss in each event in the tagger");
   analysisManager->CreateNtupleDColumn("EnergyPlasticScintillator");
+  analysisManager->FinishNtuple();
+
+  analysisManager->CreateNtuple("eTagDataTuples", "Tuples of arrival time of photons");
   analysisManager->CreateNtupleDColumn("PhotonsTime[1]");
   analysisManager->CreateNtupleDColumn("PhotonsTime[2]");
   analysisManager->CreateNtupleDColumn("PhotonsTime[3]");
@@ -85,6 +88,16 @@ RunAction::RunAction()
   analysisManager->CreateNtupleDColumn("PhotonsTime[8]");
   analysisManager->FinishNtuple();
 
+  analysisManager->CreateNtuple("firstTimes","Tuples of first arrival time for each event and SiPM");
+  analysisManager->CreateNtupleDColumn("1stTimeSiPM[1]");
+  analysisManager->CreateNtupleDColumn("1stTimeSiPM[2]");
+  analysisManager->CreateNtupleDColumn("1stTimeSiPM[3]");
+  analysisManager->CreateNtupleDColumn("1stTimeSiPM[4]");
+  analysisManager->CreateNtupleDColumn("1stTimeSiPM[5]");
+  analysisManager->CreateNtupleDColumn("1stTimeSiPM[6]");
+  analysisManager->CreateNtupleDColumn("1stTimeSiPM[7]");
+  analysisManager->CreateNtupleDColumn("1stTimeSiPM[8]");
+  analysisManager->FinishNtuple();
 
   // Register accumulable to the accumulable manager
   G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();

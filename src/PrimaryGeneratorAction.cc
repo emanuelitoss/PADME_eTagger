@@ -27,7 +27,7 @@
 /// \file B1PrimaryGeneratorAction.cc
 /// \brief Implementation of the B1PrimaryGeneratorAction class
 
-#include "PrimaryGeneratorAction.hh"
+#include "../include/PrimaryGeneratorAction.hh"
 
 #include <cmath>
 #include <fstream>
@@ -52,7 +52,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fEnvelope(nullptr),
   fTagger(nullptr)
 {
-
+ 
   G4int n_particle = 1;
   fParticleGun  = new G4ParticleGun(n_particle);
 
@@ -101,6 +101,6 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
  
   // set position of the particle
-  fParticleGun->SetParticlePosition(G4ThreeVector(0.9*max_x, 0.9*max_y, initial_z));
+  fParticleGun->SetParticlePosition(G4ThreeVector(-0.63*max_x, -0.32*max_y, initial_z));
 
 }
