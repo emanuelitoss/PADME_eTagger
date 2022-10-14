@@ -44,11 +44,8 @@ target_link_libraries(padmETag ${Geant4_LIBRARIES})
 # relies on these scripts being in the current working directory.
 #
 set(PADMETAG_SCRIPTS
-  padmETag.in
-  padmETag.out
   init_vis.mac
   run.mac
-  visualize.mac
   )
 
 foreach(_script ${PADMETAG_SCRIPTS})
