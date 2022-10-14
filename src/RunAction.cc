@@ -41,14 +41,19 @@
 #include "G4SystemOfUnits.hh"
 #include "g4root.hh"
 
+#include <string>
 
-RunAction::RunAction()
+
+RunAction::RunAction(double X, double Y)
 : G4UserRunAction(),
   fEdep(0.),
   fEdep2(0.)
 {
   // set printing event number per each event
   // G4RunManager::GetRunManager()->SetPrintProgress(1);
+
+  fPercentX = X;
+  fPercentY = Y;
 
   // Create analysis manager
   // The choice of analysis technology is done via selectin of a namespace
@@ -127,7 +132,8 @@ void RunAction::BeginOfRunAction(const G4Run* run)
   auto analysisManager = G4AnalysisManager::Instance();
 
   // Open an output file
-  G4String fileName = "../data_eTag/data_eTag.root";
+  // create the right string
+  G4String fileName = "../data_eTag/data_eTag-30.root";
   analysisManager->OpenFile(fileName);
   
   // reset accumulables to their initial values

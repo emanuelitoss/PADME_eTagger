@@ -45,18 +45,26 @@ ActionInitialization::ActionInitialization(DetectorConstruction* detConstruction
  fDetConstruction(detConstruction)
 {}
 
+ActionInitialization::ActionInitialization(DetectorConstruction* detConstruction, double X, double Y)
+ : G4VUserActionInitialization(),
+ fDetConstruction(detConstruction)
+{
+  fpercent_x = X;
+  fpercent_y = Y;
+}
+
 ActionInitialization::~ActionInitialization(){}
 
 void ActionInitialization::BuildForMaster() const {
-  RunAction* runAction = new RunAction;
+  RunAction* runAction = new RunAction(fpercent_x, fpercent_y);
   SetUserAction(runAction);
 }
 
 void ActionInitialization::Build() const {
 
-  SetUserAction(new PrimaryGeneratorAction());
+  SetUserAction(new PrimaryGeneratorAction(fpercent_x, fpercent_y));
 
-  RunAction* runAction = new RunAction;
+  RunAction* runAction = new RunAction(fpercent_x, fpercent_y);
   SetUserAction(runAction);
 
   EventAction* eventAction = new EventAction(runAction);

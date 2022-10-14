@@ -48,7 +48,8 @@ class G4Sphere;
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
-    PrimaryGeneratorAction();   
+    PrimaryGeneratorAction();
+    PrimaryGeneratorAction(G4double x, G4double y);
     virtual ~PrimaryGeneratorAction();
 
     virtual void GeneratePrimaries(G4Event*);
@@ -63,6 +64,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4ParticleGun* fParticleGun;
     G4Box* fEnvelope;
     G4Box* fTagger;
+    G4double fInitial_X = 0.;
+    G4double fInitial_Y = 0.;
 
 };
 

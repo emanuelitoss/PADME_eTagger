@@ -58,6 +58,20 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 
 }
 
+PrimaryGeneratorAction::PrimaryGeneratorAction(G4double x, G4double y)
+: G4VUserPrimaryGeneratorAction(),
+  fParticleGun(nullptr), 
+  fEnvelope(nullptr),
+  fTagger(nullptr)
+{
+ 
+  G4int n_particle = 1;
+  fParticleGun  = new G4ParticleGun(n_particle);
+  fInitial_X = x;
+  fInitial_Y = y;
+
+}
+
 PrimaryGeneratorAction::~PrimaryGeneratorAction(){
   delete fParticleGun;
 }
@@ -101,6 +115,6 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
  
   // set position of the particle
-  fParticleGun->SetParticlePosition(G4ThreeVector(-0.63*max_x, -0.32*max_y, initial_z));
+  fParticleGun->SetParticlePosition(G4ThreeVector(fInitial_X*max_x, fInitial_Y*max_y, initial_z));
 
 }

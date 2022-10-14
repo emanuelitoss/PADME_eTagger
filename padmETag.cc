@@ -43,6 +43,9 @@
 
 #include <time.h>
 
+#define PERCENT_X -0.3
+#define PERCENT_Y 0.
+
 int main(int argc,char** argv)
 {
 
@@ -78,7 +81,7 @@ int main(int argc,char** argv)
   runManager->SetUserInitialization(physicsList);
 
   // User action initialization
-  auto actionInitialization = new ActionInitialization(detConstruction);
+  auto actionInitialization = new ActionInitialization(detConstruction, PERCENT_X, PERCENT_Y);
   runManager->SetUserInitialization(actionInitialization);
   
   // Initialize visualization

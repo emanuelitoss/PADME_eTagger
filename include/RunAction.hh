@@ -51,7 +51,7 @@ class RunAction : public G4UserRunAction
 
   public:
 
-    RunAction();
+    RunAction(double X, double Y);
     virtual ~RunAction();
 
     virtual G4Run* GenerateRun();
@@ -67,6 +67,8 @@ class RunAction : public G4UserRunAction
     G4int detectedParticles;
     G4Accumulable<G4double> fEdep;
     G4Accumulable<G4double> fEdep2;
+    G4double fPercentX = 0;
+    G4double fPercentY = 0;
 
 };
 
