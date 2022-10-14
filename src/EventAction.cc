@@ -77,12 +77,7 @@ void EventAction::EndOfEventAction(const G4Event* event){
     runData->FIllFirstTimes(i, min_times[i]);
   }
 
-  if ( 1 ){
-        runData->FillPerEvent();
-
-    // adding a particle
-    fRunAction->addDetectedParticle();
-  }
+  runData->FillPerEvent();
 
 }
 

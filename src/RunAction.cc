@@ -133,15 +133,12 @@ void RunAction::BeginOfRunAction(const G4Run* run)
 
   // Open an output file
   // create the right string
-  G4String fileName = "../data_eTag/data_eTag-30.root";
+  G4String fileName = "../data_eTag/data_eTag.root";
   analysisManager->OpenFile(fileName);
   
   // reset accumulables to their initial values
   G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
   accumulableManager->Reset();
-
-  // reset number of detected particles
-  detectedParticles = 0;
 
 }
 
@@ -220,10 +217,6 @@ void RunAction::EndOfRunAction(const G4Run* run){
       << G4BestUnit(analysisManager->GetH1(0)->rms(),  "Energy") << G4endl;
 
   }
-
-  // number od detected events
-  if(!IsMaster())
-    std::cout << OBOLDWHITE << "Number of detected events: " << detectedParticles << ORESET << std::endl;
 
   // save histograms & ntuple
   analysisManager->Write();
