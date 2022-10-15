@@ -6,6 +6,8 @@
 #include <string>
 
 #include "libraries/arrival_times.cc"
+#include "libraries/fit_plot_lines.cc"
+#include "libraries/infos.h"
 
 // ROOT header files
 #include "TFile.h"
@@ -16,17 +18,8 @@
 #include "TLegend.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
-
-#define OPEN_OUTPUT 0
-#define CLOSE_OUTPUT 1
-#define SINGLE_OUTPUT 2
-#define ADD_OUTPUT 3
-
-#define HALF_LEN_X 300 // [mm]
-#define HALF_LEN_Y 22.5 // [mm]
-
-void PrintFitResults(std::vector <std::vector <double> >* means, std::vector <std::vector <double> >* stdDevs, char** files);
-void PlotFitResults(std::vector <std::vector <double> >* means, std::vector <std::vector <double> >* stdDevs, std::vector <double> positions_x);
+#include "TF1.h"
+#include "TObjString.h"
 
 int main(int argc, char** argv){
 
@@ -58,78 +51,11 @@ int main(int argc, char** argv){
         }
     }
 
-    PrintFitResults(means, stdDevs, argv);
     PlotFitResults(means, stdDevs, positions_x);
+    PrintFitResults(means, stdDevs, argv);
+
+    delete stdDevs;
+    delete means;
 
     return EXIT_SUCCESS;
-}
-
-void PrintFitResults(std::vector <std::vector <Double_t> >* means, std::vector <std::vector <Double_t> >* stdDevs, char** files){
-
-    std::cout << OBOLDYELLOW << "Statistical results of initial times:" << ORESET << std::endl;
-    
-    // loop over the entries (one per file)
-    for(int entry = 0; entry < (*means)[0].size(); ++entry)
-    {
-        std::cout << "Result of the file " << files[entry+1] << std::endl;
-        
-        for(int channel = 0; channel < numberOfChannels; ++channel)
-        {
-            std::cout << "\tSiPM # [" << channel+1 << "]\t"
-                << "mean: " << (*means)[channel][entry]
-                << "\tstd deviation: " << (*stdDevs)[channel][entry] << std::endl;
-        }
-
-        std::cout << std::endl;
-    }
-}
-
-void PlotFitResults(std::vector <std::vector <double> >* means, std::vector <std::vector <double> >* stdDevs, std::vector <double> positions_x){
-
-    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3800, 3600);
-    canva->Divide(2,2);
-    const int color[8] = {kBlue+3, kBlue+3, kBlue+3, kBlue+3, kOrange+9, kOrange+9, kOrange+9, kOrange+9};
-
-    auto graph = new TGraphErrors();
-
-    int noOfPoints = positions_x.size();
-    double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
-
-    for(int channel = 0; channel < numberOfChannels; ++channel)
-    {
-        canva->cd((channel%4)+1);
-
-        for(int entry = 0; entry < noOfPoints; ++entry)
-        {
-            x[entry] = positions_x[entry];
-            y[entry] = (*means)[channel][entry];
-            dx[entry] = 0;
-            dy[entry] = (*stdDevs)[channel][entry];
-        }
-
-        graph = new TGraphErrors(noOfPoints, x, y, dx, dy);
-        std::string title = "Beam position (x,0) vs time of first detected #gamma. SiPM #" + std::to_string(channel+1);
-        TString Ttitle = title;
-        graph->SetTitle(Ttitle);
-        graph->SetMarkerStyle(20);
-        graph->SetMarkerColor(kBlack);
-        graph->SetMarkerSize(3.);
-        graph->GetXaxis()->CenterTitle();
-        graph->GetXaxis()->SetTitle("position x [mm]");
-        graph->GetYaxis()->SetTitle("Time [ns]");
-        graph->SetLineColor(color[channel]);
-        graph->Draw("AL*");
-
-        
-        canva->Update();
-
-        if (channel == (int)numberOfChannels/2 - 1)
-        {
-            canva->Print("images/fit_line.pdf(","pdf");
-            canva->Clear();
-            canva->Divide(2,2);
-        } else if (channel == numberOfChannels-1) canva->Print("images/fit_line.pdf)","pdf");
-
-    }
-
 }

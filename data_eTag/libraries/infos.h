@@ -1,11 +1,22 @@
 #include <iostream>
-using std::cout;
-using std::endl;
+#include <cmath>
+#include <vector>
+#include <iomanip>
+#include <fstream>
+#include <string>
 
-#ifndef libraryPrint_h
-#define libraryPrint_h
+#ifndef infos_h
+#define infos_h
 
-// output colors
+#define OPEN_OUTPUT 0
+#define CLOSE_OUTPUT 1
+#define SINGLE_OUTPUT 2
+#define ADD_OUTPUT 3
+
+#define numberOfChannels 8
+#define HALF_LEN_X 300 // [mm]
+#define HALF_LEN_Y 22.5 // [mm]
+
 #define ORESET       "\033[0m"
 #define OBOLDRED     "\033[1m\033[31m"      /* Bold Red */
 #define OBOLDGREEN   "\033[1m\033[32m"      /* Bold Green */

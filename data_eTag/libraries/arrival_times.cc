@@ -16,10 +16,9 @@ using std::endl;
 #include "TGraph.h"
 #include "TStyle.h"
 
-#include "libraryPrint.h"
+#include "infos.h"
 
 // settings
-#define numberOfChannels 8
 #define nbins 60
 #define max_time 4. //[ns]
 

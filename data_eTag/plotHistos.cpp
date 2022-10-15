@@ -1,12 +1,5 @@
-#include <iostream>
-#include <cmath>
-#include <vector>
-#include <iomanip>
-#include <fstream>
-using std::cout;
-using std::endl;
-
 #include "libraries/plot_histos.cc"
+#include "libraries/infos.h"
 
 // ROOT header files
 #include "TFile.h"
@@ -16,11 +9,6 @@ using std::endl;
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TGraph.h"
-
-#define OPEN_OUTPUT 0
-#define CLOSE_OUTPUT 1
-#define SINGLE_OUTPUT 2
-#define ADD_OUTPUT 3
 
 int main(int argc, char** argv){
 

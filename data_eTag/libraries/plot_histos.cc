@@ -7,7 +7,7 @@
 using std::cout;
 using std::endl;
 
-#include "libraryPrint.h"
+#include "infos.h"
 
 // ROOT header files
 #include "TFile.h"
@@ -19,7 +19,6 @@ using std::endl;
 #include "TGraph.h"
 
 // settings
-#define numberOfChannels 8
 #define nbins 50
 #define max_time 30. //[ns]
 
@@ -78,6 +77,7 @@ void print_histos(char * fileName, int openCloseFile){
   /************ SUPERIMPOSED PLOT ************/
   
   TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3200, 3600);
+  canva->SetGrid();
   const int color[8] = {kRed+2, kRed+2, kRed+2, kRed+2, kTeal+3, kTeal+3, kTeal+3, kTeal+3};
   const int colFill[8] = {kRed-3, kRed-3, kRed-3, kRed-3, kTeal+5, kTeal+5, kTeal+5, kTeal+5};
   
@@ -146,5 +146,7 @@ void print_histos(char * fileName, int openCloseFile){
 
   delete legend;
   delete canva;
+  delete reader;
+  delete myFile;
 
 }
