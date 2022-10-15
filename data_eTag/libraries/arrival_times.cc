@@ -15,12 +15,13 @@ using std::endl;
 #include "TLegend.h"
 #include "TGraph.h"
 #include "TStyle.h"
+#include "TF1.h"
 
 #include "infos.h"
 
 // settings
-#define nbins 60
-#define max_time 4. //[ns]
+#define nbins 30
+#define max_time 3.5 //[ns]
 
 void print_arrivalTimes(char * fileName, int openCloseFile, std::vector <std::vector <Double_t> >* means, std::vector <std::vector <Double_t> >* stdDevs){
 
@@ -75,10 +76,10 @@ void print_arrivalTimes(char * fileName, int openCloseFile, std::vector <std::ve
   /********** PLOT HISTOGRAM OF EACH SiPM **********/
 
   TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3200, 3800);
+  TF1* gauss_fit = new TF1();
   const int color[8] = {kBlue+3, kBlue+3, kBlue+3, kBlue+3, kOrange+9, kOrange+9, kOrange+9, kOrange+9};
 
   canva->Divide(2,2);
-  canva->SetTitle("mio");
 
   for (int channel = 0; channel < numberOfChannels; channel++){
 
@@ -92,7 +93,16 @@ void print_arrivalTimes(char * fileName, int openCloseFile, std::vector <std::ve
     histograms[channel].Draw("SAME E1");
     histograms[channel].GetXaxis()->SetTitle("Time [ns]");
     histograms[channel].GetYaxis()->SetTitle("Number of events");
-    histograms[channel].SetLineColor(color[channel]);
+    histograms[channel].SetLineColor(kBlack);
+
+    gauss_fit = new TF1("fitting a line", "gaus", -HALF_LEN_X, HALF_LEN_X);
+    histograms[channel].Fit(gauss_fit, "0", "0");
+    gauss_fit->SetLineColor(color[channel]);
+    gauss_fit->SetLineWidth(1);
+    gauss_fit->SetFillStyle(3002);
+    gauss_fit->SetFillColorAlpha(color[channel],0.5);
+    gauss_fit->Draw("SAME C");
+
 
     if(channel == (int)(numberOfChannels/2 -1))
     {
@@ -112,6 +122,7 @@ void print_arrivalTimes(char * fileName, int openCloseFile, std::vector <std::ve
 
   myFile->Close();
 
+  delete gauss_fit;
   delete canva;
   delete myFile;
 
