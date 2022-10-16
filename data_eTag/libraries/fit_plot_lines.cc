@@ -50,9 +50,10 @@ void PlotFitResults(std::vector <std::vector <double> >* means, std::vector <std
         // markers
         graph->SetMarkerStyle(kCircle);
         graph->SetMarkerColor(kBlack);
-        graph->SetMarkerSize(3.);
+        graph->SetMarkerSize(2.);
 
-        graph->Draw("AP");    
+        graph->Draw("AP");
+        gStyle->SetEndErrorSize(8);
 
         // linear fit
         line_fit = new TF1("fitting a line", "pol1", -HALF_LEN_X, HALF_LEN_X);

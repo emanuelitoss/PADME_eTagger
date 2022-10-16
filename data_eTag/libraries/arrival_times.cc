@@ -95,6 +95,8 @@ void print_arrivalTimes(char * fileName, int openCloseFile, std::vector <std::ve
     histograms[channel].GetYaxis()->SetTitle("Number of events");
     histograms[channel].SetLineColor(kBlack);
 
+    gStyle->SetEndErrorSize(8); //4 is the number of pixels
+
     gauss_fit = new TF1("fitting a line", "gaus", -HALF_LEN_X, HALF_LEN_X);
     histograms[channel].Fit(gauss_fit, "0", "0");
     gauss_fit->SetLineColor(color[channel]);

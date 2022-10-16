@@ -17,9 +17,10 @@ using std::endl;
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TGraph.h"
+#include "TStyle.h"
 
 // settings
-#define nbins 50
+#define nbins 60
 #define max_time 30. //[ns]
 
 void print_histos(char * fileName, int openCloseFile){
@@ -78,8 +79,9 @@ void print_histos(char * fileName, int openCloseFile){
   
   TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3200, 3600);
   canva->SetGrid();
-  const int color[8] = {kRed+2, kRed+2, kRed+2, kRed+2, kTeal+3, kTeal+3, kTeal+3, kTeal+3};
-  const int colFill[8] = {kRed-3, kRed-3, kRed-3, kRed-3, kTeal+5, kTeal+5, kTeal+5, kTeal+5};
+  const int color[8] = {kRed+2, kRed+2, kRed+2, kRed+2, kCyan+3, kCyan+3, kCyan+3, kCyan+3};
+  const int colorShades[8] = {kRed+3, kRed+2, kRed+1, kRed, kCyan+1, kCyan+2, kCyan+3, kCyan+4};
+  const int colFill[8] = {kRed-3, kRed-3, kRed-3, kRed-3, kCyan-6, kCyan-6, kCyan-6, kCyan-6};
   
   histograms[0].GetXaxis()->SetTitle("Time [ns]");
   histograms[0].GetYaxis()->SetTitle("Number of events");
@@ -90,7 +92,7 @@ void print_histos(char * fileName, int openCloseFile){
 
     histograms[channel].GetYaxis()->SetRangeUser(0.,max_count*1.05);
     histograms[channel].Draw("C SAME");
-    histograms[channel].SetLineColor(color[channel]);
+    histograms[channel].SetLineColor(colorShades[channel]);
     
     std::string histoTitleS = "noOfPhotons[" + std::to_string(channel+1) + "]";
     const char* histoTitle = histoTitleS.c_str();
@@ -113,11 +115,14 @@ void print_histos(char * fileName, int openCloseFile){
   for (int channel = 0; channel < 4; channel++)
   {
     canva->cd(channel+1);
-    histograms[channel].Draw("SAMES E1 C");
     histograms[channel].GetXaxis()->SetTitle("Time [ns]");
     histograms[channel].GetYaxis()->SetTitle("Number of events");
-    histograms[channel].SetFillColor(colFill[channel]);
-    histograms[channel].SetLineColor(color[channel]);
+    histograms[channel].SetLineColor(kBlack);
+    gStyle->SetEndErrorSize(8);
+    histograms[channel].Draw("E1");
+    histograms[channel].SetFillColorAlpha(colFill[channel], 0.3);
+    histograms[channel].SetFillStyle(3002);
+    histograms[channel].Draw("SAME");
     canva->Update();
   }
 
@@ -130,10 +135,14 @@ void print_histos(char * fileName, int openCloseFile){
   for (int channel = 0; channel < 4; channel++)
   {
     canva->cd(channel+1);
-    histograms[channel+4].Draw("SAMES E1 C");
     histograms[channel+4].GetXaxis()->SetTitle("Time [ns]");
     histograms[channel+4].GetYaxis()->SetTitle("Number of events");
-    histograms[channel+4].SetLineColor(color[channel+4]);
+    histograms[channel+4].SetLineColor(kBlack);
+    gStyle->SetEndErrorSize(8);
+    histograms[channel+4].Draw("E1");
+    histograms[channel+4].SetFillColorAlpha(colFill[channel+4], 0.3);
+    histograms[channel+4].SetFillStyle(3002);
+    histograms[channel+4].Draw("SAME");
     canva->Update();
   }
 
