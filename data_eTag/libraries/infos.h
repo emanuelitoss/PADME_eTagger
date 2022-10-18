@@ -25,7 +25,6 @@
 #define OBOLDWHITE   "\033[1m\033[37m"      /* Bold White */
 #define OBOLDYELLOW  "\033[1m\033[33m"      /* Bold Yellow */
 
-
 void PrintColor(std::string message, std::string color){
   std::cout << color << message << ORESET << std::endl;
 }

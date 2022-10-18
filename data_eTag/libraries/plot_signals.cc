@@ -23,7 +23,7 @@ using std::endl;
 #define nbins 60
 #define max_time 30. //[ns]
 
-void print_histos(char * fileName, int openCloseFile){
+void print_signals(char * fileName, int openCloseFile){
 
   // open a new file
   TFile* myFile = TFile::Open(fileName);

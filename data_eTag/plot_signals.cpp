@@ -1,4 +1,4 @@
-#include "libraries/plot_histos.cc"
+#include "libraries/plot_signals.cc"
 #include "libraries/infos.h"
 
 // ROOT header files
@@ -14,7 +14,7 @@ int main(int argc, char** argv){
 
     char* fileName;
 
-    if(argc == 2) print_histos(argv[1], SINGLE_OUTPUT);
+    if(argc == 2) print_signals(argv[1], SINGLE_OUTPUT);
     else
     {
 
@@ -23,9 +23,9 @@ int main(int argc, char** argv){
 
         fileName = argv[file_counter];
 
-        if (file_counter == 1) print_histos(fileName, OPEN_OUTPUT);
-        else if (file_counter == argc-1) print_histos(fileName, CLOSE_OUTPUT);
-        else print_histos(fileName, ADD_OUTPUT);
+        if (file_counter == 1) print_signals(fileName, OPEN_OUTPUT);
+        else if (file_counter == argc-1) print_signals(fileName, CLOSE_OUTPUT);
+        else print_signals(fileName, ADD_OUTPUT);
 
         }
     }
