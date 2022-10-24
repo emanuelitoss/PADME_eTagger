@@ -1,12 +1,3 @@
-#include <iostream>
-#include <cmath>
-#include <vector>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
-using std::cout;
-using std::endl;
-
 #include "infos.h"
 
 // ROOT header files

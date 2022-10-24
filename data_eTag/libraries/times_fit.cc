@@ -89,70 +89,10 @@ void PlotFitResults(std::vector <std::vector <double> >* means, std::vector <std
 
 }
 
-void PrintFitResults(std::vector <std::vector <Double_t> >* means, std::vector <std::vector <Double_t> >* stdDevs, char** files){
-
-    /****** 8 SIPMS ******/
-
-    PrintColor("Statistical results of initial times:", OBOLDYELLOW);
-    
-    // loop over the entries (one per file)
-    for(int entry = 0; entry < (*means)[0].size(); ++entry)
-    {
-        std::cout << "Result of the file " << files[entry+1] << std::endl;
-        
-        for(int channel = 0; channel < numberOfChannels; ++channel)
-        {
-            std::cout << "\tSiPM # [" << channel+1 << "]\t"
-                << "mean: " << (*means)[channel][entry]
-                << "\tstd deviation: " << (*stdDevs)[channel][entry] << std::endl;
-        }
-
-        std::cout << std::endl;
-    }
-
-    /****** WHOLE SIDE ******/
-
-    PrintColor("Firsts signals of the two sides:", OBOLDYELLOW);
-
-    double_t mean = 0, err = 0;
-
-    for(int entry = 0; entry < (*means)[0].size(); ++entry)
-    {
-        std::cout << "\nResult of the file " << files[entry+1] << std::endl;
-
-        for(int channel = 0; channel < numberOfChannels/2; ++channel)
-        {
-            if (mean > (*means)[channel][entry] || mean == 0)
-            {
-                mean = (*means)[channel][entry];
-                err = (*stdDevs)[channel][entry];
-            }
-        }
-        std::cout << "\tLeft side\t" << "mean: " << mean
-            << "\tstd deviation: " << err << std::endl;
-
-        mean = 0;
-        err = 0;
-
-        for(int channel = numberOfChannels/2; channel < numberOfChannels; ++channel)
-        {
-            if (mean > (*means)[channel][entry] || mean == 0)
-            {
-                mean = (*means)[channel][entry];
-                err = (*stdDevs)[channel][entry];
-            }
-        }
-        std::cout << "\tRight side\t" << "mean: " << mean
-            << "\tstd deviation: " << err << std::endl;
-    }
-
-}
-
-void PlotFitResults2(std::vector <std::vector <double> >* means, std::vector <std::vector <double> >* stdDevs, std::vector <double> positions_x){
+void PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <std::vector <double> >* stdDevs2, std::vector <double> positions_x){
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3800, 3600);
-    canva->Divide(2,2);
-    const int color[8] = {kGreen+3, kGreen+3, kGreen+3, kGreen+3, kOrange+9, kOrange+9, kOrange+9, kOrange+9};
+    const int color[8] = {kGreen+3, kOrange+9};
 
     auto graph = new TGraphErrors();
     TF1* line_fit = new TF1();
@@ -162,22 +102,23 @@ void PlotFitResults2(std::vector <std::vector <double> >* means, std::vector <st
     double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
 
     // loop over channels
-    for(int channel = 0; channel < numberOfChannels; ++channel)
+    for(int side = 0; side < 2; ++side)
     {
-        canva->cd((channel%4)+1);
 
         // graph with error bars
         for(int entry = 0; entry < noOfPoints; ++entry)
         {
             x[entry] = positions_x[entry];
-            y[entry] = (*means)[channel][entry];
+            y[entry] = (*means2)[side][entry];
             dx[entry] = 0;
-            dy[entry] = (*stdDevs)[channel][entry];
+            dy[entry] = (*stdDevs2)[side][entry];
         }
         graph = new TGraphErrors(noOfPoints, x, y, dx, dy);
 
         // axis
-        std::string title = "Beam position (x,0) vs time of first detected #gamma. SiPM #" + std::to_string(channel+1);
+        std::string title = "";
+        if (side == 0) title = "Beam position (x,0) vs time of first detected #gamma (Right side of SiPMs)";
+        else title = "Beam position (x,0) vs time of first detected #gamma (Left side of SiPMs)";
         TString Ttitle = title;
         graph->SetTitle(Ttitle);
         graph->GetXaxis()->CenterTitle();
@@ -195,13 +136,13 @@ void PlotFitResults2(std::vector <std::vector <double> >* means, std::vector <st
         // linear fit
         line_fit = new TF1("fitting a line", "pol1", -HALF_LEN_X, HALF_LEN_X);
         graph->Fit(line_fit, "0", "0");
-        line_fit->SetLineColor(color[channel]);
+        line_fit->SetLineColor(color[side]);
         line_fit->SetLineWidth(1);
         line_fit->SetFillStyle(3002);
-        line_fit->SetFillColorAlpha(color[channel],0.5);
+        line_fit->SetFillColorAlpha(color[side],0.5);
 
         // legend
-        if(channel < 4) leg = new TLegend(0.4, 0.75, 0.89, 0.89);
+        if(side == 0) leg = new TLegend(0.4, 0.75, 0.89, 0.89);
         else leg = new TLegend(0.12, 0.75, 0.6, 0.89);
         leg->SetHeader("Fit results:","");
         leg->AddEntry("", Form("coefficient: %.4g +/- %.4g",line_fit->GetParameter(1),line_fit->GetParError(1)),"L");
@@ -210,13 +151,10 @@ void PlotFitResults2(std::vector <std::vector <double> >* means, std::vector <st
 
         line_fit->Draw("SAME");
 
-        if (channel == (int)numberOfChannels/2 - 1)
-        {
-            canva->Print("images/line_time_position.pdf(","pdf");
-            canva->Clear();
-            canva->Divide(2,2);
-        } else if (channel == numberOfChannels-1) canva->Print("images/line_time_position.pdf)","pdf");
+        if (side == 0)  canva->Print("images/line_time_position2.pdf(","pdf");
+        else canva->Print("images/line_time_position2.pdf)","pdf");
 
+        canva->Clear();
     }
 
     delete leg;
@@ -224,4 +162,44 @@ void PlotFitResults2(std::vector <std::vector <double> >* means, std::vector <st
     delete graph;
     delete canva;
 
+}
+
+void PrintFitResults(std::vector <std::vector <Double_t> >* means, std::vector <std::vector <Double_t> >* stdDevs, char** files){
+
+    PrintColor("Statistical results of initial times (\"single SiPM\" method):", OBOLDYELLOW);
+    
+    // loop over the entries (one per file)
+    for(int entry = 0; entry < (*means)[0].size(); ++entry)
+    {
+        std::cout << "Result for the file " << files[entry+1] << std::endl;
+        
+        for(int channel = 0; channel < numberOfChannels; ++channel)
+        {
+            std::cout << "\tSiPM # [" << channel+1 << "]\t"
+                << "mean: " << (*means)[channel][entry]
+                << "\tstd deviation: " << (*stdDevs)[channel][entry] << std::endl;
+        }
+
+        std::cout << std::endl;
+    }
+}
+
+void PrintFitResults2(std::vector <std::vector <Double_t> >* means2, std::vector <std::vector <Double_t> >* stdDevs2, char** files){
+
+    PrintColor("Statistical results of initial times (\"sides\" method):", OBOLDYELLOW);
+    
+    // loop over the entries (one per file)
+    for(int entry = 0; entry < (*means2)[0].size(); ++entry)
+    {
+        std::cout << "Result for the file " << files[entry+1] << std::endl;
+        
+        std::cout << "\tRight side\t"
+                << "mean: " << (*means2)[0][entry]
+                << "\tstd deviation: " << (*stdDevs2)[0][entry] << std::endl;
+            std::cout << "\tLeft side\t"
+                << "mean: " << (*means2)[1][entry]
+                << "\tstd deviation: " << (*stdDevs2)[1][entry] << std::endl;
+
+        std::cout << std::endl;
+    }
 }
