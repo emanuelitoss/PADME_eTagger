@@ -47,6 +47,7 @@ int main(int argc, char** argv){
         PrintColor("Error: modify .cpp file or insert more input files",OBOLDRED);
         return EXIT_FAILURE;
     }
+    
     else
     {
 
