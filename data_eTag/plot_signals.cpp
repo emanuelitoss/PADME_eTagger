@@ -1,4 +1,4 @@
-#include "libraries/plot_signals.cc"
+#include "libraries/signals_plot.cc"
 #include "libraries/infos.h"
 
 // ROOT header files
