@@ -49,9 +49,7 @@
 #include "G4LogicalBorderSurface.hh"
 #include "G4LogicalSkinSurface.hh"
 
-const double hPlanck = 4.135655e-15; // [eV*s]
-const double c_light = 3e+8; // [m/s]
-const double meters_to_nanometers = 1e9; // 1 m = 1e9 nm
+G4double conversionFactor = 1239.8*nm*eV;
 
 DetectorConstruction::DetectorConstruction()
 : G4VUserDetectorConstruction(),
@@ -118,6 +116,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
   fTagger = 
     new G4PVPlacement(0, G4ThreeVector(0, 0, 0), Tagger_LogicalVolume, "Tagger PV", logicEnv, false, 0, checkOverlaps);
 
+  OpticalSurfaceTagger_Vacuum(fTagger, physEnvelope);
+
   /*************** SILICON PHOTOMULTIPLIERS ***************/
 
   G4Material* borosilicate = this->CreatePyrex();
@@ -158,6 +158,49 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
 }
 
+G4Material* DetectorConstruction::CreatePlasticMaterial() const {
+  
+  G4NistManager* nist = G4NistManager::Instance();
+
+  G4Material* plastic_basic_material = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
+  G4Material* plastic_material = new G4Material("PlasticScintillator", 1.023*g/cm3, plastic_basic_material);
+
+  // photon energy = hPlanck * (speed of light) / wavelength
+  G4double energies_photons[10] = {conversionFactor/(380.*nm),
+                                   conversionFactor/(390.*nm),
+                                   conversionFactor/(400.*nm),
+                                   conversionFactor/(410.*nm),
+                                   conversionFactor/(420.*nm),
+                                   conversionFactor/(430.*nm),
+                                   conversionFactor/(440.*nm),
+                                   conversionFactor/(460.*nm),
+                                   conversionFactor/(480.*nm),
+                                   conversionFactor/(500.*nm)};
+
+  G4double rindex[10] = {1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58};
+  G4double absorption[10] = {140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm};
+  G4double scintillation_spectrum[10] = {0.04, 0.3, 0.87, 0.92, 0.55, 0.45, 0.34, 0.13, 0.05, 0.01};
+
+  G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
+ 
+  // properties independent of energy
+  G4double light_yield_Anthracene = 17400./MeV;
+  MPT->AddConstProperty("SCINTILLATIONYIELD", 0.68*light_yield_Anthracene);
+  MPT->AddConstProperty("FASTTIMECONSTANT", 1.8*ns);
+  MPT->AddConstProperty("RESOLUTIONSCALE", 1.0);
+
+  // properties that depend on energy
+  MPT->AddProperty("RINDEX", energies_photons, rindex, 10)->SetSpline(true);
+  MPT->AddProperty("ABSLENGTH", energies_photons, absorption, 10)->SetSpline(true);
+  MPT->AddProperty("FASTCOMPONENT", energies_photons, scintillation_spectrum, 10)->SetSpline(true);
+
+  plastic_material->SetMaterialPropertiesTable(MPT);
+  plastic_material->GetIonisation()->SetBirksConstant(0.126*mm/MeV);
+
+  return plastic_material;
+
+}
+
 G4Material* DetectorConstruction::CreateLowVacuumAir() const {
 
   G4NistManager* nist = G4NistManager::Instance();
@@ -165,14 +208,14 @@ G4Material* DetectorConstruction::CreateLowVacuumAir() const {
 
   double p_atm = 1.013, p_vacuum = 0.001; // pressure [bar]
   G4double density_atm = 1.204*kg/m3;
-  G4double density_vacuum = density_atm*p_vacuum/p_atm;
+  G4double density_vacuum = density_atm*p_vacuum/p_atm; // scaling the desity according to ideal gas law
 
   G4Material* vacuum_air = new G4Material("Low Vacuum Air", density_vacuum, basic_air);
 
   // photon energy = hPlanck * (speed of light) / wavelength
-  G4double photonenergy[3] = {hPlanck*c_light*meters_to_nanometers/380.*eV,
-                            hPlanck*c_light*meters_to_nanometers/440.*eV, 
-                            hPlanck*c_light*meters_to_nanometers/500.*eV};
+  G4double photonenergy[3] = {conversionFactor/(380.*nm),
+                              conversionFactor/(440.*nm), 
+                              conversionFactor/(500.*nm)};
   G4double rindex[3] = {1.000293, 1.000293, 1.000293};
 
   G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
@@ -184,48 +227,6 @@ G4Material* DetectorConstruction::CreateLowVacuumAir() const {
 
 }
 
-G4Material* DetectorConstruction::CreatePlasticMaterial() const {
-  
-  G4NistManager* nist = G4NistManager::Instance();
-
-  G4Material* plastic_basic_material = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
-  G4Material* plastic_material = new G4Material("PlasticScintillator", 1.023*g/cm3, plastic_basic_material);
-
-  // photon energy = hPlanck * (speed of light) / wavelength
-  G4double energies_photons[10] = {hPlanck*c_light*meters_to_nanometers/380.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/390.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/400.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/410.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/420.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/430.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/440.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/460.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/480.*eV,
-                                    hPlanck*c_light*meters_to_nanometers/500.*eV};
-
-  G4double rindex[10] = {1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58};
-  G4double absorption[10] = {140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm, 140.*cm};
-  G4double scintillation_spectrum[10] = {0.04, 0.3, 0.87, 0.92, 0.55, 0.45, 0.34, 0.13, 0.05, 0.01};
-
-  G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
- 
-  // properties independent of energy
-  MPT->AddConstProperty("FASTTIMECONSTANT", 1.8*ns);
-  MPT->AddConstProperty("RESOLUTIONSCALE", 1.0);
-  G4double light_yield_Anthracene = 17400./MeV;
-  MPT->AddConstProperty("SCINTILLATIONYIELD", 0.68*light_yield_Anthracene);
-
-  // properties that depend on energy
-  MPT->AddProperty("RINDEX", energies_photons, rindex, 10)->SetSpline(true);
-  MPT->AddProperty("ABSLENGTH", energies_photons, absorption, 10)->SetSpline(true);
-  MPT->AddProperty("FASTCOMPONENT", energies_photons, scintillation_spectrum, 10)->SetSpline(true);
-
-  plastic_material->SetMaterialPropertiesTable(MPT);
-  plastic_material->GetIonisation()->SetBirksConstant(0.126*mm/MeV);
-
-  return plastic_material;
-}
-
 G4Material* DetectorConstruction::CreatePyrex() const {
   
   G4NistManager* nist = G4NistManager::Instance();
@@ -234,9 +235,9 @@ G4Material* DetectorConstruction::CreatePyrex() const {
   G4Material* pyrex = new G4Material("Borosilicate_Glass", 2.23*g/cm3, pyrex_basic);
   
   // photon energy = hPlanck * (speed of light) / wavelength
-  G4double photonenergy[3] = {hPlanck*c_light*meters_to_nanometers/320.*eV,
-                              hPlanck*c_light*meters_to_nanometers/400.*eV,  
-                              hPlanck*c_light*meters_to_nanometers/480.*eV};
+  G4double photonenergy[3] = {conversionFactor/(320.*nm),
+                              conversionFactor/(400.*nm),  
+                              conversionFactor/(480.*nm)};
                             
   G4double rindex[3] = {1.471, 	1.471, 	1.471};
 
@@ -252,33 +253,78 @@ G4Material* DetectorConstruction::CreatePyrex() const {
 void DetectorConstruction::OpticalSurfaceTagger_SiPM(G4VPhysicalVolume* Tagger_PV, G4VPhysicalVolume* TheOtherPV) const {
 
   G4OpticalSurface* opPlasticSurface = new G4OpticalSurface("Plastic scintillator surface");
+  opPlasticSurface->SetModel(unified);
   opPlasticSurface->SetType(dielectric_dielectric);
-  opPlasticSurface->SetFinish(PolishedESRGrease_LUT);
-  opPlasticSurface->SetModel(DAVIS);
+  opPlasticSurface->SetFinish(polished);
 
   G4LogicalBorderSurface* LogicalPlasticSurface = new G4LogicalBorderSurface(
     "Plastic Surface", Tagger_PV, TheOtherPV, opPlasticSurface);
   
-  G4OpticalSurface* opticalSurface = dynamic_cast<G4OpticalSurface*>(
-    LogicalPlasticSurface->GetSurface(Tagger_PV, TheOtherPV)->GetSurfaceProperty());
-
-  // VEDI ANCHE G4LogicalSkinSurface QUI: 
-  // https://geant4-userdoc.web.cern.ch/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/physicsProcess.html#davis-look-up-tables-lutdavis
-
-  if(opticalSurface) opticalSurface->DumpInfo();
-
-  // Photon energy = hPlanck * (speed of light) / wavelength
-  G4double energies_photons[10] = { 2.*eV, 2.5*eV, 3.*eV, 3.5*eV, 4.*eV,
-                                    4.5*eV, 4.75*eV, 4.9*eV, 5.*eV, 5.4*eV };
-  G4double reflectivity[10] = { 0.125, 0.13, 0.14, 0.155, 0.175,
-                                0.25, 0.29, 0.243, 0.21, 0.22 };
+  // // To re-get this surface use the following:
+  // G4OpticalSurface* opticalSurface = dynamic_cast<G4OpticalSurface*>(
+  //  LogicalPlasticSurface->GetSurface(Tagger_PV, TheOtherPV)->GetSurfaceProperty());
 
   G4MaterialPropertiesTable* SurfaceTable = new G4MaterialPropertiesTable();
 
-  SurfaceTable->AddProperty("REFLECTIVITY", energies_photons, reflectivity, 10)->SetSpline(true);
+  // SiPM model Hamamatsu 13360-3050PE: see datasheet
+  G4double photonenergy[10] = {conversionFactor/(320.*nm),
+                               conversionFactor/(350.*nm),
+                               conversionFactor/(400.*nm),
+                               conversionFactor/(450.*nm),
+                               conversionFactor/(500.*nm),
+                               conversionFactor/(550.*nm),
+                               conversionFactor/(600.*nm),
+                               conversionFactor/(650.*nm),
+                               conversionFactor/(700.*nm),
+                               conversionFactor/(800.*nm)};
+
+  std::cout << ORED << G4BestUnit(photonenergy[8], "Energy") << ORESET << std::endl;
+
+  G4double transmissiom[10] = {0.025, 0.18, 0.35, 0.4, 0.38, 0.33, 0.27, 0.20, 0.15, 0.08};
+  SurfaceTable->AddProperty("TRANSMISSION", photonenergy, transmissiom, 10)->SetSpline(true);
   
-  SurfaceTable->DumpTable();
+  // if(opticalSurface) opticalSurface->DumpInfo();
+  // SurfaceTable->DumpTable();
   opPlasticSurface->SetMaterialPropertiesTable(SurfaceTable);
 
 }
 
+void DetectorConstruction::OpticalSurfaceTagger_Vacuum(G4VPhysicalVolume* Tagger_PV, G4VPhysicalVolume* Vacuum_PV) const {
+
+  G4OpticalSurface* opPlasticSurface = new G4OpticalSurface("Scintillator-Vacuum(Air) surface");
+
+  G4LogicalBorderSurface* LogicalPlasticSurface = new G4LogicalBorderSurface(
+    "Plastic Surface", Tagger_PV, Vacuum_PV, opPlasticSurface);
+  
+  G4double sigma_alpha = 0.1;
+  opPlasticSurface->SetModel(unified);
+  opPlasticSurface->SetType(dielectric_dielectric);
+  opPlasticSurface->SetFinish(groundfrontpainted);
+  opPlasticSurface->SetSigmaAlpha(sigma_alpha);
+
+  // // To re-get this surface use the following:
+  // G4OpticalSurface* opticalSurface = dynamic_cast<G4OpticalSurface*>(
+  //   LogicalPlasticSurface->GetSurface(Tagger_PV, Vacuum_PV)->GetSurfaceProperty());
+
+  G4MaterialPropertiesTable* SurfaceTable = new G4MaterialPropertiesTable();
+
+  // photon energy = hPlanck * (speed of light) / wavelength
+  G4double energies_photons[10] = {conversionFactor/(380.*nm),
+                                   conversionFactor/(390.*nm),
+                                   conversionFactor/(400.*nm),
+                                   conversionFactor/(410.*nm),
+                                   conversionFactor/(420.*nm),
+                                   conversionFactor/(430.*nm),
+                                   conversionFactor/(440.*nm),
+                                   conversionFactor/(460.*nm),
+                                   conversionFactor/(480.*nm),
+                                   conversionFactor/(500.*nm)};
+
+  G4double reflectivity[10] = {0.68, 0.84, 0.9, 0.93, 0.95, 0.955, 0.96, 0.96, 0.96, 0.96};
+  SurfaceTable->AddProperty("REFLECTIVITY", energies_photons, reflectivity, 10)->SetSpline(true);
+
+  // if(opticalSurface) opticalSurface->DumpInfo();
+  // SurfaceTable->DumpTable();
+  opPlasticSurface->SetMaterialPropertiesTable(SurfaceTable);
+
+}

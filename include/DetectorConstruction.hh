@@ -73,6 +73,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4Material* CreateLowVacuumAir() const;
 
     void OpticalSurfaceTagger_SiPM(G4VPhysicalVolume*, G4VPhysicalVolume*) const;
+    void OpticalSurfaceTagger_Vacuum(G4VPhysicalVolume*, G4VPhysicalVolume*) const;
 
 };
 
