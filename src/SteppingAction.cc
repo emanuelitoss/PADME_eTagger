@@ -50,6 +50,9 @@
 
 #include <vector>
 
+#include "Randomize.hh"
+#define NOISE_STD_DEV 0.6 //[ns]
+
 SteppingAction::SteppingAction(EventAction* eventAction, const DetectorConstruction* detConstruction)
 : G4UserSteppingAction(),
   fEventAction(eventAction),
@@ -77,13 +80,21 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
   G4bool IsOpticalPhoton = ( step->GetTrack()->GetParticleDefinition() == G4OpticalPhoton::OpticalPhotonDefinition() );
   G4bool IsPhotDetectedInSiPM;
 
+  // I add a random noise extrapolated from a Gaussian with 0.6 ns std deviation
+  CLHEP::RandGauss noise_generator(new CLHEP::MTwistEngine(), 0*ns, NOISE_STD_DEV*ns);
+
   if(IsOpticalPhoton){
     for(int id = 0; id < 8; ++id){
 
       IsPhotDetectedInSiPM = (PreStepPV == fDetConstruction->GetScintillator()) && (PostStepPV == fDetConstruction->GetSiPMs()[id]);
       if (IsPhotDetectedInSiPM)
       {
+
+        // get global time
         G4double G_arrival_time = step->GetTrack()->GetGlobalTime();
+
+        // adding noise
+        G_arrival_time += noise_generator.fire();
 
         runData->FillTimePerPhoton(id, G_arrival_time);
         step->GetTrack()->SetTrackStatus(fStopAndKill);
