@@ -43,7 +43,7 @@
 
 #include <time.h>
 
-#define PERCENT_X -0.3
+#define PERCENT_X 0.
 #define PERCENT_Y 0.
 
 int main(int argc,char** argv)
