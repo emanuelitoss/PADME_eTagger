@@ -5,4 +5,4 @@
 #
 #/run/numberOfThreads 2
 #
-/run/beamOn 10
+/run/beamOn 200
