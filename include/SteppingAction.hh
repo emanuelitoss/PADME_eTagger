@@ -50,6 +50,7 @@ class SteppingAction : public G4UserSteppingAction{
 
     // method from the base class
     virtual void UserSteppingAction(const G4Step*);
+    G4bool ApplyDetectionEfficiency(G4double photon_energy);
 
   private:
     EventAction* fEventAction;
