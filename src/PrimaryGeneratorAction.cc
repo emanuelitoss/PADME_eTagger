@@ -45,41 +45,28 @@ using namespace std;
 #include "Randomize.hh"
 #include "g4root.hh"
 #include "G4UnitsTable.hh"
+#include "G4GenericMessenger.hh"
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
 : G4VUserPrimaryGeneratorAction(),
-  fParticleGun(nullptr), 
+  fParticleGun(nullptr),
   fEnvelope(nullptr),
-  fTagger(nullptr)
+  fTagger(nullptr),
+  fMessenger(nullptr)
 {
- 
   G4int n_particle = 1;
   fParticleGun  = new G4ParticleGun(n_particle);
 
-}
-
-PrimaryGeneratorAction::PrimaryGeneratorAction(G4double x, G4double y)
-: G4VUserPrimaryGeneratorAction(),
-  fParticleGun(nullptr), 
-  fEnvelope(nullptr),
-  fTagger(nullptr)
-{
- 
-  G4int n_particle = 1;
-  fParticleGun  = new G4ParticleGun(n_particle);
-  fInitial_X = x;
-  fInitial_Y = y;
-
+  DefineCommands();
 }
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction(){
   delete fParticleGun;
+  // delete fMessenger;
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  //this function is called at the begining of ecah event
-
   // In order to avoid dependence of PrimaryGeneratorAction
   // on DetectorConstruction class we get Envelope volume
   // from G4LogicalVolumeStore.
@@ -96,9 +83,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   ParticleKinematicsGenerator();
 
   fParticleGun->GeneratePrimaryVertex(anEvent);
+
 }
 
-// this function sets kinematic and specifics of the incoming ray
 void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
 
   // default particle kinematic
@@ -115,6 +102,36 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
  
   // set position of the particle
-  fParticleGun->SetParticlePosition(G4ThreeVector(fInitial_X*max_x, fInitial_Y*max_y, initial_z));
+  fParticleGun->SetParticlePosition(G4ThreeVector(max_x*fInitial_X/100., max_y*fInitial_Y/100., initial_z));
+
+}
+
+void PrimaryGeneratorAction::DefineCommands() {
+  
+  // Define /B5/detector command directory using generic messenger class
+  fMessenger = new G4GenericMessenger(this, "/PadmETag/Generation/", "Primary generator");
+
+  // position X
+  auto& setXcommand
+  = fMessenger->DeclareProperty("SetX",fInitial_X);
+  setXcommand.SetParameterName("percentageX", true);
+  setXcommand.SetRange("percentageX>=-100. && percentageX<100.");
+  setXcommand.SetDefaultValue("0.");
+
+  // position Y
+  auto& setYcommand
+  = fMessenger->DeclareProperty("SetY",fInitial_Y);
+  setYcommand.SetParameterName("percentageY", true);
+  setYcommand.SetRange("percentageY>=-100. && percentageY<100.");
+  setYcommand.SetDefaultValue("0.");
+
+  // positions X and Y
+  auto& setXYcommand
+    = fMessenger->DeclareMethod("SetXY",
+                                &PrimaryGeneratorAction::SetIncomingPositionsXY, 
+                                "Set (X,Y) position of incoming beam");
+  setXYcommand.SetParameterName("position", true);
+  setXYcommand.SetRange("percentageX>=-100. && percentageX<100. && percentageY>=-100. && percentageY<100.");
+  setXYcommand.SetDefaultValue("0., 0.");
 
 }

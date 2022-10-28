@@ -44,29 +44,52 @@ using namespace std;
 class G4ParticleGun;
 class G4Event;
 class G4Sphere;
+class G4GenericMessenger;
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
+
   public:
+
     PrimaryGeneratorAction();
-    PrimaryGeneratorAction(G4double x, G4double y);
     virtual ~PrimaryGeneratorAction();
 
     virtual void GeneratePrimaries(G4Event*);
     
-    // generator of particle kinematic
+    // particle kinematic
     void ParticleKinematicsGenerator();
 
-    // method to access particle gun - getter
+    // getters
     const G4ParticleGun* GetParticleGun() const { return fParticleGun; }
-  
+    G4double GetInitialX() const { return fInitial_X; }
+    G4double GetInitialY() const { return fInitial_Y; }
+
   private:
+
+    void DefineCommands();
+
+    void SetIncomingPositionX(G4double x);
+    void SetIncomingPositionY(G4double y);
+    void SetIncomingPositionsXY(G4double x, G4double y);
+    
     G4ParticleGun* fParticleGun;
+
     G4Box* fEnvelope;
     G4Box* fTagger;
+
+    G4GenericMessenger* fMessenger;
     G4double fInitial_X = 0.;
     G4double fInitial_Y = 0.;
 
 };
+
+inline void PrimaryGeneratorAction::SetIncomingPositionX(G4double x) { fInitial_X = x; }
+ 
+inline void PrimaryGeneratorAction::SetIncomingPositionY(G4double y) { fInitial_Y = y; }
+
+inline void PrimaryGeneratorAction::SetIncomingPositionsXY(G4double x, G4double y){
+  SetIncomingPositionX(x);
+  SetIncomingPositionY(y);
+}
 
 #endif

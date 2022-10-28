@@ -39,21 +39,19 @@
 #include "G4LogicalVolume.hh"
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4GenericMessenger.hh"
 #include "g4root.hh"
 
 #include <string>
 
 
-RunAction::RunAction(double X, double Y)
+RunAction::RunAction()
 : G4UserRunAction(),
   fEdep(0.),
   fEdep2(0.)
 {
-  // set printing event number per each event
-  // G4RunManager::GetRunManager()->SetPrintProgress(1);
 
-  fPercentX = X;
-  fPercentY = Y;
+  DefineCommands();
 
   // Create analysis manager
   // The choice of analysis technology is done via selectin of a namespace
@@ -114,6 +112,7 @@ RunAction::RunAction(double X, double Y)
 RunAction::~RunAction()
 {
   delete G4AnalysisManager::Instance();  
+  delete fMessenger;
 }
 
 G4Run* RunAction::GenerateRun()
@@ -133,8 +132,8 @@ void RunAction::BeginOfRunAction(const G4Run* run)
 
   // Open an output file
   // create the right string
-  G4String fileName = "../data_eTag/data_eTag.root";
-  analysisManager->OpenFile(fileName);
+  G4String OutputCompleteName = G4String("../data_eTag/data_eTag") + OutputFileName + G4String(".root");
+  analysisManager->OpenFile(OutputCompleteName);
   
   // reset accumulables to their initial values
   G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
@@ -221,6 +220,19 @@ void RunAction::EndOfRunAction(const G4Run* run){
   // save histograms & ntuple
   analysisManager->Write();
   analysisManager->CloseFile();
+
+}
+
+void RunAction::DefineCommands() {
+  
+  // Define /B5/detector command directory using generic messenger class
+  fMessenger = new G4GenericMessenger(this, "/PadmETag/OutputFile/", "Output file");
+
+  // position X
+  auto& setFileNameCommand
+  = fMessenger->DeclareProperty("SetName", OutputFileName);
+  setFileNameCommand.SetParameterName("Output File Name", true);
+  setFileNameCommand.SetDefaultValue("");
 
 }
 

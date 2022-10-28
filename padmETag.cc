@@ -43,17 +43,13 @@
 
 #include <time.h>
 
-#define PERCENT_X 0.
-#define PERCENT_Y 0.
-
-int main(int argc,char** argv)
+int main(int argc, char** argv)
 {
 
   // storing runtime of the code:
   clock_t tStart = clock();
 
   // Detect interactive mode (if no arguments) and define UI session
-  //
   G4UIExecutive* ui = 0;
   if ( argc == 1 ) {
     ui = new G4UIExecutive(argc, argv);
@@ -81,7 +77,7 @@ int main(int argc,char** argv)
   runManager->SetUserInitialization(physicsList);
 
   // User action initialization
-  auto actionInitialization = new ActionInitialization(detConstruction, PERCENT_X, PERCENT_Y);
+  auto actionInitialization = new ActionInitialization(detConstruction);
   runManager->SetUserInitialization(actionInitialization);
   
   // Initialize visualization
@@ -101,12 +97,18 @@ int main(int argc,char** argv)
     UImanager->ApplyCommand(command+fileName);
   }
   else{
-    // interactive mode
+    // interactive mode if no macro file is involved
     UImanager->ApplyCommand("/control/execute init_vis.mac");
+    /* vedi esempio B5
+    if (ui->IsGUI()) {
+         UImanager->ApplyCommand("/control/execute gui.mac");
+    }
+    */
     ui->SessionStart();
     delete ui;
   }
 
+  // evaluate running time of the program
   int execution_time_s = round((clock() - tStart)/CLOCKS_PER_SEC);
   int remainder_s = execution_time_s%60;
   int execution_time_min = (int)((execution_time_s-remainder_s)/60);

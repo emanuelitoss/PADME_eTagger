@@ -41,7 +41,6 @@ class ActionInitialization : public G4VUserActionInitialization
   public:
 
     ActionInitialization(DetectorConstruction*);
-    ActionInitialization(DetectorConstruction*, double, double);
     virtual ~ActionInitialization();
 
     virtual void BuildForMaster() const;
@@ -49,8 +48,6 @@ class ActionInitialization : public G4VUserActionInitialization
 
   private:
     DetectorConstruction* fDetConstruction = nullptr;
-    double fpercent_x = 0;
-    double fpercent_y = 0;
     
 };
 

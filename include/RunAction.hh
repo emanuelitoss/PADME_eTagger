@@ -38,6 +38,7 @@ using namespace std;
 #include "globals.hh"
 
 class G4Run;
+class G4GenericMessenger;
 
 /// Run action class
 ///
@@ -51,7 +52,7 @@ class RunAction : public G4UserRunAction
 
   public:
 
-    RunAction(double X, double Y);
+    RunAction();
     virtual ~RunAction();
 
     virtual G4Run* GenerateRun();
@@ -63,10 +64,14 @@ class RunAction : public G4UserRunAction
 
   private:
 
+    void DefineCommands();
+
     G4Accumulable<G4double> fEdep;
     G4Accumulable<G4double> fEdep2;
-    G4double fPercentX = 0;
-    G4double fPercentY = 0;
+
+    G4GenericMessenger* fMessenger;
+
+    G4String OutputFileName = "";
 
 };
 
