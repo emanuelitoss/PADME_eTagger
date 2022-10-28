@@ -7,25 +7,21 @@ Supervisor LNF: Emanuele Leonardi > ************************
 
 ## Description
 
-The electron/positron tagger has the purpose to detect these particles through scintillation mechanism and, using the time differences and distributions of the signals on 8 silicon photomultipliers, reconstruct the incidence position of the incoming particle.
+The electron tagger has the purpose to detect these particles through scintillation mechanism and, through the signal of 8 silicon photomultipliers, reconstructs the incidence position of the incoming particle. The incoming particle could be an electron or a positron.
 
 # Geometry
     
-    (1) The world and the envelope are boxes filled with low vacuum atmospheric air.
-        Some optical parameters as the refractive index are given.
+    (1) The world and the envelope are boxes filled with low vacuum atmospheric air. Some optical parameters as the refractive index are given.
 
-    (2) The main componenti is the Tagger: it is a plastic scintillator by Saint Gobain;
-        its features are given by datasheets and properly implemented. Its surface is entirely polished
-        and it is covered with a high reflective optical paint.
+    (2) The main componenti is the Tagger: a plastic scintillator <Saint Gobain BC-404> its features are given by datasheets and properly implemented. Its surface is entirely polished and it is covered with a high reflective optical paint <Saint Gobain BC-620>.
 
     (3) At the end of the tagger, 8 silicon photomultipliers (SiPM) by Hamamatsu are fixed through optical glue.
-        A SiPM is schematized as a little 3x3 mm^2 layer of pyrex glass. Its purpose is to detect optical photons.
-        Again, optical properties of the Pyrex window are given. Moreover, the quantum efficiency of the SiPM in implemented in detection time in SteppingAction.cc.
+    A SiPM is schematized as a little 3x3 mm^2 layer of pyrex glass. Its purpose is to detect photons in the optical wavelength range. Again, optical properties of the Pyrex window are given. Moreover, the quantum efficiency of the SiPM in implemented in detection time in SteppingAction.cc.
 
 # Particle generation
 
     The simulations generates electrons and/or positrons. The initial energy of an electron is 21. MeV and its direction is 
-    perpendicular to one face of the tagger; the position (x,y) is a free choice of the user.
+    perpendicular to the lergest face of the tagger the one linked to the calorimeter; the position (x,y) is a free choice of the user and is the quantity we want to reconstruct from the signals on the silicon photomultipliers.
 
 # Photon detection strategy
 
