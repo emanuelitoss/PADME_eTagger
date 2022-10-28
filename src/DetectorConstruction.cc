@@ -278,8 +278,6 @@ void DetectorConstruction::OpticalSurfaceTagger_SiPM(G4VPhysicalVolume* Tagger_P
                                conversionFactor/(700.*nm),
                                conversionFactor/(800.*nm)};
 
-  std::cout << ORED << G4BestUnit(photonenergy[8], "Energy") << ORESET << std::endl;
-
   G4double transmissiom[10] = {0.025, 0.18, 0.35, 0.4, 0.38, 0.33, 0.27, 0.20, 0.15, 0.08};
   SurfaceTable->AddProperty("TRANSMISSION", photonenergy, transmissiom, 10)->SetSpline(true);
   
@@ -296,10 +294,10 @@ void DetectorConstruction::OpticalSurfaceTagger_Vacuum(G4VPhysicalVolume* Tagger
   G4LogicalBorderSurface* LogicalPlasticSurface = new G4LogicalBorderSurface(
     "Plastic Surface", Tagger_PV, Vacuum_PV, opPlasticSurface);
   
-  G4double sigma_alpha = 0.1;
+  G4double sigma_alpha = 0.001;
   opPlasticSurface->SetModel(unified);
   opPlasticSurface->SetType(dielectric_dielectric);
-  opPlasticSurface->SetFinish(groundfrontpainted);
+  opPlasticSurface->SetFinish(polishedfrontpainted);
   opPlasticSurface->SetSigmaAlpha(sigma_alpha);
 
   // // To re-get this surface use the following:
@@ -326,5 +324,5 @@ void DetectorConstruction::OpticalSurfaceTagger_Vacuum(G4VPhysicalVolume* Tagger
   // if(opticalSurface) opticalSurface->DumpInfo();
   // SurfaceTable->DumpTable();
   opPlasticSurface->SetMaterialPropertiesTable(SurfaceTable);
-
+  
 }
