@@ -59,6 +59,7 @@ SteppingAction::SteppingAction(EventAction* eventAction, const DetectorConstruct
 : G4UserSteppingAction(),
   fEventAction(eventAction),
   fScoringVolume(nullptr),
+  fnoise_generator(new CLHEP::MTwistEngine(), 0*ns, NOISE_STD_DEV*ns),
   fDetConstruction(detConstruction)
 {}
 
@@ -82,11 +83,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
   G4bool IsOpticalPhoton = ( step->GetTrack()->GetParticleDefinition() == G4OpticalPhoton::OpticalPhotonDefinition() );
   G4bool IsPhotDetectedInSiPM;
 
-  // I add a random noise extrapolated from a Gaussian with 0.6 ns std deviation
-  CLHEP::RandGauss noise_generator(new CLHEP::MTwistEngine(), 0*ns, NOISE_STD_DEV*ns);
-  G4double G_arrival_time = 0.;
-
-  // Photon energy to take into account the detection efficiency of the SiPMs
+  G4double Global_arrival_time = 0.;
   G4double phot_energy = 0.*eV;
 
   if(IsOpticalPhoton){
@@ -95,19 +92,19 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
       phot_energy = step->GetTrack()->GetKineticEnergy();
       IsPhotDetectedInSiPM = (PreStepPV == fDetConstruction->GetScintillator()) && (PostStepPV == fDetConstruction->GetSiPMs()[id]);
       IsPhotDetectedInSiPM = IsPhotDetectedInSiPM && ( ApplyDetectionEfficiency(phot_energy) );
-      
+
       if (IsPhotDetectedInSiPM)
       {
 
         // get global time
-        G_arrival_time = step->GetTrack()->GetGlobalTime();
+        Global_arrival_time = step->GetTrack()->GetGlobalTime();
 
         // adding noise
-        G_arrival_time += noise_generator.fire();
+        Global_arrival_time += fnoise_generator.fire();
 
-        runData->FillTimePerPhoton(id, G_arrival_time);
+        runData->FillTimePerPhoton(id, Global_arrival_time);
         step->GetTrack()->SetTrackStatus(fStopAndKill);
-        fEventAction->SetMinTimeIfLess(id, G_arrival_time);
+        fEventAction->SetMinTimeIfLess(id, Global_arrival_time);
 
       }
     }
@@ -151,16 +148,15 @@ G4bool SteppingAction::ApplyDetectionEfficiency(G4double photon_energy){
   if(wavelength < 300.*nm || wavelength > 900.*nm) detection = 0;
   else{
 
-    idx = (int)((wavelength-300)/25);
+    idx = (int)((wavelength-300*nm)/(25*nm));
 
-    if(wavelength > bin_borders[idx] && wavelength < bin_borders[idx+1]) check_right_bin = 1;
+    if(wavelength >= bin_borders[idx] && wavelength < bin_borders[idx+1]) check_right_bin = 1;
 
     if(G4UniformRand() < efficiencies[idx]) detection = 1;
     else detection = 0;
-    
+
   }
 
-  if (detection && check_right_bin) std::cout << OGREEN << "Daje, fotone rilevato" << ORESET << std::endl;
   return detection && check_right_bin;
 
 }
