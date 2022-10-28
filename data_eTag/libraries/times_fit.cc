@@ -92,7 +92,7 @@ void PlotFitResults(std::vector <std::vector <double> >* means, std::vector <std
 void PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <std::vector <double> >* stdDevs2, std::vector <double> positions_x){
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3800, 3500);
-    const int color[8] = {kGreen+3, kOrange+9};
+    const int color[2] = {kGreen+3, kOrange+9};
 
     auto graph = new TGraphErrors();
     TF1* line_fit = new TF1();

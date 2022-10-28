@@ -8,18 +8,7 @@
 #include "libraries/times_plot.cc"
 #include "libraries/times_fit.cc"
 #include "libraries/infos.h"
-
-// ROOT header files
-#include "TFile.h"
-#include "TTreeReader.h"
-#include "TTreeReaderValue.h"
-#include "TH1F.h"
-#include "TCanvas.h"
-#include "TLegend.h"
-#include "TGraph.h"
-#include "TGraphErrors.h"
-#include "TF1.h"
-#include "TObjString.h"
+#include "libraries/times_scatter.cc"
 
 int main(int argc, char** argv){
 
@@ -41,7 +30,7 @@ int main(int argc, char** argv){
     // positions in x axis for each input file
     std::vector <double> positions_x = {-90, -70., -50., -30., 0., 30., 50., 70., 90.};
     for (auto x = positions_x.begin(); x != positions_x.end(); ++x) *x *= HALF_LEN_X/100.;
-
+    
     if(argc == 2)
     {
         PrintColor("Error: modify .cpp file or insert more input files",OBOLDRED);
@@ -80,6 +69,8 @@ int main(int argc, char** argv){
     PlotFitResults2(means2, stdDevs2, positions_x);
     PrintFitResults(means, stdDevs, argv);
     PrintFitResults2(means2, stdDevs2, argv);
+
+    plotScatter_arrivalTimes(argc, positions_x, argv);
 
     delete stdDevs2;
     delete means2;
