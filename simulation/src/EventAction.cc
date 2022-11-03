@@ -59,6 +59,7 @@ void EventAction::BeginOfEventAction(const G4Event*){
 
   G4double max_t = 2000.*ns;
   min_times = {max_t,max_t,max_t,max_t,max_t,max_t,max_t,max_t};
+  signals_charges = {0.,0.,0.,0.,0.,0.,0.,0.};
 
 }
 
