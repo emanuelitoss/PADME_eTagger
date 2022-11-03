@@ -68,7 +68,7 @@ void EventAction::EndOfEventAction(const G4Event* event){
   fRunAction->AddEdep(fEdep);
 
   auto eventID = event->GetEventID();
-  if (( eventID % 10000 == 0 )) {
+  if (( eventID % 10 == 0 )) {
     G4cout << "-------> End of event: " << eventID << G4endl;
   }
 
