@@ -143,7 +143,7 @@ void RunAction::BeginOfRunAction(const G4Run* run)
 
   // Open an output file
   // create the right string
-  G4String OutputCompleteName = G4String("../data_eTag/data_eTag") + OutputFileName + G4String(".root");
+  G4String OutputCompleteName = G4String("../../data_analysis/data_eTag") + OutputFileName + G4String(".root");
   analysisManager->OpenFile(OutputCompleteName);
   
   // reset accumulables to their initial values
