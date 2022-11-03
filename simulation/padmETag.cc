@@ -35,7 +35,6 @@
 #include "FTFP_BERT.hh"
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
-#include "G4RunManagerFactory.hh"
 #include "G4String.hh"
 #include "G4Types.hh"
 #include "Randomize.hh"
