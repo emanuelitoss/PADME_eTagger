@@ -75,10 +75,10 @@ void PlotFitResults(std::vector <std::vector <double> >* means, std::vector <std
 
         if (channel == (int)numberOfChannels/2 - 1)
         {
-            canva->Print("images/line_time_position.pdf(","pdf");
+            canva->Print("images/t_vs_x_singleSIPM.pdf(","pdf");
             canva->Clear();
             canva->Divide(2,2);
-        } else if (channel == numberOfChannels-1) canva->Print("images/line_time_position.pdf)","pdf");
+        } else if (channel == numberOfChannels-1) canva->Print("images/t_vs_x_singleSIPM.pdf)","pdf");
 
     }
 
@@ -145,7 +145,7 @@ void PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
 
     line_fit->Draw("SAME");
 
-    canva->Print("images/line_time_position2.pdf","pdf");
+    canva->Print("images/t_vs_x.pdf","pdf");
 
     delete leg;
     delete line_fit;

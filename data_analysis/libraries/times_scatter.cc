@@ -11,10 +11,6 @@
 #include "TGraphErrors.h"
 #include "TStyle.h"
 
-// settings
-#define nbins 30
-#define max_time 3.5 //[ns]
-
 void plotScatter_arrivalTimes(int argc, std::vector <double> original_posX, char** argv){
 
     /********** READ FILE AND INITIALIZE READERS **********/

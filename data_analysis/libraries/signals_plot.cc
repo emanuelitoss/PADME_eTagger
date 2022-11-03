@@ -1,18 +1,8 @@
 #include "infos.h"
 
-// ROOT header files
-#include "TFile.h"
-#include "TTreeReader.h"
-#include "TTreeReaderValue.h"
-#include "TH1F.h"
-#include "TCanvas.h"
-#include "TLegend.h"
-#include "TGraph.h"
-#include "TStyle.h"
-
 // settings
-#define nbins 60
-#define max_time 30. //[ns]
+#define nbins 50
+#define max_Time 50. //[ns]
 
 void print_signals(char * fileName, int openCloseFile){
 
@@ -39,7 +29,7 @@ void print_signals(char * fileName, int openCloseFile){
     const char* histoName = histoNameS.c_str();
     std::string histoTitleS = "noOfPhotons[" + ChannelName + "]";
     const char* histoTitle = histoTitleS.c_str();
-    histograms.push_back(TH1F(histoName, histoTitle, nbins, 0, max_time));
+    histograms.push_back(TH1F(histoName, histoTitle, nbins, 0, max_Time));
 
   }
 
@@ -66,7 +56,7 @@ void print_signals(char * fileName, int openCloseFile){
       
   }
   
-  /************ SUPERIMPOSED PLOT ************/
+  /************ SUPERIMPOSED PLOTS ************/
   
   TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3200, 3600);
   canva->SetGrid();

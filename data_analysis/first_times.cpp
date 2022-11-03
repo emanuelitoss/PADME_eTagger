@@ -28,7 +28,7 @@ int main(int argc, char** argv){
     
    
     // positions in x axis for each input file
-    std::vector <double> positions_x = {-90, -70., -50., -30., 0., 30., 50., 70., 90.};
+    std::vector <double> positions_x = {-90, -80., -70., -60., -50., -30., 0., 30., 50., 60., 70., 80., 90.};
     for (auto x = positions_x.begin(); x != positions_x.end(); ++x) *x *= HALF_LEN_X/100.;
     
     if(argc == 2)
@@ -65,12 +65,12 @@ int main(int argc, char** argv){
         }
     }
 
-    PlotFitResults(means, stdDevs, positions_x);
+    //PlotFitResults(means, stdDevs, positions_x);
     PlotFitResults2(means2, stdDevs2, positions_x);
     PrintFitResults(means, stdDevs, argv);
     PrintFitResults2(means2, stdDevs2, argv);
 
-    plotScatter_arrivalTimes(argc, positions_x, argv);
+    //plotScatter_arrivalTimes(argc, positions_x, argv);
 
     delete stdDevs2;
     delete means2;
