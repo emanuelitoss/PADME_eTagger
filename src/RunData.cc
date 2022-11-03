@@ -43,7 +43,7 @@ RunData::RunData()
 RunData::~RunData()
 {}
 
-void RunData::FillPerEvent()
+void RunData::FillPerEvent(std::vector <G4double> charges)
 {
     auto analysisManager = G4AnalysisManager::Instance();
 
@@ -56,6 +56,14 @@ void RunData::FillPerEvent()
         analysisManager->FillNtupleDColumn(0, counter, edep);
     }
     analysisManager->AddNtupleRow(0);
+
+    counter = 3;
+    for (int channel = 0; channel < 8; ++channel)
+    {
+        analysisManager->FillNtupleDColumn(counter, channel, charges[channel]);
+    }
+    analysisManager->AddNtupleRow(counter);
+
 }
 
 void RunData::FillTimePerPhoton(G4int id, G4double time)

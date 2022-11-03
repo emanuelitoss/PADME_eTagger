@@ -45,6 +45,7 @@ EventAction::EventAction(RunAction* runAction)
   fEdep(0.)
 {
   min_times = {0.,0.,0.,0.,0.,0.,0.,0.};
+  signals_charges = {0.,0.,0.,0.,0.,0.,0.,0.};
 }
 
 EventAction::~EventAction(){}
@@ -77,7 +78,7 @@ void EventAction::EndOfEventAction(const G4Event* event){
     runData->FIllFirstTimes(i, min_times[i]);
   }
 
-  runData->FillPerEvent();
+  runData->FillPerEvent(signals_charges);
 
 }
 

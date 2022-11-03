@@ -102,6 +102,17 @@ RunAction::RunAction()
   analysisManager->CreateNtupleDColumn("1stTimeSiPM[8]");
   analysisManager->FinishNtuple();
 
+  analysisManager->CreateNtuple("totalCharges","Tuples total charge for each SiPM for event");
+  analysisManager->CreateNtupleDColumn("Charges[1]");
+  analysisManager->CreateNtupleDColumn("Charges[2]");
+  analysisManager->CreateNtupleDColumn("Charges[3]");
+  analysisManager->CreateNtupleDColumn("Charges[4]");
+  analysisManager->CreateNtupleDColumn("Charges[5]");
+  analysisManager->CreateNtupleDColumn("Charges[6]");
+  analysisManager->CreateNtupleDColumn("Charges[7]");
+  analysisManager->CreateNtupleDColumn("Charges[8]");
+  analysisManager->FinishNtuple();
+
   // Register accumulable to the accumulable manager
   G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
   accumulableManager->RegisterAccumulable(fEdep);

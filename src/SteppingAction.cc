@@ -105,6 +105,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
         runData->FillTimePerPhoton(id, Global_arrival_time);
         step->GetTrack()->SetTrackStatus(fStopAndKill);
         fEventAction->SetMinTimeIfLess(id, Global_arrival_time);
+        fEventAction->SetDetectedPhoton(id);
 
       }
     }

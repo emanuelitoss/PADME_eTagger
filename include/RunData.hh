@@ -39,13 +39,9 @@
 #include <array>
 
 const G4int kBGO = 0;
-//const G4int kScint1 = 1;
-//const G4int kScint2 = 2;
 const G4int kBGO_Cherenkov = 1;
 const G4int kBGO_Scintillation = 2;
-//const G4int kNum_Cerenkov = 5;
-//const G4int kNum_Scint = 6;
-const G4int kDim = 3;//7;
+const G4int kDim = 3;
 
 const G4int kDimVolumes = 5;
 
@@ -69,7 +65,7 @@ class RunData : public G4Run
         virtual ~RunData();
 
         void AddEnergy(G4int id, G4double de);
-        void FillPerEvent();
+        void FillPerEvent(std::vector <G4double> charges);
         void FillTimePerPhoton(G4int id, G4double t);
         void FIllFirstTimes(G4int id, G4double time);
 
@@ -79,7 +75,7 @@ class RunData : public G4Run
         G4double GetEdep(G4int id) const;
 
     private:
-        std::array<G4double, kDim> fEdep = { 0., 0., 0.}; //, 0., 0., 0., 0. };
+        std::array<G4double, kDim> fEdep = { 0., 0., 0.};
 };
 
 // inline functions
