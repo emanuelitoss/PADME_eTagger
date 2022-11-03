@@ -5,7 +5,7 @@
 #
 #/run/numberOfThreads 2
 #
-/PadmETag/Generation/SetX 69
+/PadmETag/Generation/SetX 68
 /PadmETag/OutputFile/SetName +68
 
-/run/beamOn 40
+/run/beamOn 100
