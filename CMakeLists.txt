@@ -46,6 +46,25 @@ target_link_libraries(padmETag ${Geant4_LIBRARIES})
 set(PADMETAG_SCRIPTS
   init_vis.mac
   run.mac
+  macros/runM10.mac
+  macros/runM20.mac
+  macros/runM30.mac
+  macros/runM40.mac
+  macros/runM50.mac
+  macros/runM60.mac
+  macros/runM70.mac
+  macros/runM80.mac
+  macros/runM90.mac
+  macros/run00.mac
+  macros/run10.mac
+  macros/run20.mac
+  macros/run30.mac
+  macros/run40.mac
+  macros/run50.mac
+  macros/run60.mac
+  macros/run70.mac
+  macros/run80.mac
+  macros/run90.mac
   )
 
 foreach(_script ${PADMETAG_SCRIPTS})
