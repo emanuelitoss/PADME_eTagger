@@ -77,26 +77,25 @@ int main(int argc, char** argv){
 
 double_t Mean(vector <double_t> vec){
     
-    double_t mean = 0;
+    Double_t mean = 0;
+    Int_t num = vec.size();
 
-    for (int i = 0; i<vec.size(); ++i){
-        mean += vec[i];
-    }
+    for (int i = 0; i<num; ++i) mean += vec[i];
 
-    mean/=(vec.size());
+    mean/=num;
     return mean;
 }
 
 double_t StdDeviation(vector <double_t> vec){
     
-    double_t err = 0;
-    double_t mean = Mean(vec);
+    double_t err = 0, mean = Mean(vec);
+    Int_t num = vec.size();
 
-    for (int i = 0; i<vec.size(); ++i){
-        err += (vec[i]-mean)*(vec[i]-mean);
-    }
+    for (int i = 0; i<num; ++i) err += vec[i]*vec[i];
 
-    err = sqrt(err/vec.size());
+    err /= num;
+    err -= mean*mean;
+    err = sqrt(err);
 
     return err;
 
@@ -110,7 +109,7 @@ void AddCharges(char * fileName, vector <vector <double_t> >* charge_means, vect
     reader.SetTree("totalCharges", myFile);
     vector< TTreeReaderValue<double_t> > charges;
 
-    cout << "\nInspectin file \"" << fileName << "\":" << endl;
+    cout << "\nInspecting file \"" << fileName << "\":" << endl;
 
     vector < vector <double_t> > charges_for_side = {{}, {}};
 
