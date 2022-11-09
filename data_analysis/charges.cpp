@@ -19,7 +19,11 @@ using namespace std;
 
 #include "libraries/infos.h"
 
+#define EVE true // if true, it uses event per event method
+
 void AddCharges(char * filename, vector <vector <double_t> >* means, vector <vector <double_t> >* errs);
+void AddChargesEPE(char * filename, vector <vector <double_t> >* means, vector <vector <double_t> >* errs,
+     vector <vector <double_t> >* functions, vector <vector <double_t> >* functions_err);
 void AddFunctionsOfCharges(vector <vector <double_t> >* means, vector <vector <double_t> >* errs,
     vector <vector <double_t> >* functions, vector <vector <double_t> >* functions_err);
 double_t Mean(vector <double_t> vec);
@@ -39,9 +43,9 @@ int main(int argc, char** argv){
 
     // arrays for 
     vector <vector <double> >* charges_functions_means
-        = new vector <vector <double_t> > {{}, {}, {}};
+        = new vector <vector <double_t> > {{}, {}, {}, {}};
     vector <vector <double> >* charges_functions_stdDevs
-        = new vector <vector <double_t> > {{}, {}, {}};
+        = new vector <vector <double_t> > {{}, {}, {}, {}};
 
     // positions in x axis for each input file
     vector <double> positions_x = {-90, -80., -70., -60., -50., -30., 0., 30., 50., 60., 70., 80., 90.};
@@ -58,11 +62,12 @@ int main(int argc, char** argv){
         for(int file_counter = 1; file_counter < argc; ++file_counter)
         {
             fileName = argv[file_counter];
-            AddCharges(fileName, charges_means, charges_stdDevs);
+            if(EVE) AddChargesEPE(fileName, charges_means, charges_stdDevs, charges_functions_means, charges_functions_stdDevs);
+            else AddCharges(fileName, charges_means, charges_stdDevs);
         }
     }
 
-    AddFunctionsOfCharges(charges_means, charges_stdDevs, charges_functions_means, charges_functions_stdDevs);
+    if(!EVE) AddFunctionsOfCharges(charges_means, charges_stdDevs, charges_functions_means, charges_functions_stdDevs);
 
     PlotCharges(charges_means, charges_stdDevs, positions_x);
     PlotChargesFunctions(charges_functions_means, charges_functions_stdDevs, positions_x);
@@ -123,22 +128,22 @@ void AddCharges(char * fileName, vector <vector <double_t> >* charge_means, vect
     }
 
     double_t charge = 0;
-    double_t tot_charge = 0;
+    double_t chargeDX, chargeSX;
 
     while (reader.Next())
     {
+        chargeDX = 0;
+        chargeSX = 0;
+
         for(int channel = 0; channel < numberOfChannels; channel++)
         {
             charge = *charges[channel];
-            if(charge != 0)
-            {
-                if(channel < numberOfChannels/2) charges_for_side[0].push_back(charge);
-                else{
-                    charges_for_side[1].push_back(charge);
-                } 
-                tot_charge += charge;
-            }
+            if(channel < numberOfChannels/2) chargeDX += charge;
+            else chargeSX += charge;
         }
+
+        charges_for_side[0].push_back(chargeDX);
+        charges_for_side[1].push_back(chargeSX);
     }
 
     vector <double_t> MeanCharges = {{}, {}};
@@ -161,11 +166,101 @@ void AddCharges(char * fileName, vector <vector <double_t> >* charge_means, vect
 
 }
 
+void AddChargesEPE(char * fileName, vector <vector <double_t> >* charge_means, vector <vector <double_t> >* charge_stdDevs,
+    vector <vector <double_t> >* functions, vector <vector <double_t> >* functions_err){
+    
+    // reading objects
+    TFile* myFile = TFile::Open(fileName);
+    TTreeReader reader = TTreeReader();
+    reader.SetTree("totalCharges", myFile);
+    vector< TTreeReaderValue<double_t> > charges;
+
+    cout << "\nInspecting file \"" << fileName << "\":" << endl;
+
+    vector < vector <double_t> > charges_for_side = {{}, {}};
+    vector < vector <double_t> > charges_for_side_err = {{}, {}};
+    // sum dx+sx, difference dx-sx, ratio dx/sx, ratio sx/dx
+    vector < vector <double_t> > charges_functions = {{}, {}, {}, {}};
+    vector < vector <double_t> > charges_functions_err = {{}, {}, {}, {}};
+
+    for (int channel = 0; channel < numberOfChannels; ++channel)
+    {
+      // initialize readers
+      string ChannelName = to_string(channel+1);
+      string dirNameStr = "Charges[" + ChannelName + "]";
+      const char* dirName = dirNameStr.c_str();
+      charges.push_back(TTreeReaderValue<double_t>(reader,dirName));
+    }
+
+    double_t charge = 0;
+    double_t chargeDX, chargeSX;
+    double_t errorSUM, errorRATIO_relative;
+
+    while (reader.Next())
+    {
+        chargeDX = 0;
+        chargeSX = 0;
+
+        for(int channel = 0; channel < numberOfChannels; channel++)
+        {
+            charge = *charges[channel];
+            if(channel < numberOfChannels/2) chargeDX += charge;
+            else chargeSX += charge;
+        }
+
+        charges_for_side[0].push_back(chargeDX);
+        charges_for_side[1].push_back(chargeSX);
+        // charges_for_side_err[0].push_back(sqrt(chargeDX));
+        // charges_for_side_err[1].push_back(sqrt(chargeSX));
+
+        charges_functions[0].push_back(chargeDX+chargeSX);
+        charges_functions[1].push_back(chargeDX-chargeSX);
+        charges_functions[2].push_back(chargeDX/chargeSX);
+        charges_functions[3].push_back(chargeSX/chargeDX);
+
+        /*
+        errorSUM = sqrt(chargeDX + chargeSX);
+        errorRATIO_relative = sqrt( 1./chargeDX + 1./chargeSX );
+
+        charges_functions_err[0].push_back(errorSUM);
+        charges_functions_err[1].push_back(errorSUM);
+        charges_functions_err[2].push_back((chargeDX/chargeSX)*errorRATIO_relative);
+        charges_functions_err[3].push_back((chargeSX/chargeDX)*errorRATIO_relative);*/
+
+    }
+
+    vector <double_t> MeanCharges = {{}, {}};
+    vector <double_t> ErrCharges = {{}, {}};
+    double_t value;
+    Int_t size;
+
+    for(int ch = 0; ch < 2; ++ch)
+    {
+        MeanCharges[ch] = Mean(charges_for_side[ch]);
+        ErrCharges[ch] = StdDeviation(charges_for_side[ch]);
+    
+        (*charge_means)[ch].push_back(MeanCharges[ch]);
+        (*charge_stdDevs)[ch].push_back(ErrCharges[ch]);
+
+        if (ch == 0) cout << "\n\tRight side:\t";
+        else cout << "\tLeft side:\t";
+        cout << "Mean = " << MeanCharges[ch] << ",\t StdDev = " << ErrCharges[ch] << endl;
+    }
+
+    for(int func_idx = 0; func_idx < 4; ++func_idx)
+    {
+        (*functions)[func_idx].push_back(Mean(charges_functions[func_idx]));
+        (*functions_err)[func_idx].push_back(StdDeviation(charges_functions[func_idx]));
+    }
+
+    cout << endl;
+
+}
+
 void AddFunctionsOfCharges(vector <vector <double_t> >* means, vector <vector <double_t> >* errs, vector <vector <double_t> >* functions, vector <vector <double_t> >* functions_err){
 
     Int_t numMeasures = (*means)[0].size();
-
-    const int sum_idx = 0, diff_idx = 1, ratio_idx = 2;
+    const int sum_idx = 0, diff_idx = 1, ratio_DS_idx = 2, ratio_SD_idx = 3;
     double_t err = 0;
     double_t val1, val2, err1, err2;
 
@@ -185,10 +280,15 @@ void AddFunctionsOfCharges(vector <vector <double_t> >* means, vector <vector <d
         (*functions)[diff_idx].push_back(val1 - val2);
         (*functions_err)[diff_idx].push_back(err);
 
-        // charge ratio
-        (*functions)[ratio_idx].push_back(val1/val2);
+        // charge ratio DX/SX
+        (*functions)[ratio_DS_idx].push_back(val1/val2);
         err = (val1/val2)*sqrt( pow(err1/val1,2) + pow(err2/val2,2) );
-        (*functions_err)[ratio_idx].push_back(err);
+        (*functions_err)[ratio_DS_idx].push_back(err);
+
+        // charge ratio SX/DX
+        (*functions)[ratio_SD_idx].push_back(val2/val1);
+        err = (val2/val1)*sqrt( pow(err1/val1,2) + pow(err2/val2,2) );
+        (*functions_err)[ratio_SD_idx].push_back(err);
 
     }
     
@@ -208,7 +308,7 @@ void PlotCharges(vector <vector <double> >* means, vector <vector <double> >* st
 
     for(int ch = 0; ch < 2; ++ch)
     {
-        canva->cd(ch+1);
+        canva->cd((ch%2==0)+1);
         canva->SetGrid();
 
         for(int entry = 0; entry < noOfPoints; ++entry)
@@ -255,7 +355,8 @@ void PlotCharges(vector <vector <double> >* means, vector <vector <double> >* st
         graph->Clear();
     }
 
-    canva->Print("images/charges.pdf(","pdf");
+    if(EVE) canva->Print("images/chargesEVE.pdf(","pdf");
+    else canva->Print("images/charges.pdf(","pdf");
 
     delete exp_fit;
     delete graph;
@@ -267,8 +368,9 @@ void PlotChargesFunctions(vector <vector <double> >* fmeans, vector <vector <dou
     
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
 
-    const int color[3] = {kAzure-5, kAzure-5, kAzure-5};//kViolet+6};
-    TString name[3] = {"Charges sum", "Charges difference", "Charges ratio"};
+    const int color[4] = {kAzure-5, kAzure-5, kViolet+6, kViolet+6};
+    TString name[4] = {"Charges sum", "Charges difference", "Charges ratio", "Charges ratio"};
+    TString yAxisName[4] = {"Sum N_{DX} + N_{SX}", "Difference N_{DX} - N_{SX}", "Ratio N_{DX} / N_{SX}", "Ratio N_{SX} / N_{DX}"};
 
     TGraphErrors* graph = new TGraphErrors();
     TF1* fit = new TF1();
@@ -276,7 +378,7 @@ void PlotChargesFunctions(vector <vector <double> >* fmeans, vector <vector <dou
     int noOfPoints = positions_x.size();
     double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
 
-    for(int ch = 0; ch < 3; ++ch)
+    for(int ch = 0; ch < 4; ++ch)
     {
         canva->SetGrid();
 
@@ -295,7 +397,7 @@ void PlotChargesFunctions(vector <vector <double> >* fmeans, vector <vector <dou
         graph->SetMarkerStyle(20);
         graph->SetMarkerColor(color[ch]);
         graph->SetMarkerSize(4.);
-        graph->SetDrawOption("C AP");
+        graph->SetDrawOption("AP");
         gStyle->SetEndErrorSize(8);
 
         // axis
@@ -303,13 +405,14 @@ void PlotChargesFunctions(vector <vector <double> >* fmeans, vector <vector <dou
         graph->GetXaxis()->CenterTitle();
         graph->GetYaxis()->CenterTitle();
         graph->GetXaxis()->SetTitle("position x [mm]");
-        graph->GetYaxis()->SetTitle("Number of detected #gamma");
+        graph->GetYaxis()->SetTitle(yAxisName[ch]);
+        
      
         graph->Draw();
 
         // hyperbolic cosine + offset
         //if(ch == 0) fit = new TF1("f(x)+f(-x)", "2*[0] + [1]*(exp(x*[2])+exp(-x*[2]))", -HALF_LEN_X, HALF_LEN_X);
-        fit = new TF1("f(x)+f(-x)", "pol5", -HALF_LEN_X, HALF_LEN_X);
+        fit = new TF1("f(x)+f(-x)", "pol6", -HALF_LEN_X, HALF_LEN_X);
         // hyperbolic cosine + offset
         //else if (ch==1) fit = new TF1("f(x)-f(-x)", "[0]*(exp(x*[1])-exp(-x*[1]))", -HALF_LEN_X, HALF_LEN_X);
         // hyperbolic tangent
@@ -323,8 +426,15 @@ void PlotChargesFunctions(vector <vector <double> >* fmeans, vector <vector <dou
 
         canva->Draw();
 
-        if (ch == 2) canva->Print("images/charges.pdf)","pdf");
-        else canva->Print("images/charges.pdf","pdf");
+        if(EVE)
+        {
+            if (ch == 3) canva->Print("images/chargesEVE.pdf)","pdf");
+            else canva->Print("images/chargesEVE.pdf","pdf");
+        }
+        else{
+            if (ch == 3) canva->Print("images/charges.pdf)","pdf");
+            else canva->Print("images/charges.pdf","pdf");
+        }
 
         graph->Clear();
         canva->Clear();
