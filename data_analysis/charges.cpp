@@ -28,27 +28,27 @@ void AddFunctionsOfCharges(vector <vector <double_t> >* means, vector <vector <d
     vector <vector <double_t> >* functions, vector <vector <double_t> >* functions_err);
 double_t Mean(vector <double_t> vec);
 double_t StdDeviation(vector <double_t> vec);
-void PlotCharges(vector <vector <double> >* means, vector <vector <double> >* stdDevs, vector <double> positions_x);
-void PlotChargesFunctions(vector <vector <double> >* means, vector <vector <double> >* stdDevs, vector <double> positions_x);
+void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >* stdDevs, vector <double_t> positions_x);
+void PlotChargesFunctions(vector <vector <double_t> >* means, vector <vector <double_t> >* stdDevs, vector <double_t> positions_x);
 
 int main(int argc, char** argv){
 
     char* fileName;
 
     // 2 arrays: one for each side of SiPM
-    vector <vector <double> >* charges_means
+    vector <vector <double_t> >* charges_means
         = new vector <vector <double_t> > {{}, {}};
-    vector <vector <double> >* charges_stdDevs
+    vector <vector <double_t> >* charges_stdDevs
         = new vector <vector <double_t> > {{}, {}};
 
     // arrays for 
-    vector <vector <double> >* charges_functions_means
+    vector <vector <double_t> >* charges_functions_means
         = new vector <vector <double_t> > {{}, {}, {}, {}};
-    vector <vector <double> >* charges_functions_stdDevs
+    vector <vector <double_t> >* charges_functions_stdDevs
         = new vector <vector <double_t> > {{}, {}, {}, {}};
 
     // positions in x axis for each input file
-    vector <double> positions_x = {-90, -80., -70., -60., -50., -30., 0., 30., 50., 60., 70., 80., 90.};
+    vector <double_t> positions_x = {-90, -80., -70., -60., -50., -30., 0., 30., 50., 60., 70., 80., 90.};
     for (auto x = positions_x.begin(); x != positions_x.end(); ++x) *x *= HALF_LEN_X/100.;
     
     if(argc <= 2)
@@ -96,10 +96,10 @@ double_t StdDeviation(vector <double_t> vec){
     double_t err = 0, mean = Mean(vec);
     Int_t num = vec.size();
 
-    for (int i = 0; i<num; ++i) err += vec[i]*vec[i];
+    for (int i = 0; i<num; ++i) err += (vec[i]*vec[i]);
 
-    err /= num;
-    err -= mean*mean;
+    err /= (num-1);
+    err -= mean*mean*num/(num-1);
     err = sqrt(err);
 
     return err;
@@ -194,7 +194,6 @@ void AddChargesEPE(char * fileName, vector <vector <double_t> >* charge_means, v
 
     double_t charge = 0;
     double_t chargeDX, chargeSX;
-    double_t errorSUM, errorRATIO_relative;
 
     while (reader.Next())
     {
@@ -210,27 +209,16 @@ void AddChargesEPE(char * fileName, vector <vector <double_t> >* charge_means, v
 
         charges_for_side[0].push_back(chargeDX);
         charges_for_side[1].push_back(chargeSX);
-        // charges_for_side_err[0].push_back(sqrt(chargeDX));
-        // charges_for_side_err[1].push_back(sqrt(chargeSX));
 
         charges_functions[0].push_back(chargeDX+chargeSX);
         charges_functions[1].push_back(chargeDX-chargeSX);
         charges_functions[2].push_back(chargeDX/chargeSX);
         charges_functions[3].push_back(chargeSX/chargeDX);
 
-        /*
-        errorSUM = sqrt(chargeDX + chargeSX);
-        errorRATIO_relative = sqrt( 1./chargeDX + 1./chargeSX );
-
-        charges_functions_err[0].push_back(errorSUM);
-        charges_functions_err[1].push_back(errorSUM);
-        charges_functions_err[2].push_back((chargeDX/chargeSX)*errorRATIO_relative);
-        charges_functions_err[3].push_back((chargeSX/chargeDX)*errorRATIO_relative);*/
-
     }
 
-    vector <double_t> MeanCharges = {{}, {}};
-    vector <double_t> ErrCharges = {{}, {}};
+    vector <double_t> MeanCharges = {0, 0};
+    vector <double_t> ErrCharges = {0, 0};
     double_t value;
     Int_t size;
 
@@ -244,13 +232,12 @@ void AddChargesEPE(char * fileName, vector <vector <double_t> >* charge_means, v
 
         if (ch == 0) cout << "\n\tRight side:\t";
         else cout << "\tLeft side:\t";
-        cout << "Mean = " << MeanCharges[ch] << ",\t StdDev = " << ErrCharges[ch] << endl;
     }
 
     for(int func_idx = 0; func_idx < 4; ++func_idx)
     {
-        (*functions)[func_idx].push_back(Mean(charges_functions[func_idx]));
-        (*functions_err)[func_idx].push_back(StdDeviation(charges_functions[func_idx]));
+        (*functions)[func_idx].push_back( Mean(charges_functions[func_idx]) );
+        (*functions_err)[func_idx].push_back( StdDeviation(charges_functions[func_idx]) );
     }
 
     cout << endl;
@@ -294,7 +281,7 @@ void AddFunctionsOfCharges(vector <vector <double_t> >* means, vector <vector <d
     
 }
 
-void PlotCharges(vector <vector <double> >* means, vector <vector <double> >* stdDevs, vector <double> positions_x){
+void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >* stdDevs, vector <double_t> positions_x){
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
     canva->Divide(2,1);
@@ -355,7 +342,7 @@ void PlotCharges(vector <vector <double> >* means, vector <vector <double> >* st
         graph->Clear();
     }
 
-    if(EVE) canva->Print("images/chargesEVE.pdf(","pdf");
+    if(EVE) canva->Print("images/chargesEpE.pdf(","pdf");
     else canva->Print("images/charges.pdf(","pdf");
 
     delete exp_fit;
@@ -364,7 +351,7 @@ void PlotCharges(vector <vector <double> >* means, vector <vector <double> >* st
 
 }
 
-void PlotChargesFunctions(vector <vector <double> >* fmeans, vector <vector <double> >* fstdDevs, vector <double> positions_x){
+void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <double_t> >* fstdDevs, vector <double_t> positions_x){
     
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
 
@@ -428,8 +415,8 @@ void PlotChargesFunctions(vector <vector <double> >* fmeans, vector <vector <dou
 
         if(EVE)
         {
-            if (ch == 3) canva->Print("images/chargesEVE.pdf)","pdf");
-            else canva->Print("images/chargesEVE.pdf","pdf");
+            if (ch == 3) canva->Print("images/chargesEpE.pdf)","pdf");
+            else canva->Print("images/chargesEpE.pdf","pdf");
         }
         else{
             if (ch == 3) canva->Print("images/charges.pdf)","pdf");
