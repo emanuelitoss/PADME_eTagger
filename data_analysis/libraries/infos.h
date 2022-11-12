@@ -19,6 +19,7 @@ using namespace std;
 #define HALF_LEN_Y 22.5 // [mm]
 #define max_time 5. //[ns] (range for plots)
 #define min_time -1.5 //[ns] (range for plots)
+#define OFFSET 8 //[ns] >> I do not have times >~ 8 ns
 
 #define ORESET   "\033[0m"
 #define OBLACK   "\033[30m"      /* Black */

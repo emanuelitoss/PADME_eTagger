@@ -41,50 +41,37 @@ void plotScatter_arrivalTimes(int argc, std::vector <double> original_posX, char
             times.push_back(TTreeReaderValue<Double_t>(reader,dirName));
         }
 
-        double_t time = 0;
+        double_t time = 0, min_time_SX, min_time_DX;
         int counter = 0, entry = 0;
-        bool checkSX, checkDX;
+        bool checkDX;
 
         while(reader.Next())
         {
-            entry = (int)counter/8;
-
             for (int channel = 0; channel < numberOfChannels; channel++)
             {
+                min_time_SX = OFFSET;
+                min_time_DX = OFFSET;
+
                 time = *times[channel];
+
                 if(time != 0)
                 {
                     checkDX = channel < 4;
-                    checkSX = !checkDX;
 
                     if(checkDX)
                     {
-                        if(min_times[DX].size() == entry+1)
-                        {
-                            if(min_times[DX][entry]>time) min_times[DX][entry] = time;
-                        }
-                        else min_times[DX].push_back(time);
+                        if(time < min_time_DX) min_time_DX = time;
                     }
-                    else if(checkSX)
+                    else
                     {
-
-                        if(min_times[SX].size() == entry+1)
-                        {
-                            if(min_times[SX][entry]>time) min_times[SX][entry] = time;
-                        }
-                        else min_times[SX].push_back(time);
+                        if(time < min_time_SX) min_time_SX = time;
                     }
                 }
             }
 
-            ++counter;
+            time_differences.push_back(min_time_DX - min_time_SX);
+            positions_x.push_back(original_posX[file_counter-1]);
 
-            // This because I know how the numbers are stored.
-            // Inspect a .root output to understand
-            if(counter % 8 == 0){
-                time_differences.push_back(min_times[DX].back() - min_times[SX].back());
-                positions_x.push_back(original_posX[file_counter-1]);
-            }
         }
 
         myFile->Close();

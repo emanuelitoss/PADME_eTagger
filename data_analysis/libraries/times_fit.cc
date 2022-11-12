@@ -10,6 +10,7 @@
 #include "TGraphErrors.h"
 #include "TF1.h"
 #include "TObjString.h"
+#include "TStyle.h"
 
 void PlotFitResults(std::vector <std::vector <double> >* means, std::vector <std::vector <double> >* stdDevs, std::vector <double> positions_x){
 

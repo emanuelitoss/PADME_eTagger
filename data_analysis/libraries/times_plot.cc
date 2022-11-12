@@ -56,10 +56,10 @@ void plotHisto_arrivalTimes(char * fileName, int openCloseFile, std::vector <std
     {
 
       time = *times[channel];
-      if(time != 0){
+      //if(time != 0){
         min_times[channel].push_back(time);
         histograms[channel].Fill(time);
-      }
+      //}
 
     }
   }
@@ -150,50 +150,37 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
     histograms.push_back(TH1F("histogram[SiPM_DX]", "SiPM_DX", nbins, min_time, max_time));
     histograms.push_back(TH1F("histogram[SiPM_SX]", "SiPM_SX", nbins, min_time, max_time));
 
-    int counter = 0, entry = 0;
     double_t time = 0, min_timeSX = 0, min_timeDX = 0;
-    bool checkSX, checkDX;
 
     while(reader.Next())
     {
-        entry = (int)counter/8;
 
-        for (int channel = 0; channel < numberOfChannels; channel++)
-        {
-            time = *times[channel];
-            if(time != 0)
-            {
-                checkDX = channel < 4;
-                checkSX = !checkDX;
+      min_timeSX = OFFSET;
+      min_timeDX = OFFSET;
 
-                if(checkDX)
-                {
-                    if(min_times[DX].size() == entry+1)
-                    {
-                        if(min_times[DX][entry]>time) min_times[DX][entry] = time;
-                    }
-                    else min_times[DX].push_back(time);
-                }
-                else if(checkSX)
-                {
-
-                    if(min_times[SX].size() == entry+1)
-                    {
-                        if(min_times[SX][entry]>time) min_times[SX][entry] = time;
-                    }
-                    else min_times[SX].push_back(time);
-                }
-            }
-        }
-        
-        ++counter;
-        
-        if(counter % 8 == 0)
-        {
-            histograms[DX].Fill(min_times[DX].back());
-            histograms[SX].Fill(min_times[SX].back());
-            histogram_differences.Fill(min_times[DX].back() - min_times[SX].back());
-        }
+      for (int channel = 0; channel < numberOfChannels; channel++)
+      {
+        time = *times[channel];
+          if(time != 0)
+          {
+              if(channel < numberOfChannels/2)
+              {
+              if(time < min_timeDX) min_timeDX = time;
+              }
+              else
+              {
+                if(time < min_timeSX) min_timeSX = time;
+              }            
+          }
+      }
+    
+      min_times[DX].push_back(min_timeDX);
+      min_times[SX].push_back(min_timeSX);
+      
+      histograms[DX].Fill(min_timeDX);
+      histograms[SX].Fill(min_timeSX);
+      histogram_differences.Fill(min_timeDX - min_timeSX);
+    
     }
 
     /********** PLOT HISTOGRAM OF EACH SIDE OF SiPMs **********/
