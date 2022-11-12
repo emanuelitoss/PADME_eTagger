@@ -59,7 +59,7 @@ SteppingAction::SteppingAction(EventAction* eventAction, const DetectorConstruct
 : G4UserSteppingAction(),
   fEventAction(eventAction),
   fScoringVolume(nullptr),
-  fnoise_generator(new CLHEP::MTwistEngine(), 0*ns, NOISE_STD_DEV*ns),
+  fnoise_generator(new CLHEP::MTwistEngine(), 0, NOISE_STD_DEV),
   fDetConstruction(detConstruction)
 {}
 
@@ -100,12 +100,14 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
         Global_arrival_time = step->GetTrack()->GetGlobalTime();
 
         // adding noise
-        Global_arrival_time += fnoise_generator.fire();
+        Global_arrival_time += (fnoise_generator.fire())*ns;
 
         runData->FillTimePerPhoton(id, Global_arrival_time);
-        step->GetTrack()->SetTrackStatus(fStopAndKill);
         fEventAction->SetMinTimeIfLess(id, Global_arrival_time);
         fEventAction->SetDetectedPhoton(id);
+
+        // kill the photon in order to avoid double counting
+        step->GetTrack()->SetTrackStatus(fStopAndKill);
 
       }
     }
