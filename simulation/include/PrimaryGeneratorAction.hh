@@ -81,6 +81,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4double fInitial_X = 0.;
     G4double fInitial_Y = 0.;
 
+    G4bool randomic_generation = 0.;
+
 };
 
 inline void PrimaryGeneratorAction::SetIncomingPositionX(G4double x) { fInitial_X = x; }

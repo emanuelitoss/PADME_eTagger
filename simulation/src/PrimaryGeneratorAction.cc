@@ -47,6 +47,8 @@ using namespace std;
 #include "G4UnitsTable.hh"
 #include "G4GenericMessenger.hh"
 
+#define EPS 0.1
+
 PrimaryGeneratorAction::PrimaryGeneratorAction()
 : G4VUserPrimaryGeneratorAction(),
   fParticleGun(nullptr),
@@ -102,6 +104,13 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
  
   // set position of the particle
+
+  if(randomic_generation)
+  {
+    fInitial_X = (G4UniformRand()-0.5)*(2-EPS);
+    fInitial_Y = (G4UniformRand()-0.5)*(2-EPS);
+  }
+
   fParticleGun->SetParticlePosition(G4ThreeVector(max_x*fInitial_X/100., max_y*fInitial_Y/100., initial_z));
 
 }
@@ -110,6 +119,13 @@ void PrimaryGeneratorAction::DefineCommands() {
   
   // Define /B5/detector command directory using generic messenger class
   fMessenger = new G4GenericMessenger(this, "/PadmETag/Generation/", "Primary generator");
+
+  // position Y
+  auto& setRandomGeneration
+  = fMessenger->DeclareProperty("SetRandomGeneration",randomic_generation);
+  setRandomGeneration.SetParameterName("RandomGenerationBool", true);
+  setRandomGeneration.SetCandidates("0 1");
+  setRandomGeneration.SetDefaultValue("0");
 
   // position X
   auto& setXcommand
