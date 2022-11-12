@@ -67,7 +67,7 @@ class RunData : public G4Run
         void AddEnergy(G4int id, G4double de);
         void FillPerEvent(std::vector <G4double> charges);
         void FillTimePerPhoton(G4int id, G4double t);
-        void FIllFirstTimes(G4int id, G4double time);
+        void FIllFirstTimes(std::vector <G4double> time);
 
         void Reset();
 

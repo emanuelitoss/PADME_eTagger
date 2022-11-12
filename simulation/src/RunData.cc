@@ -77,11 +77,11 @@ void RunData::FillTimePerPhoton(G4int id, G4double time)
 
 }
 
-void RunData::FIllFirstTimes(G4int id, G4double time){
+void RunData::FIllFirstTimes(std::vector <G4double> times){
 
     auto analysisManager = G4AnalysisManager::Instance();
 
-    analysisManager->FillNtupleDColumn(2, id, time);
+    for(int id = 0; id < 8; ++id) analysisManager->FillNtupleDColumn(2, id, times[id]);
     analysisManager->AddNtupleRow(2);
 
 }
