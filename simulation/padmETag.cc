@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 
   // Optionally: choose a different Random engine...
   // G4Random::setTheEngine(new CLHEP::MTwistEngine);
-  // G4Random::setTheEngine(new CLHEP::RanecuEngine);
+  G4Random::setTheEngine(new CLHEP::RanecuEngine);
   double myseed = round(tStart);
   G4Random::setTheSeed(myseed);
 
