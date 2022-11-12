@@ -46,6 +46,7 @@ target_link_libraries(padmETag ${Geant4_LIBRARIES})
 set(PADMETAG_SCRIPTS
   init_vis.mac
   run.mac
+  macros/rand_run.mac
   macros/runM10.mac
   macros/runM20.mac
   macros/runM30.mac
