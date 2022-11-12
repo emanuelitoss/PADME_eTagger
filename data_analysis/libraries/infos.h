@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
+using namespace std;
 
 #ifndef infos_h
 #define infos_h
@@ -39,6 +40,32 @@
 
 void PrintColor(std::string message, std::string color){
   std::cout << color << message << ORESET << std::endl;
+}
+
+double_t Mean(vector <double_t> vec){
+    
+    double_t mean = 0;
+    int num = vec.size();
+
+    for (int i = 0; i<num; ++i) mean += vec[i];
+
+    mean/=num;
+    return mean;
+}
+
+double_t StdDeviation(vector <double_t> vec){
+    
+    double_t err = 0, mean = Mean(vec);
+    int num = vec.size();
+
+    for (int i = 0; i<num; ++i) err += (vec[i]*vec[i]);
+
+    err /= (num-1);
+    err -= mean*mean*num/(num-1);
+    err = sqrt(err);
+
+    return err;
+
 }
 
 #endif

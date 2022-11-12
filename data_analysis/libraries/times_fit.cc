@@ -133,8 +133,9 @@ void PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
     graph->Fit(line_fit, "0", "0");
     line_fit->SetLineColor(color[1]);
     line_fit->SetLineWidth(1);
-    line_fit->SetFillStyle(3002);
-    line_fit->SetFillColorAlpha(color[0],0.5);
+    //line_fit->SetFillStyle(3002);
+    line_fit->SetFillColorAlpha(color[0],0.9);
+    line_fit->DrawClone("SAME E3AL");
 
     // legend
     leg = new TLegend(0.4, 0.75, 0.89, 0.89);

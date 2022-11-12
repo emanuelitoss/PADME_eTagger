@@ -1,5 +1,17 @@
 #include "infos.h"
 
+#include "TFile.h"
+#include "TTreeReader.h"
+#include "TTreeReaderValue.h"
+#include "TH1F.h"
+#include "TCanvas.h"
+#include "TLegend.h"
+#include "TGraph.h"
+#include "TGraphErrors.h"
+#include "TF1.h"
+#include "TObjString.h"
+#include "TStyle.h"
+
 // settings
 #define nbins 50
 #define max_Time 50. //[ns]
