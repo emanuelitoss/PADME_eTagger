@@ -114,7 +114,8 @@ int main(int argc, char** argv){
         graph->SetMarkerSize(4.);
 
         // axis
-        graph->SetTitle("Scatterplot: times vs charges");
+        if(ch == 0) graph->SetTitle("Scatterplot: times vs charges (right side)");
+        else graph->SetTitle("Scatterplot: times vs charges (left side)");
         graph->GetXaxis()->CenterTitle();
         graph->GetYaxis()->CenterTitle();
         graph->GetXaxis()->SetTitle("time [ns]");
