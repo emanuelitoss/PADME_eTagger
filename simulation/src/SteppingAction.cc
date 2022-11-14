@@ -83,7 +83,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
   G4bool IsOpticalPhoton = ( step->GetTrack()->GetParticleDefinition() == G4OpticalPhoton::OpticalPhotonDefinition() );
   G4bool IsPhotDetectedInSiPM;
 
-  G4double Global_arrival_time = 0.;
+  G4double Global_arrival_time = 0., rndm_noise;
   G4double phot_energy = 0.*eV;
 
   if(IsOpticalPhoton){
@@ -100,7 +100,9 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
         Global_arrival_time = step->GetTrack()->GetGlobalTime();
 
         // adding noise
-        Global_arrival_time += (fnoise_generator.fire())*ns;
+        rndm_noise =  (fnoise_generator.fire())*ns;
+
+        Global_arrival_time += rndm_noise;
 
         runData->FillTimePerPhoton(id, Global_arrival_time);
         fEventAction->SetMinTimeIfLess(id, Global_arrival_time);

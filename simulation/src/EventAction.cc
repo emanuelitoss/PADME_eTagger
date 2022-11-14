@@ -88,5 +88,6 @@ void EventAction::AddEdep(G4double edep){
 }
 
 void EventAction::SetMinTimeIfLess(G4int channel, G4double time){
-  if(time != 0 && time < min_times[channel])  min_times[channel] = time;
+  //if(time != 0 && time < min_times[channel])  min_times[channel] = time;
+  if(time > 0 && time < min_times[channel])  min_times[channel] = time;
 }
