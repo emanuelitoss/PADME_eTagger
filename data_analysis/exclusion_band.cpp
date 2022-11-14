@@ -27,8 +27,8 @@ int main(int argc, char** argv){
     /****************** READING & STORE DATA ******************/
     TTreeReader readerQ = TTreeReader();
     TTreeReader readerT = TTreeReader();
-    readerQ.SetTree("totalCharges", myFile);
-    readerT.SetTree("firstTimes", myFile);
+    readerQ.SetTree("charges", myFile);
+    readerT.SetTree("arrival_times", myFile);
     vector< TTreeReaderValue<double_t> > charges;
     vector< TTreeReaderValue<double_t> > times;
 
@@ -42,7 +42,7 @@ int main(int argc, char** argv){
         charges.push_back(TTreeReaderValue<double_t>(readerQ,dirNameQ));
 
         ChannelName = to_string(channel+1);
-        dirNameStr = "1stTimeSiPM[" + ChannelName + "]";
+        dirNameStr = "arrival_times_SiPM[" + ChannelName + "]";
         const char* dirNameT = dirNameStr.c_str();
         times.push_back(TTreeReaderValue<double_t>(readerT,dirNameT));
     }
@@ -117,7 +117,7 @@ int main(int argc, char** argv){
         graph->SetTitle("Scatterplot: times vs charges");
         graph->GetXaxis()->CenterTitle();
         graph->GetYaxis()->CenterTitle();
-        graph->GetXaxis()->SetTitle("time [nm]");
+        graph->GetXaxis()->SetTitle("time [ns]");
         graph->GetYaxis()->SetTitle("Number of detected #gamma");
 
         graph->Draw("ap");
