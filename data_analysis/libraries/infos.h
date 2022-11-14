@@ -14,6 +14,9 @@ using namespace std;
 #define SINGLE_OUTPUT 2
 #define ADD_OUTPUT 3
 
+#define DX 0
+#define SX 1
+
 #define numberOfChannels 8
 #define HALF_LEN_X 300 // [mm]
 #define HALF_LEN_Y 22.5 // [mm]

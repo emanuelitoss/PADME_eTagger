@@ -12,85 +12,7 @@
 #include "TObjString.h"
 #include "TStyle.h"
 
-void PlotFitResults(std::vector <std::vector <double> >* means, std::vector <std::vector <double> >* stdDevs, std::vector <double> positions_x){
-
-    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3800, 3600);
-    canva->Divide(2,2);
-    const int color[8] = {kGreen+3, kGreen+3, kGreen+3, kGreen+3, kOrange+9, kOrange+9, kOrange+9, kOrange+9};
-
-    auto graph = new TGraphErrors();
-    TF1* line_fit = new TF1();
-    TLegend* leg = new TLegend();
-
-    int noOfPoints = positions_x.size();
-    double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
-
-    // loop over channels
-    for(int channel = 0; channel < numberOfChannels; ++channel)
-    {
-        canva->cd((channel%4)+1);
-
-        // graph with error bars
-        for(int entry = 0; entry < noOfPoints; ++entry)
-        {
-            x[entry] = positions_x[entry];
-            y[entry] = (*means)[channel][entry];
-            dx[entry] = 0;
-            dy[entry] = (*stdDevs)[channel][entry];
-        }
-        graph = new TGraphErrors(noOfPoints, x, y, dx, dy);
-
-        // axis
-        std::string title = "Beam position (x,0) vs time of first detected #gamma. SiPM #" + std::to_string(channel+1);
-        TString Ttitle = title;
-        graph->SetTitle(Ttitle);
-        graph->GetXaxis()->CenterTitle();
-        graph->GetXaxis()->SetTitle("position x [mm]");
-        graph->GetYaxis()->SetTitle("Time [ns]");
-
-        // markers
-        graph->SetMarkerStyle(kCircle);
-        graph->SetMarkerColor(kBlack);
-        graph->SetMarkerSize(2.);
-
-        graph->Draw("AP");
-        gStyle->SetEndErrorSize(8);
-
-        // linear fit
-        line_fit = new TF1("fitting a line", "pol1", -HALF_LEN_X, HALF_LEN_X);
-        graph->Fit(line_fit, "0", "0");
-        line_fit->SetLineColor(color[channel]);
-        line_fit->SetLineWidth(1);
-        line_fit->SetFillStyle(3002);
-        line_fit->SetFillColorAlpha(color[channel],0.5);
-
-        // legend
-        if(channel < 4) leg = new TLegend(0.4, 0.75, 0.89, 0.89);
-        else leg = new TLegend(0.12, 0.75, 0.6, 0.89);
-        leg->SetHeader("Fit results:","");
-        leg->AddEntry("", Form("coefficient: %.4g +/- %.4g",line_fit->GetParameter(1),line_fit->GetParError(1)),"L");
-        leg->AddEntry("", Form("quote: %.4g +/- %.4g",line_fit->GetParameter(0),line_fit->GetParError(0)), "L");
-        leg->Draw("SAME");
-
-        line_fit->Draw("SAME");
-
-        if (channel == (int)numberOfChannels/2 - 1)
-        {
-            canva->Print("images/t_vs_x_singleSIPM.pdf(","pdf");
-            canva->Clear();
-            canva->Divide(2,2);
-        } else if (channel == numberOfChannels-1) canva->Print("images/t_vs_x_singleSIPM.pdf)","pdf");
-
-    }
-
-    delete leg;
-    delete line_fit;
-    delete graph;
-    delete canva;
-
-}
-
-void PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <std::vector <double> >* stdDevs2, std::vector <double> positions_x){
+TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <std::vector <double> >* stdDevs2, std::vector <double> positions_x){
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3800, 3500);
     const int color[2] = {kGreen+3, kOrange+9};
@@ -110,6 +32,7 @@ void PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
         dx[entry] = 0;
         dy[entry] = sqrt((*stdDevs2)[0][entry]*(*stdDevs2)[0][entry] + (*stdDevs2)[1][entry]*(*stdDevs2)[1][entry]);
     }
+    
     graph = new TGraphErrors(noOfPoints, x, y, dx, dy);
 
     // axis
@@ -134,9 +57,9 @@ void PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
     graph->Fit(line_fit, "0", "0");
     line_fit->SetLineColor(color[1]);
     line_fit->SetLineWidth(1);
-    //line_fit->SetFillStyle(3002);
+    line_fit->SetFillStyle(3002);
     line_fit->SetFillColorAlpha(color[0],0.9);
-    line_fit->DrawClone("SAME E3AL");
+    //line_fit->DrawClone("SAME E3AL");
 
     // legend
     leg = new TLegend(0.4, 0.75, 0.89, 0.89);
@@ -147,12 +70,13 @@ void PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
 
     line_fit->Draw("SAME");
 
-    canva->Print("images/t_vs_x.pdf","pdf");
+    canva->Print("images/t_vs_x.pdf(","pdf");
 
     delete leg;
-    delete line_fit;
     delete graph;
     delete canva;
+
+    return line_fit;
 
 }
 

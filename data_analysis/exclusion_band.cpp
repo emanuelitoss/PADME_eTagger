@@ -21,8 +21,10 @@ int main(int argc, char** argv){
     TFile* myFile = TFile::Open(fileName);
 
     // charges vs arrival time >> for scatterplot
-    vector <vector <double_t> > charge_points = {{}, {}};
-    vector <vector <double_t> > time_points = {{}, {}};
+    // channels 0,1 for left and right sides of SiPMs
+    // channel 2,3 for the difference and sum
+    vector <vector <double_t> > charge_points = {{}, {}, {}, {}};
+    vector <vector <double_t> > time_points = {{}, {}, {}, {}};
 
     /****************** READING & STORE DATA ******************/
     TTreeReader readerQ = TTreeReader();
@@ -75,8 +77,12 @@ int main(int argc, char** argv){
 
         charge_points[0].push_back(charge_dx);
         charge_points[1].push_back(charge_sx);
+        charge_points[2].push_back(charge_dx - charge_sx);
+        charge_points[3].push_back(charge_dx + charge_sx);
         time_points[0].push_back(time_dx);
         time_points[1].push_back(time_sx);
+        time_points[2].push_back(time_dx - time_sx);
+        time_points[3].push_back(time_dx + time_sx);
     }
 
     // check the right behavior of the program & data
@@ -92,9 +98,17 @@ int main(int argc, char** argv){
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
     TGraph* graph = new TGraph();
-    const int color[2] = {kGreen+3, kOrange+9};
+    TF1* fit = new TF1();
+    TLegend* leg;
 
-    for(int ch=0; ch<2; ++ch)
+    const int len = time_points.size();
+    const int color[] = {kGreen+3, kOrange+9, kAzure-5, kAzure-5};
+    const TString titles[] = {"Scatterplot: times vs charges (right side)",
+                                "Scatterplot: times vs charges (left side)",
+                                "Scatterplot: times vs charges (right side - left side)",
+                                "Scatterplot: times vs charges (right side + left side)"};
+
+    for(int ch=0; ch<len; ++ch)
     {
         int noOfPoints = charge_points[ch].size();
         double x[noOfPoints], y[noOfPoints];
@@ -114,25 +128,51 @@ int main(int argc, char** argv){
         graph->SetMarkerSize(4.);
 
         // axis
-        if(ch == 0) graph->SetTitle("Scatterplot: times vs charges (right side)");
-        else graph->SetTitle("Scatterplot: times vs charges (left side)");
+        graph->SetTitle(titles[ch]);
         graph->GetXaxis()->CenterTitle();
         graph->GetYaxis()->CenterTitle();
         graph->GetXaxis()->SetTitle("time [ns]");
         graph->GetYaxis()->SetTitle("Number of detected #gamma");
 
         graph->Draw("ap");
+        
+        if(ch<2) fit = new TF1("exponential function", "[0] + [1]*exp(-[2]*x) + [3]/x", graph->GetXaxis()->GetXmin(), graph->GetXaxis()->GetXmax());
+        else fit = new TF1("Poly3", "pol3", graph->GetXaxis()->GetXmin(), graph->GetXaxis()->GetXmax());
+        graph->Fit(fit, "0", "0");
+        fit->SetLineColor(kBlack);
+        fit->SetLineWidth(1);
+        fit->Draw("SAME");
+
+        leg = new TLegend(0.3, 0.78, 0.89, 0.89);
+        leg->SetHeader("Fit results:","");
+        if(ch<2)
+        {
+            leg->AddEntry("-", Form("quote: %.4g +/- %.4g",fit->GetParameter(0), fit->GetParError(0)),"L");
+            leg->AddEntry("-", Form("coefficient: %.4g +/- %.4g",fit->GetParameter(1), fit->GetParError(1)), "L");
+            leg->AddEntry("-", Form("decayconstant: %.4g +/- %.4g",fit->GetParameter(2), fit->GetParError(2)), "L");
+            leg->AddEntry("-", Form("1/x term: %.4g +/- %.4g",fit->GetParameter(3), fit->GetParError(3)), "L");
+        }
+        else
+        {
+            leg->AddEntry("-", Form("par0: %.4g +/- %.4g",fit->GetParameter(0), fit->GetParError(0)),"L");
+            leg->AddEntry("-", Form("par1: %.4g +/- %.4g",fit->GetParameter(1), fit->GetParError(1)), "L");
+            leg->AddEntry("-", Form("par2: %.4g +/- %.4g",fit->GetParameter(2), fit->GetParError(2)), "L");
+            leg->AddEntry("-", Form("par3: %.4g +/- %.4g",fit->GetParameter(3), fit->GetParError(3)), "L");
+        }
+        leg->Draw("SAME");
 
         if(ch == 0) canva->Print("images/time_vs_charge.pdf(","pdf");
-        else canva->Print("images/time_vs_charge.pdf)","pdf");
+        else if (ch == len-1) canva->Print("images/time_vs_charge.pdf)","pdf");
+        else canva->Print("images/time_vs_charge.pdf","pdf");
 
         graph->Clear();
         canva->Clear();
     }
 
-
     /****************** CLOSE & EXIT ******************/
 
+    delete leg;
+    delete fit;
     delete graph;
     delete canva;
 

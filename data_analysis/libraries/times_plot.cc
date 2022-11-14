@@ -133,7 +133,6 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
     std::vector < TTreeReaderValue <Double_t> > times;
 
     // to manipulate and save data
-    const int DX = 0, SX = 1;
     std::vector <std::vector <Double_t> > min_times = {{}, {}};
     std::vector < TH1F > histograms;
     TH1F histogram_differences = TH1F("histogram[DX -SX]", "difference t(dx)-t(sx)", nbins, -max_time, max_time);

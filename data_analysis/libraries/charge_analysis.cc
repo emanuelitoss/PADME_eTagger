@@ -51,8 +51,8 @@ void AddCharges(char * fileName, vector <vector <double_t> >* charge_means, vect
             else chargeSX += charge;
         }
 
-        charges_for_side[0].push_back(chargeDX);
-        charges_for_side[1].push_back(chargeSX);
+        charges_for_side[DX].push_back(chargeDX);
+        charges_for_side[SX].push_back(chargeSX);
     }
 
     vector <double_t> MeanCharges = {{}, {}};
@@ -116,8 +116,8 @@ void AddChargesEPE(char * fileName, vector <vector <double_t> >* charge_means, v
             else chargeSX += charge;
         }
 
-        charges_for_side[0].push_back(chargeDX);
-        charges_for_side[1].push_back(chargeSX);
+        charges_for_side[DX].push_back(chargeDX);
+        charges_for_side[SX].push_back(chargeSX);
 
         charges_functions[0].push_back(chargeDX+chargeSX);
         charges_functions[1].push_back(chargeDX-chargeSX);
@@ -162,10 +162,10 @@ void AddFunctionsOfCharges(vector <vector <double_t> >* means, vector <vector <d
 
     for(int meas = 0; meas < numMeasures; ++meas)
     {
-        val1 = (*means)[0][meas];
-        val2 = (*means)[1][meas];
-        err1 = (*errs)[0][meas];
-        err2 = (*errs)[1][meas];
+        val1 = (*means)[DX][meas];
+        val2 = (*means)[SX][meas];
+        err1 = (*errs)[DX][meas];
+        err2 = (*errs)[SX][meas];
 
         // charge sum
         (*functions)[sum_idx].push_back(val1 + val2);
@@ -198,6 +198,7 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
 
     TGraphErrors* graph = new TGraphErrors();
     TF1* exp_fit = new TF1();
+    TLegend* leg;
 
     int noOfPoints = positions_x.size();
     double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
@@ -247,6 +248,15 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
         exp_fit->SetFillColorAlpha(color[ch],0.5);
         exp_fit->Draw("SAME");
 
+        // legend
+        if(ch == 0) leg = new TLegend(0.11, 0.78, 0.70, 0.89);
+        else leg = new TLegend(0.3, 0.78, 0.89, 0.89);
+        leg->SetHeader("Fit results:","");
+        leg->AddEntry("-", Form("quote: %.4g +/- %.4g",exp_fit->GetParameter(0), exp_fit->GetParError(0)),"L");
+        leg->AddEntry("-", Form("coefficient: %.4g +/- %.4g",exp_fit->GetParameter(1), exp_fit->GetParError(1)), "L");
+        leg->AddEntry("-", Form("decayconstant: %.4g +/- %.4g",exp_fit->GetParameter(2), exp_fit->GetParError(2)), "L");
+        leg->Draw("SAME");
+
         canva->Update();
         graph->Clear();
     }
@@ -254,6 +264,7 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
     if(EVE) canva->Print("images/chargesEpE.pdf(","pdf");
     else canva->Print("images/charges.pdf(","pdf");
 
+    delete leg;
     delete exp_fit;
     delete graph;
     delete canva;
@@ -264,7 +275,6 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
     
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
 
-    const int color[4] = {kAzure-5, kAzure-5, kViolet+6, kViolet+6};
     TString name[4] = {"Charges sum", "Charges difference", "Charges ratio", "Charges ratio"};
     TString yAxisName[4] = {"Sum N_{DX} + N_{SX}", "Difference N_{DX} - N_{SX}", "Ratio N_{DX} / N_{SX}", "Ratio N_{SX} / N_{DX}"};
 
@@ -291,7 +301,7 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
         
         // markers
         graph->SetMarkerStyle(20);
-        graph->SetMarkerColor(color[ch]);
+        graph->SetMarkerColor(kAzure-5);
         graph->SetMarkerSize(4.);
         graph->SetDrawOption("AP");
         gStyle->SetEndErrorSize(8);
@@ -302,7 +312,6 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
         graph->GetYaxis()->CenterTitle();
         graph->GetXaxis()->SetTitle("position x [mm]");
         graph->GetYaxis()->SetTitle(yAxisName[ch]);
-        
      
         graph->Draw();
 
@@ -314,10 +323,10 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
         // hyperbolic tangent
         //else fit = new TF1("f(x)/f(-x)", "(1+[0]*exp(x*[1]))/(1+[0]*exp(-x*[1]))", -HALF_LEN_X, HALF_LEN_X);
         graph->Fit(fit, "0", "0");
-        fit->SetLineColor(color[ch]);
+        fit->SetLineColor(kAzure-5);
         fit->SetLineWidth(1);
         fit->SetFillStyle(3002);
-        fit->SetFillColorAlpha(color[ch],0.5);
+        fit->SetFillColorAlpha(kAzure-5,0.5);
         fit->Draw("SAME");
 
         canva->Draw();
