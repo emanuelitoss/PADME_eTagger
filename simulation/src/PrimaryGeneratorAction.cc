@@ -82,6 +82,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     if ( tagLV ) fTagger = dynamic_cast<G4Box*>(tagLV->GetSolid());
   }
 
+  max_x = fTagger->GetXHalfLength();
+  max_y = fTagger->GetYHalfLength();
+
   ParticleKinematicsGenerator();
 
   fParticleGun->GeneratePrimaryVertex(anEvent);
@@ -98,7 +101,6 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
   fParticleGun->SetParticleEnergy(21.*MeV);
   
   const G4double initial_z = fEnvelope->GetZHalfLength();
-  G4double max_x = (fTagger->GetXHalfLength()), max_y = (fTagger->GetYHalfLength());
 
   // direction of the beam
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
@@ -107,8 +109,8 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
 
   if(randomic_generation)
   {
-    fInitial_X = (G4UniformRand()-0.5)*(2-EPS);
-    fInitial_Y = (G4UniformRand()-0.5)*(2-EPS);
+    fInitial_X = 100*(G4UniformRand()-0.5)*(2-EPS);
+    fInitial_Y = 100*(G4UniformRand()-0.5)*(2-EPS);
   }
 
   fParticleGun->SetParticlePosition(G4ThreeVector(max_x*fInitial_X/100., max_y*fInitial_Y/100., initial_z));

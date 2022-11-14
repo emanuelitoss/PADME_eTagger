@@ -75,12 +75,13 @@ RunAction::RunAction()
   analysisManager->CreateH1("PhotonsTime[7]","Arival time of photons[7]", 100, 0, 30, "ns");
   analysisManager->CreateH1("PhotonsTime[8]","Arival time of photons[8]", 100, 0, 30, "ns");
 
-  // Creating ntuples
-  analysisManager->CreateNtuple("energyLoss", "Energy loss in each event in the tagger");
+  // Create Ntuple of energy loss in tagger
+  analysisManager->CreateNtuple("energy_loss", "Energy loss in each event in the tagger");
   analysisManager->CreateNtupleDColumn("EnergyPlasticScintillator");
   analysisManager->FinishNtuple();
 
-  analysisManager->CreateNtuple("eTagDataTuples", "Tuples of arrival time of photons");
+  // Create Ntuple 
+  analysisManager->CreateNtuple("times", "Tuples of arrival time of photons");
   analysisManager->CreateNtupleDColumn("PhotonsTime[1]");
   analysisManager->CreateNtupleDColumn("PhotonsTime[2]");
   analysisManager->CreateNtupleDColumn("PhotonsTime[3]");
@@ -91,18 +92,18 @@ RunAction::RunAction()
   analysisManager->CreateNtupleDColumn("PhotonsTime[8]");
   analysisManager->FinishNtuple();
 
-  analysisManager->CreateNtuple("firstTimes","Tuples of first arrival time for each event and SiPM");
-  analysisManager->CreateNtupleDColumn("1stTimeSiPM[1]");
-  analysisManager->CreateNtupleDColumn("1stTimeSiPM[2]");
-  analysisManager->CreateNtupleDColumn("1stTimeSiPM[3]");
-  analysisManager->CreateNtupleDColumn("1stTimeSiPM[4]");
-  analysisManager->CreateNtupleDColumn("1stTimeSiPM[5]");
-  analysisManager->CreateNtupleDColumn("1stTimeSiPM[6]");
-  analysisManager->CreateNtupleDColumn("1stTimeSiPM[7]");
-  analysisManager->CreateNtupleDColumn("1stTimeSiPM[8]");
+  analysisManager->CreateNtuple("arrival_times","Tuples of first arrival time for each event and SiPM");
+  analysisManager->CreateNtupleDColumn("arrival_times_SiPM[1]");
+  analysisManager->CreateNtupleDColumn("arrival_times_SiPM[2]");
+  analysisManager->CreateNtupleDColumn("arrival_times_SiPM[3]");
+  analysisManager->CreateNtupleDColumn("arrival_times_SiPM[4]");
+  analysisManager->CreateNtupleDColumn("arrival_times_SiPM[5]");
+  analysisManager->CreateNtupleDColumn("arrival_times_SiPM[6]");
+  analysisManager->CreateNtupleDColumn("arrival_times_SiPM[7]");
+  analysisManager->CreateNtupleDColumn("arrival_times_SiPM[8]");
   analysisManager->FinishNtuple();
 
-  analysisManager->CreateNtuple("totalCharges","Tuples total charge for each SiPM for event");
+  analysisManager->CreateNtuple("charges","Total charge for each SiPM for event");
   analysisManager->CreateNtupleDColumn("Charges[1]");
   analysisManager->CreateNtupleDColumn("Charges[2]");
   analysisManager->CreateNtupleDColumn("Charges[3]");
@@ -111,6 +112,11 @@ RunAction::RunAction()
   analysisManager->CreateNtupleDColumn("Charges[6]");
   analysisManager->CreateNtupleDColumn("Charges[7]");
   analysisManager->CreateNtupleDColumn("Charges[8]");
+  analysisManager->FinishNtuple();
+
+  analysisManager->CreateNtuple("positions","Positions (x,y) of the incident electrons (or positrons)");
+  analysisManager->CreateNtupleDColumn("X_position");
+  analysisManager->CreateNtupleDColumn("Y_position");
   analysisManager->FinishNtuple();
 
   // Register accumulable to the accumulable manager

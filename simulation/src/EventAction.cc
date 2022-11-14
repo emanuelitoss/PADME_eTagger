@@ -30,6 +30,7 @@
 #include "EventAction.hh"
 #include "RunAction.hh"
 #include "RunData.hh"
+#include "PrimaryGeneratorAction.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
@@ -61,6 +62,13 @@ void EventAction::BeginOfEventAction(const G4Event*){
   min_times = {max_t,max_t,max_t,max_t,max_t,max_t,max_t,max_t};
   signals_charges = {0.,0.,0.,0.,0.,0.,0.,0.};
 
+  const PrimaryGeneratorAction* generatorAction
+   = static_cast<const PrimaryGeneratorAction*>
+   (G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction());
+
+  position_x = generatorAction->GetInitialX();
+  position_y = generatorAction->GetInitialY();
+
 }
 
 void EventAction::EndOfEventAction(const G4Event* event){
@@ -79,7 +87,7 @@ void EventAction::EndOfEventAction(const G4Event* event){
     runData->FIllFirstTimes(min_times);
   }
 
-  runData->FillPerEvent(signals_charges);
+  runData->FillPerEvent(signals_charges, position_x, position_y);
 
 }
 
@@ -88,6 +96,5 @@ void EventAction::AddEdep(G4double edep){
 }
 
 void EventAction::SetMinTimeIfLess(G4int channel, G4double time){
-  //if(time != 0 && time < min_times[channel])  min_times[channel] = time;
-  if(time > 0 && time < min_times[channel])  min_times[channel] = time;
+  if(time < min_times[channel])  min_times[channel] = time;
 }

@@ -60,6 +60,7 @@ class EventAction : public G4UserEventAction
   G4double fEdep;
   std::vector <G4double> min_times;
   std::vector <G4double> signals_charges;
+  G4double position_x, position_y;
   
 };
 

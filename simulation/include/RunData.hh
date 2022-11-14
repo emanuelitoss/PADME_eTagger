@@ -34,7 +34,8 @@
 #include "globals.hh"
 #include "g4root.hh"
 
-#include "../include/OutputColors.hh"
+#include "OutputColors.hh"
+#include "RunAction.hh"
 
 #include <array>
 
@@ -65,7 +66,7 @@ class RunData : public G4Run
         virtual ~RunData();
 
         void AddEnergy(G4int id, G4double de);
-        void FillPerEvent(std::vector <G4double> charges);
+        void FillPerEvent(std::vector <G4double> charges, G4double x, G4double y);
         void FillTimePerPhoton(G4int id, G4double t);
         void FIllFirstTimes(std::vector <G4double> time);
 

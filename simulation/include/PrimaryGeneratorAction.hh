@@ -61,8 +61,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     // getters
     const G4ParticleGun* GetParticleGun() const { return fParticleGun; }
-    G4double GetInitialX() const { return fInitial_X; }
-    G4double GetInitialY() const { return fInitial_Y; }
+    G4double GetInitialX() const { return max_x*fInitial_X/100.; }
+    G4double GetInitialY() const { return max_y*fInitial_Y/100.; }
 
   private:
 
@@ -78,6 +78,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4Box* fTagger;
 
     G4GenericMessenger* fMessenger;
+
+    G4double max_x, max_y;
     G4double fInitial_X = 0.;
     G4double fInitial_Y = 0.;
 

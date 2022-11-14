@@ -43,27 +43,28 @@ RunData::RunData()
 RunData::~RunData()
 {}
 
-void RunData::FillPerEvent(std::vector <G4double> charges)
+void RunData::FillPerEvent(std::vector <G4double> charges, G4double x, G4double y)
 {
     auto analysisManager = G4AnalysisManager::Instance();
 
     // accumulate statistic
     // in the order od the histograms, ntuple columns declarations
-    G4int counter = 0;
     for ( auto edep : fEdep )
     {
-        analysisManager->FillH1(counter, edep);
-        analysisManager->FillNtupleDColumn(0, counter, edep);
+        analysisManager->FillH1(ID_ENERGY, edep);
+        analysisManager->FillNtupleDColumn(ID_ENERGY, 0, edep);
     }
     analysisManager->AddNtupleRow(0);
 
-    counter = 3;
     for (int channel = 0; channel < 8; ++channel)
     {
-        analysisManager->FillNtupleDColumn(counter, channel, charges[channel]);
+        analysisManager->FillNtupleDColumn(ID_CHARGES, channel, charges[channel]);
     }
-    analysisManager->AddNtupleRow(counter);
+    analysisManager->AddNtupleRow(ID_CHARGES);
 
+    analysisManager->FillNtupleDColumn(ID_POSITIONS, 0, x);
+    analysisManager->FillNtupleDColumn(ID_POSITIONS, 1, y);
+    analysisManager->AddNtupleRow(ID_POSITIONS);
 }
 
 void RunData::FillTimePerPhoton(G4int id, G4double time)
@@ -71,9 +72,9 @@ void RunData::FillTimePerPhoton(G4int id, G4double time)
     auto analysisManager = G4AnalysisManager::Instance();
     
     analysisManager->FillH1(id + 1, time);
-    analysisManager->FillNtupleDColumn(1, id, time);
+    analysisManager->FillNtupleDColumn(ID_TIMES, id, time);
     
-    analysisManager->AddNtupleRow(1);
+    analysisManager->AddNtupleRow(ID_TIMES);
 
 }
 
@@ -81,8 +82,8 @@ void RunData::FIllFirstTimes(std::vector <G4double> times){
 
     auto analysisManager = G4AnalysisManager::Instance();
 
-    for(int id = 0; id < 8; ++id) analysisManager->FillNtupleDColumn(2, id, times[id]);
-    analysisManager->AddNtupleRow(2);
+    for(int id = 0; id < 8; ++id) analysisManager->FillNtupleDColumn(ID_ARRIVAL_TIMES, id, times[id]);
+    analysisManager->AddNtupleRow(ID_ARRIVAL_TIMES);
 
 }
 
