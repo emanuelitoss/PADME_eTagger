@@ -80,9 +80,8 @@ int main(int argc, char** argv){
         gStyle->SetEndErrorSize(8);
 
         // axis
-        string title = "Total charges vs initial time";
-        TString Ttitle = title;
-        graph->SetTitle(Ttitle);
+        if(ch == 0) graph->SetTitle("Total charges vs initial time (right side)");
+        else graph->SetTitle("Total charges vs initial time (left side)");
         graph->GetXaxis()->CenterTitle();
         graph->GetYaxis()->CenterTitle();
         graph->GetXaxis()->SetTitle("initial time t[ns]");
