@@ -83,9 +83,7 @@ void EventAction::EndOfEventAction(const G4Event* event){
 
   auto runData = static_cast<RunData*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
 
-  for(int i = 0; i<8; ++i){
-    runData->FIllFirstTimes(min_times);
-  }
+  runData->FIllFirstTimes(min_times);
 
   runData->FillPerEvent(signals_charges, position_x, position_y);
 
