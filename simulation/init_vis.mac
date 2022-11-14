@@ -133,6 +133,6 @@
 # /vis/set/lineWidth     # Revert to default line width (1.)
 
 # Attach text to one edge of Shape1, with a small, fixed offset
-# /vis/scene/add/text 0 12 -13.5 cm 18 4 4 BGO
+# /vis/scene/add/text 0 12 -13.5 cm 18 4 4 Plastic
 # Attach text to one corner of Shape2, with a small, fixed offset
 # /vis/scene/add/text 0 3.5 8 cm 18 4 4 Plastics

@@ -86,9 +86,3 @@ void RunData::FIllFirstTimes(std::vector <G4double> times){
     analysisManager->AddNtupleRow(ID_ARRIVAL_TIMES);
 
 }
-
-void RunData::Reset(){
-
-    for ( auto& edep : fEdep ) edep = 0.;
-
-}

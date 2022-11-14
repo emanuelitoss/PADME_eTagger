@@ -81,7 +81,7 @@ RunAction::RunAction()
   analysisManager->FinishNtuple();
 
   // Create Ntuple 
-  analysisManager->CreateNtuple("times", "Tuples of arrival time of photons");
+  analysisManager->CreateNtuple("generic_times", "Tuples of arrival time of photons");
   analysisManager->CreateNtupleDColumn("PhotonsTime[1]");
   analysisManager->CreateNtupleDColumn("PhotonsTime[2]");
   analysisManager->CreateNtupleDColumn("PhotonsTime[3]");
@@ -171,14 +171,8 @@ void RunAction::EndOfRunAction(const G4Run* run){
   G4double edep  = fEdep.GetValue();
   G4double edep2 = fEdep2.GetValue();
   
-  G4double rms = edep2 - edep*edep/nofEvents; // non dovrebbe essere (edep2 - edep*edep)/nofEvents ???
+  G4double rms = edep2 - edep*edep/nofEvents;
   if (rms > 0.) rms = std::sqrt(rms); else rms = 0.;  
-
-  const DetectorConstruction* detectorConstruction
-   = static_cast<const DetectorConstruction*> (G4RunManager::GetRunManager()->GetUserDetectorConstruction());
-  G4double mass = detectorConstruction->GetScoringVolume()->GetMass();
-  G4double dose = edep/mass;
-  G4double rmsDose = rms/mass;
 
   // Run conditions
   //  note: There is no primary generator action object for "master"
@@ -211,27 +205,21 @@ void RunAction::EndOfRunAction(const G4Run* run){
   G4cout
      << G4endl
      << " The run consists of " << nofEvents << " "<< runCondition
-     << G4endl
-     << " Cumulated dose per run, in scoring volume : " 
-     << G4BestUnit(dose,"Dose") << " rms = " << G4BestUnit(rmsDose,"Dose")
-     << G4endl
-     << "------------------------------------------------------------"
-     << G4endl
      << G4endl;
 
   // print histogram statistics
   auto analysisManager = G4AnalysisManager::Instance();
-  if ( analysisManager->GetH1(1) ) {
+  if ( analysisManager->GetH1(1) )
+  {
     G4cout << G4endl << " ----> print histograms statistic ";
     if(isMaster) {
       G4cout << "for the entire run " << G4endl << G4endl;
     }
-  
+
     G4cout << " EnergyPlastic : mean = "
       << G4BestUnit(analysisManager->GetH1(0)->mean(), "Energy")
       << " rms = "
       << G4BestUnit(analysisManager->GetH1(0)->rms(),  "Energy") << G4endl;
-
   }
 
   // save histograms & ntuple
@@ -250,12 +238,5 @@ void RunAction::DefineCommands() {
   = fMessenger->DeclareProperty("SetName", OutputFileName);
   setFileNameCommand.SetParameterName("Output File Name", true);
   setFileNameCommand.SetDefaultValue("");
-
-}
-
-void RunAction::AddEdep(G4double edep){
-
-  fEdep  += edep;
-  fEdep2 += edep*edep;
 
 }

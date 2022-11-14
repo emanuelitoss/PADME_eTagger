@@ -39,13 +39,6 @@
 
 #include <array>
 
-const G4int kBGO = 0;
-const G4int kBGO_Cherenkov = 1;
-const G4int kBGO_Scintillation = 2;
-const G4int kDim = 3;
-
-const G4int kDimVolumes = 5;
-
 ///  Run data class
 ///
 /// It defines data members to hold the energy deposit and track lengths
@@ -65,28 +58,12 @@ class RunData : public G4Run
         RunData();
         virtual ~RunData();
 
-        void AddEnergy(G4int id, G4double de);
         void FillPerEvent(std::vector <G4double> charges, G4double x, G4double y);
         void FillTimePerPhoton(G4int id, G4double t);
         void FIllFirstTimes(std::vector <G4double> time);
 
-        void Reset();
-
-        // Get methods
-        G4double GetEdep(G4int id) const;
-
     private:
-        std::array<G4double, kDim> fEdep = { 0., 0., 0.};
+        std::array<G4double, 3> fEdep = { 0., 0., 0.};
 };
-
-// inline functions
-inline void RunData::AddEnergy(G4int id, G4double de) {
-    fEdep[id] += de;
-}
-
-inline G4double RunData::GetEdep(G4int id) const {
-    return fEdep[id];
-}
-
   
 #endif

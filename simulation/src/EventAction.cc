@@ -42,8 +42,7 @@
 
 EventAction::EventAction(RunAction* runAction)
 : G4UserEventAction(),
-  fRunAction(runAction),
-  fEdep(0.)
+  fRunAction(runAction)
 {
   min_times = {0.,0.,0.,0.,0.,0.,0.,0.};
   signals_charges = {0.,0.,0.,0.,0.,0.,0.,0.};
@@ -52,11 +51,6 @@ EventAction::EventAction(RunAction* runAction)
 EventAction::~EventAction(){}
 
 void EventAction::BeginOfEventAction(const G4Event*){
-
-  fEdep = 0.;
-
-  auto runData = static_cast<RunData*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
-  runData->Reset();
 
   G4double max_t = 2000.*ns;
   min_times = {max_t,max_t,max_t,max_t,max_t,max_t,max_t,max_t};
@@ -72,9 +66,6 @@ void EventAction::BeginOfEventAction(const G4Event*){
 }
 
 void EventAction::EndOfEventAction(const G4Event* event){
-  
-  // accumulate statistics in run action
-  fRunAction->AddEdep(fEdep);
 
   auto eventID = event->GetEventID();
   if (( eventID % 10 == 0 )) {
@@ -87,10 +78,6 @@ void EventAction::EndOfEventAction(const G4Event* event){
 
   runData->FillPerEvent(signals_charges, position_x, position_y);
 
-}
-
-void EventAction::AddEdep(G4double edep){
-  fEdep += edep;
 }
 
 void EventAction::SetMinTimeIfLess(G4int channel, G4double time){

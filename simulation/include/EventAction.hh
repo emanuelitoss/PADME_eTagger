@@ -48,7 +48,6 @@ class EventAction : public G4UserEventAction
   virtual void BeginOfEventAction(const G4Event* event);
   virtual void EndOfEventAction(const G4Event* event);
 
-  void AddEdep(G4double edep);
   void SetMinTimeIfLess(G4int channel, G4double time);
   void SetDetectedPhoton(G4int id);
   G4double GetMinTime(G4int channel) { return min_times[channel]; }
@@ -57,7 +56,6 @@ class EventAction : public G4UserEventAction
   private:
 
   RunAction* fRunAction;
-  G4double fEdep;
   std::vector <G4double> min_times;
   std::vector <G4double> signals_charges;
   G4double position_x, position_y;

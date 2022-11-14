@@ -49,8 +49,6 @@
 #include "G4UnitsTable.hh"
 
 #include <vector>
-#define hPlanck 4.135655e-15 // [eV*s]
-#define c_light 3e+17 // [nm/s]
 
 #include "Randomize.hh"
 #define NOISE_STD_DEV 0.6 //[ns]
@@ -77,7 +75,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
 
   G4VPhysicalVolume* PostStepPV = step->GetPostStepPoint()->GetTouchableHandle()->GetVolume();
   G4VPhysicalVolume* PreStepPV = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
-  G4LogicalVolume* volume = PreStepPV->GetLogicalVolume();
 
   // Store of arrival time for optical photons
   G4bool IsOpticalPhoton = ( step->GetTrack()->GetParticleDefinition() == G4OpticalPhoton::OpticalPhotonDefinition() );
@@ -114,19 +111,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
       }
     }
   }
-
-  // collect energy deposited in this step
-  G4double edepStep = step->GetTotalEnergyDeposit();
-
-  if ( PreStepPV == fDetConstruction->GetScintillator() ) {
-    runData->AddEnergy(kBGO, edepStep);
-  }
-
-  // check if we are not in scoring volume
-  if (volume != fScoringVolume) return;
-  // else score
-  fEventAction->AddEdep(edepStep);
-
 }
 
 G4bool SteppingAction::ApplyDetectionEfficiency(G4double photon_energy){
