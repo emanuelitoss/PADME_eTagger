@@ -37,11 +37,11 @@ int main(int argc, char** argv){
     for (int channel = 0; channel < numberOfChannels; ++channel)
     {
         ChannelName = to_string(channel+1);
+
         dirNameStr = "Charges[" + ChannelName + "]";
         const char* dirNameQ = dirNameStr.c_str();
         charges.push_back(TTreeReaderValue<double_t>(readerQ,dirNameQ));
 
-        ChannelName = to_string(channel+1);
         dirNameStr = "arrival_times_SiPM[" + ChannelName + "]";
         const char* dirNameT = dirNameStr.c_str();
         times.push_back(TTreeReaderValue<double_t>(readerT,dirNameT));
@@ -75,8 +75,8 @@ int main(int argc, char** argv){
 
         charge_points[0].push_back(charge_dx);
         charge_points[1].push_back(charge_sx);
-        time_points[0].push_back(time_sx);
-        time_points[1].push_back(time_dx);
+        time_points[0].push_back(time_dx);
+        time_points[1].push_back(time_sx);
     }
 
     // check the right behavior of the program & data
