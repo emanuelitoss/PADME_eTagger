@@ -68,7 +68,7 @@ void EventAction::BeginOfEventAction(const G4Event*){
 void EventAction::EndOfEventAction(const G4Event* event){
 
   auto eventID = event->GetEventID();
-  if (( eventID % 10 == 0 )) {
+  if (( eventID % 5 == 0 )) {
     G4cout << "-------> End of event: " << eventID << G4endl;
   }
 
