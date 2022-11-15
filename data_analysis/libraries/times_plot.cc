@@ -23,7 +23,7 @@ void plotHisto_arrivalTimes(char * fileName, int openCloseFile, std::vector <std
   // reading objects
   TFile* myFile = TFile::Open(fileName);
   TTreeReader reader = TTreeReader();
-  reader.SetTree("firstTimes", myFile);
+  reader.SetTree("arrival_times", myFile);
   std::vector< TTreeReaderValue<Double_t> > times;
 
   // 8 objects: one for each SiPM
@@ -34,7 +34,7 @@ void plotHisto_arrivalTimes(char * fileName, int openCloseFile, std::vector <std
   {
     // readers
     std::string ChannelName = std::to_string(channel+1);
-    std::string dirNameS = "1stTimeSiPM[" + ChannelName + "]";
+    std::string dirNameS = "arrival_times_SiPM[" + ChannelName + "]";
     const char* dirName = dirNameS.c_str();
     times.push_back(TTreeReaderValue<Double_t>(reader,dirName));
 
@@ -129,7 +129,7 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
     // reading objects
     TFile* myFile = TFile::Open(fileName);
     TTreeReader reader = TTreeReader();
-    reader.SetTree("firstTimes", myFile);
+    reader.SetTree("arrival_times", myFile);
     std::vector < TTreeReaderValue <Double_t> > times;
 
     // to manipulate and save data
@@ -141,7 +141,7 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
     {
       // readers
       std::string ChannelName = std::to_string(channel+1);
-      std::string dirNameS = "1stTimeSiPM[" + ChannelName + "]";
+      std::string dirNameS = "arrival_times_SiPM[" + ChannelName + "]";
       const char* dirName = dirNameS.c_str();
       times.push_back(TTreeReaderValue<Double_t>(reader,dirName));
     }

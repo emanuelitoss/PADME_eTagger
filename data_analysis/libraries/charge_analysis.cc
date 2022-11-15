@@ -20,7 +20,7 @@ void AddCharges(char * fileName, vector <vector <double_t> >* charge_means, vect
     // reading objects
     TFile* myFile = TFile::Open(fileName);
     TTreeReader reader = TTreeReader();
-    reader.SetTree("totalCharges", myFile);
+    reader.SetTree("charges", myFile);
     vector< TTreeReaderValue<double_t> > charges;
 
     cout << "\nInspecting file \"" << fileName << "\":" << endl;
@@ -81,7 +81,7 @@ void AddChargesEPE(char * fileName, vector <vector <double_t> >* charge_means, v
     // reading objects
     TFile* myFile = TFile::Open(fileName);
     TTreeReader reader = TTreeReader();
-    reader.SetTree("totalCharges", myFile);
+    reader.SetTree("charges", myFile);
     vector< TTreeReaderValue<double_t> > charges;
 
     cout << "\nInspecting file \"" << fileName << "\":" << endl;
@@ -281,6 +281,8 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
     TGraphErrors* graph = new TGraphErrors();
     TF1* fit = new TF1();
 
+    TLegend* leg;
+
     int noOfPoints = positions_x.size();
     double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
 
@@ -317,7 +319,7 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
 
         // hyperbolic cosine + offset
         //if(ch == 0) fit = new TF1("f(x)+f(-x)", "2*[0] + [1]*(exp(x*[2])+exp(-x*[2]))", -HALF_LEN_X, HALF_LEN_X);
-        fit = new TF1("f(x)+f(-x)", "pol6", -HALF_LEN_X, HALF_LEN_X);
+        fit = new TF1("f(x)+f(-x)", "pol5", -HALF_LEN_X, HALF_LEN_X);
         // hyperbolic cosine + offset
         //else if (ch==1) fit = new TF1("f(x)-f(-x)", "[0]*(exp(x*[1])-exp(-x*[1]))", -HALF_LEN_X, HALF_LEN_X);
         // hyperbolic tangent
@@ -328,6 +330,16 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
         fit->SetFillStyle(3002);
         fit->SetFillColorAlpha(kAzure-5,0.5);
         fit->Draw("SAME");
+
+        leg = new TLegend(0.11, 0.78, 0.70, 0.89);
+        leg->SetHeader("Fit results, polynomial degree 5:","");
+        leg->AddEntry("-", Form("par[0]: %.4g +/- %.4g",fit->GetParameter(0), fit->GetParError(0)),"L");
+        leg->AddEntry("-", Form("par[1]: %.4g +/- %.4g",fit->GetParameter(1), fit->GetParError(1)), "L");
+        leg->AddEntry("-", Form("par[2]: %.4g +/- %.4g",fit->GetParameter(2), fit->GetParError(2)), "L");
+        leg->AddEntry("-", Form("par[3]: %.4g +/- %.4g",fit->GetParameter(3), fit->GetParError(2)), "L");
+        leg->AddEntry("-", Form("par[4]: %.4g +/- %.4g",fit->GetParameter(4), fit->GetParError(2)), "L");
+        leg->AddEntry("-", Form("par[5]: %.4g +/- %.4g",fit->GetParameter(5), fit->GetParError(2)), "L");
+        leg->Draw("SAME");
 
         canva->Draw();
 
@@ -346,6 +358,7 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
 
     }
 
+    delete leg;
     delete fit;
     delete graph;
     delete canva;

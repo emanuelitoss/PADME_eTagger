@@ -23,7 +23,7 @@ void print_signals(char * fileName, int openCloseFile){
 
   /******* READERS & HISTOS INITIALIZATION *******/
 
-  TTreeReader* reader = new TTreeReader("eTagDataTuples", myFile);
+  TTreeReader* reader = new TTreeReader("generic_times", myFile);
   std::vector< TTreeReaderValue<Double_t> > times;
 
   std::vector <TH1F> histograms;
