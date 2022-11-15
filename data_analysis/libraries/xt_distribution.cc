@@ -112,7 +112,8 @@ void HistoFillDeltaXRandomFile(TH1F* histogram, TF1* function, TString fileName)
 
     }
 
-    return;
+    myFile->Close();
+    delete myFile;
 }
 
 void PlotHistogramDeltaX(TH1F* histo_deltaX, TString output_name){
@@ -120,8 +121,9 @@ void PlotHistogramDeltaX(TH1F* histo_deltaX, TString output_name){
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 4000);
     TF1* gauss_fit = new TF1();
 
-    histo_deltaX->Draw("");
-    histo_deltaX->Draw("SAME E1");
+    canva->SetGrid();
+
+    histo_deltaX->Draw("EP");
     histo_deltaX->GetXaxis()->SetTitle("Length [mm]");
     histo_deltaX->GetYaxis()->SetTitle("Number of events");
     histo_deltaX->SetLineColor(kBlack);

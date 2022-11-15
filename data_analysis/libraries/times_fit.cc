@@ -17,6 +17,8 @@ TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3800, 3500);
     const int color[2] = {kGreen+3, kOrange+9};
 
+    canva->SetGrid();
+
     auto graph = new TGraphErrors();
     TF1* line_fit = new TF1();
     TLegend* leg = new TLegend();

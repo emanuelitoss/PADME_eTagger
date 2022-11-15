@@ -94,6 +94,7 @@ int main(int argc, char** argv){
     /***************** TESTING OF THE DISTRIBUTION OF TRUE_X - RECO_X OVER RANDOM (x,y) DATA *****************/
 
     histo_deltaX->Clear();
+    histo_deltaX = new TH1F("histo_dx_time","Histogram of x_{rec} - x_{true}", nbins, -HALF_LEN_X, HALF_LEN_X);
     HistoFillDeltaXRandomFile(histo_deltaX, correlation_function, "data_eTagRAND.root");
     PlotHistogramDeltaX(histo_deltaX, "images/t_vs_x.pdf)");
 
@@ -104,7 +105,7 @@ int main(int argc, char** argv){
     delete stdDevs2;
     delete means2;
     delete stdDevs;
-    delete means;
+    //delete means;
 
     return EXIT_SUCCESS;
 }
