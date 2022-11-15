@@ -98,7 +98,7 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
   G4String particleName;
   G4ParticleDefinition* particle = particleTable->FindParticle(particleName="e-");
   fParticleGun->SetParticleDefinition(particle);
-  fParticleGun->SetParticleEnergy(21.*MeV);
+  fParticleGun->SetParticleEnergy(100.*MeV);
   
   const G4double initial_z = fEnvelope->GetZHalfLength();
 
