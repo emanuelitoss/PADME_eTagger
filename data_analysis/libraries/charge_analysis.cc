@@ -190,7 +190,7 @@ void AddFunctionsOfCharges(vector <vector <double_t> >* means, vector <vector <d
     
 }
 
-void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >* stdDevs, vector <double_t> positions_x, bool EVE){
+void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >* stdDevs, vector <double_t> positions_x, bool EPE){
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
     canva->Divide(2,1);
@@ -261,7 +261,7 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
         graph->Clear();
     }
 
-    if(EVE) canva->Print("images/chargesEpE.pdf(","pdf");
+    if(EPE) canva->Print("images/chargesEpE.pdf(","pdf");
     else canva->Print("images/charges.pdf(","pdf");
 
     delete leg;
@@ -271,7 +271,7 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
 
 }
 
-void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <double_t> >* fstdDevs, vector <double_t> positions_x, bool EVE){
+void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <double_t> >* fstdDevs, vector <double_t> positions_x, bool EPE){
     
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
 
@@ -290,12 +290,25 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
     {
         canva->SetGrid();
 
-        for(int entry = 0; entry < noOfPoints; ++entry)
+        if(ch == 1)
         {
-            x[entry] = positions_x[entry];
-            y[entry] = (*fmeans)[ch][entry];
-            dx[entry] = 0;
-            dy[entry] = (*fstdDevs)[ch][entry];
+            for(int entry = 0; entry < noOfPoints; ++entry)
+            {
+                x[entry] = (*fmeans)[ch][entry];
+                y[entry] = positions_x[entry];
+                dx[entry] = (*fstdDevs)[ch][entry];
+                dy[entry] = 10;
+            }
+        }
+        else
+        {
+            for(int entry = 0; entry < noOfPoints; ++entry)
+            {
+                x[entry] = positions_x[entry];
+                y[entry] = (*fmeans)[ch][entry];
+                dx[entry] = 0;
+                dy[entry] = (*fstdDevs)[ch][entry];
+            } 
         }
 
         graph = new TGraphErrors(noOfPoints, x, y, dx, dy);
@@ -319,7 +332,7 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
 
         // hyperbolic cosine + offset
         //if(ch == 0) fit = new TF1("f(x)+f(-x)", "2*[0] + [1]*(exp(x*[2])+exp(-x*[2]))", -HALF_LEN_X, HALF_LEN_X);
-        fit = new TF1("f(x)+f(-x)", "pol5", -HALF_LEN_X, HALF_LEN_X);
+        fit = new TF1("f(x)+f(-x)", "[0]*((1-exp(-[1]*x)) - (1-exp([2]*x)) )", -HALF_LEN_X, HALF_LEN_X);
         // hyperbolic cosine + offset
         //else if (ch==1) fit = new TF1("f(x)-f(-x)", "[0]*(exp(x*[1])-exp(-x*[1]))", -HALF_LEN_X, HALF_LEN_X);
         // hyperbolic tangent
@@ -337,13 +350,13 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
         leg->AddEntry("-", Form("par[1]: %.4g +/- %.4g",fit->GetParameter(1), fit->GetParError(1)), "L");
         leg->AddEntry("-", Form("par[2]: %.4g +/- %.4g",fit->GetParameter(2), fit->GetParError(2)), "L");
         leg->AddEntry("-", Form("par[3]: %.4g +/- %.4g",fit->GetParameter(3), fit->GetParError(2)), "L");
-        leg->AddEntry("-", Form("par[4]: %.4g +/- %.4g",fit->GetParameter(4), fit->GetParError(2)), "L");
-        leg->AddEntry("-", Form("par[5]: %.4g +/- %.4g",fit->GetParameter(5), fit->GetParError(2)), "L");
+        //leg->AddEntry("-", Form("par[4]: %.4g +/- %.4g",fit->GetParameter(4), fit->GetParError(2)), "L");
+        //leg->AddEntry("-", Form("par[5]: %.4g +/- %.4g",fit->GetParameter(5), fit->GetParError(2)), "L");
         leg->Draw("SAME");
 
         canva->Draw();
 
-        if(EVE)
+        if(EPE)
         {
             if (ch == 3) canva->Print("images/chargesEpE.pdf)","pdf");
             else canva->Print("images/chargesEpE.pdf","pdf");

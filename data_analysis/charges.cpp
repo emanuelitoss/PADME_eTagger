@@ -9,7 +9,7 @@ using namespace std;
 #include "libraries/infos.h"
 #include "libraries/charge_analysis.cc"
 
-#define EVE true // if true, it uses event per event method
+#define EPE true // if true, it uses event per event method
 
 int main(int argc, char** argv){
 
@@ -42,15 +42,15 @@ int main(int argc, char** argv){
         for(int file_counter = 1; file_counter < argc; ++file_counter)
         {
             fileName = argv[file_counter];
-            if(EVE) AddChargesEPE(fileName, charges_means, charges_stdDevs, charges_functions_means, charges_functions_stdDevs);
+            if(EPE) AddChargesEPE(fileName, charges_means, charges_stdDevs, charges_functions_means, charges_functions_stdDevs);
             else AddCharges(fileName, charges_means, charges_stdDevs);
         }
     }
 
-    if(!EVE) AddFunctionsOfCharges(charges_means, charges_stdDevs, charges_functions_means, charges_functions_stdDevs);
+    if(!EPE) AddFunctionsOfCharges(charges_means, charges_stdDevs, charges_functions_means, charges_functions_stdDevs);
 
-    PlotCharges(charges_means, charges_stdDevs, positions_x, EVE);
-    PlotChargesFunctions(charges_functions_means, charges_functions_stdDevs, positions_x, EVE);
+    PlotCharges(charges_means, charges_stdDevs, positions_x, EPE);
+    PlotChargesFunctions(charges_functions_means, charges_functions_stdDevs, positions_x, EPE);
 
     delete charges_functions_stdDevs;
     delete charges_functions_means;
