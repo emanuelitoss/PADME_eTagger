@@ -34,7 +34,7 @@ int main(int argc, char** argv){
         = new std::vector <std::vector <double> > {{}, {}};
     
     // positions in x axis for each input file
-    std::vector <double> positions_x = {-90, -80., -70., -60., -50., -30., 0., 30., 50., 60., 70., 80., 90.};
+    std::vector <double> positions_x = {-90, -80., -70., -60., -50., -40., -30., -20., -10., 0., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
     for (auto x = positions_x.begin(); x != positions_x.end(); ++x) *x *= HALF_LEN_X/100.;
     
     /***************** INSPECTING FILES *****************/
@@ -105,7 +105,6 @@ int main(int argc, char** argv){
     delete stdDevs2;
     delete means2;
     delete stdDevs;
-    //delete means;
 
     return EXIT_SUCCESS;
 }

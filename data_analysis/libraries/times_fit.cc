@@ -21,7 +21,6 @@ TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
 
     auto graph = new TGraphErrors();
     TF1* line_fit = new TF1();
-    TLegend* leg = new TLegend();
 
     int noOfPoints = positions_x.size();
     double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
@@ -56,25 +55,25 @@ TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
 
     // linear fit
     line_fit = new TF1("fitting a line", "pol1", -HALF_LEN_X, HALF_LEN_X);
-    graph->Fit(line_fit, "0", "0");
+    graph->Fit(line_fit, "Q L", "0");
     line_fit->SetLineColor(color[1]);
     line_fit->SetLineWidth(1);
     line_fit->SetFillStyle(3002);
     line_fit->SetFillColorAlpha(color[0],0.9);
-    //line_fit->DrawClone("SAME E3AL");
-
-    // legend
-    leg = new TLegend(0.4, 0.75, 0.89, 0.89);
-    leg->SetHeader("Fit results:","");
-    leg->AddEntry("", Form("coefficient: %.4g +/- %.4g",line_fit->GetParameter(1),line_fit->GetParError(1)),"L");
-    leg->AddEntry("", Form("quote: %.4g +/- %.4g",line_fit->GetParameter(0),line_fit->GetParError(0)), "L");
-    leg->Draw("SAME");
+    
+    gStyle->SetOptFit(1110);
+    gStyle->SetOptStat(2210);
+    gStyle->SetStatFont(43);
+    gStyle->SetStatFontSize(15);
+    gStyle->SetStatX(0.95);
+    gStyle->SetStatY(0.92);
+    gStyle->SetStatW(0.19);    //default width 0.19
+    gStyle->SetStatH(0.16);    // default height 0.10
 
     line_fit->Draw("SAME");
 
     canva->Print("images/t_vs_x.pdf(","pdf");
 
-    delete leg;
     delete graph;
     delete canva;
 

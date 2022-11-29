@@ -97,7 +97,6 @@ int main(int argc, char** argv){
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
     TGraph* graph = new TGraph();
     TF1* fit = new TF1();
-    TLegend* leg;
 
     const int len = time_points.size();
     const int color[] = {kGreen+3, kOrange+9, kAzure-5, kAzure-5};
@@ -120,6 +119,11 @@ int main(int argc, char** argv){
 
         graph = new TGraph(noOfPoints, x, y);
 
+        gStyle->SetOptFit(1110);
+        gStyle->SetOptStat(2210);
+        gStyle->SetStatX(0.95);
+        gStyle->SetStatY(0.87);
+
         // markers
         graph->SetMarkerStyle(43);
         graph->SetMarkerColor(color[ch]);
@@ -136,29 +140,10 @@ int main(int argc, char** argv){
         
         if(ch<2) fit = new TF1("exponential function", "[1] + [2]*exp(-[3]*x)", graph->GetXaxis()->GetXmin(), graph->GetXaxis()->GetXmax());
         else fit = new TF1("Poly3", "pol3", graph->GetXaxis()->GetXmin(), graph->GetXaxis()->GetXmax());
-        graph->Fit(fit, "0", "0");
+        graph->Fit(fit, "Q", "0");
         fit->SetLineColor(kBlack);
         fit->SetLineWidth(1);
         fit->Draw("SAME");
-
-        leg = new TLegend(0.3, 0.78, 0.89, 0.89);
-        if(ch<2)
-        {
-            leg->SetHeader("f(x) = A + B*exp(-C*x):","");
-            //leg->AddEntry("-", Form("quote: %.4g +/- %.4g",fit->GetParameter(0), fit->GetParError(0)),"L");
-            leg->AddEntry("-", Form("A = %.4g +/- %.4g",fit->GetParameter(1), fit->GetParError(1)), "L");
-            leg->AddEntry("-", Form("B = %.4g +/- %.4g",fit->GetParameter(2), fit->GetParError(2)), "L");
-            leg->AddEntry("-", Form("C = %.4g +/- %.4g",fit->GetParameter(3), fit->GetParError(3)), "L");
-        }
-        else
-        {
-            leg->SetHeader("Polynomial of 3rd degree:","");
-            leg->AddEntry("-", Form("par0: %.4g +/- %.4g",fit->GetParameter(0), fit->GetParError(0)),"L");
-            leg->AddEntry("-", Form("par1: %.4g +/- %.4g",fit->GetParameter(1), fit->GetParError(1)), "L");
-            leg->AddEntry("-", Form("par2: %.4g +/- %.4g",fit->GetParameter(2), fit->GetParError(2)), "L");
-            leg->AddEntry("-", Form("par3: %.4g +/- %.4g",fit->GetParameter(3), fit->GetParError(3)), "L");
-        }
-        leg->Draw("SAME");
 
         if(ch == 0) canva->Print("images/time_vs_charge.pdf(","pdf");
         else if (ch == len-1) canva->Print("images/time_vs_charge.pdf)","pdf");
@@ -170,7 +155,6 @@ int main(int argc, char** argv){
 
     /****************** CLOSE & EXIT ******************/
 
-    delete leg;
     delete fit;
     delete graph;
     delete canva;

@@ -88,6 +88,8 @@ void plotHisto_arrivalTimes(char * fileName, int openCloseFile, std::vector <std
     histograms[channel].SetLineWidth((Width_t)1.5);
 
     gStyle->SetEndErrorSize(8); //4 is the number of pixels
+    gStyle->SetOptFit(1110);
+    gStyle->SetOptStat(2210);
 
     gauss_fit = new TF1("fitting a line", "gaus", -HALF_LEN_X, HALF_LEN_X);
     histograms[channel].Fit(gauss_fit, "0", "0");

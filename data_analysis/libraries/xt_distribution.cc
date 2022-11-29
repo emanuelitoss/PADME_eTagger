@@ -129,10 +129,19 @@ void PlotHistogramDeltaX(TH1F* histo_deltaX, TString output_name){
     histo_deltaX->SetLineColor(kBlack);
     histo_deltaX->SetLineWidth((Width_t)1.5);
     
+    gStyle->Reset();
     gStyle->SetEndErrorSize(8);
+    gStyle->SetOptFit(1110);
+    gStyle->SetOptStat(2210);
+    gStyle->SetLegendTextSize(40);
+    gStyle->SetLegendFillColor(0);
+    gStyle->SetTitleFillColor(0);
+    gStyle->SetLineColorAlpha(kAzure-5,0.5);
+    gStyle->SetLineWidth(1);
+    gStyle->SetDrawBorder(false);
     
     gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
-    histo_deltaX->Fit(gauss_fit, "0", "0");
+    histo_deltaX->Fit(gauss_fit, "L Q", "0");
     gauss_fit->SetLineColor(kAzure-5);
     gauss_fit->SetLineWidth(1);
     gauss_fit->SetFillStyle(3002);
