@@ -198,7 +198,6 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
 
     TGraphErrors* graph = new TGraphErrors();
     TF1* exp_fit = new TF1();
-    TLegend* leg;
 
     int noOfPoints = positions_x.size();
     double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
@@ -225,7 +224,12 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
         graph->SetMarkerColor(color[ch]);
         graph->SetMarkerSize(2.);
         graph->SetDrawOption("AP");
+
         gStyle->SetEndErrorSize(8);
+        gStyle->SetOptFit(1110);
+        gStyle->SetOptStat(2210);
+        if(ch == 0) gStyle->SetStatX(0.5);
+        else gStyle->SetStatX(0.92);
 
         // axis
         string title = "Total charges vs Beam position (x,0)";
@@ -241,21 +245,12 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
         // exponential fit
         //syntax: TF1(const char* name, const char* formula, Double_t xmin = 0, Double_t xmax = 1)
         exp_fit = new TF1("exponential+offset", "[0] + [1]*exp(x*[2])", -HALF_LEN_X, HALF_LEN_X);
-        graph->Fit(exp_fit, "0", "0");
+        graph->Fit(exp_fit, "Q", "0");
         exp_fit->SetLineColor(color[ch]);
         exp_fit->SetLineWidth(1);
         exp_fit->SetFillStyle(3002);
         exp_fit->SetFillColorAlpha(color[ch],0.5);
         exp_fit->Draw("SAME");
-
-        // legend
-        if(ch == 0) leg = new TLegend(0.11, 0.78, 0.70, 0.89);
-        else leg = new TLegend(0.3, 0.78, 0.89, 0.89);
-        leg->SetHeader("Fit results:","");
-        leg->AddEntry("-", Form("quote: %.4g +/- %.4g",exp_fit->GetParameter(0), exp_fit->GetParError(0)),"L");
-        leg->AddEntry("-", Form("coefficient: %.4g +/- %.4g",exp_fit->GetParameter(1), exp_fit->GetParError(1)), "L");
-        leg->AddEntry("-", Form("decayconstant: %.4g +/- %.4g",exp_fit->GetParameter(2), exp_fit->GetParError(2)), "L");
-        leg->Draw("SAME");
 
         canva->Update();
         graph->Clear();
@@ -264,24 +259,22 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
     if(EPE) canva->Print("images/chargesEpE.pdf(","pdf");
     else canva->Print("images/charges.pdf(","pdf");
 
-    delete leg;
     delete exp_fit;
     delete graph;
     delete canva;
 
 }
 
-void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <double_t> >* fstdDevs, vector <double_t> positions_x, bool EPE){
+TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <double_t> >* fstdDevs, vector <double_t> positions_x, bool EPE){
     
+    vector <TF1*> fits = {nullptr, nullptr, nullptr, nullptr};
+
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
 
     TString name[4] = {"Charges sum", "Charges difference", "Charges ratio", "Charges ratio"};
     TString yAxisName[4] = {"Sum N_{DX} + N_{SX}", "Difference N_{DX} - N_{SX}", "Ratio N_{DX} / N_{SX}", "Ratio N_{SX} / N_{DX}"};
 
     TGraphErrors* graph = new TGraphErrors();
-    TF1* fit = new TF1();
-
-    TLegend* leg;
 
     int noOfPoints = positions_x.size();
     double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
@@ -290,25 +283,12 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
     {
         canva->SetGrid();
 
-        if(ch == 1)
+        for(int entry = 0; entry < noOfPoints; ++entry)
         {
-            for(int entry = 0; entry < noOfPoints; ++entry)
-            {
-                x[entry] = (*fmeans)[ch][entry];
-                y[entry] = positions_x[entry];
-                dx[entry] = (*fstdDevs)[ch][entry];
-                dy[entry] = 10;
-            }
-        }
-        else
-        {
-            for(int entry = 0; entry < noOfPoints; ++entry)
-            {
-                x[entry] = positions_x[entry];
-                y[entry] = (*fmeans)[ch][entry];
-                dx[entry] = 0;
-                dy[entry] = (*fstdDevs)[ch][entry];
-            } 
+            x[entry] = positions_x[entry];
+            y[entry] = (*fmeans)[ch][entry];
+            dx[entry] = 0;
+            dy[entry] = (*fstdDevs)[ch][entry];
         }
 
         graph = new TGraphErrors(noOfPoints, x, y, dx, dy);
@@ -330,51 +310,45 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
      
         graph->Draw();
 
-        // hyperbolic cosine + offset
-        //if(ch == 0) fit = new TF1("f(x)+f(-x)", "2*[0] + [1]*(exp(x*[2])+exp(-x*[2]))", -HALF_LEN_X, HALF_LEN_X);
-        fit = new TF1("f(x)+f(-x)", "[0]*((1-exp(-[1]*x)) - (1-exp([2]*x)) )", -HALF_LEN_X, HALF_LEN_X);
-        // hyperbolic cosine + offset
-        //else if (ch==1) fit = new TF1("f(x)-f(-x)", "[0]*(exp(x*[1])-exp(-x*[1]))", -HALF_LEN_X, HALF_LEN_X);
-        // hyperbolic tangent
-        //else fit = new TF1("f(x)/f(-x)", "(1+[0]*exp(x*[1]))/(1+[0]*exp(-x*[1]))", -HALF_LEN_X, HALF_LEN_X);
-        graph->Fit(fit, "0", "0");
-        fit->SetLineColor(kAzure-5);
-        fit->SetLineWidth(1);
-        fit->SetFillStyle(3002);
-        fit->SetFillColorAlpha(kAzure-5,0.5);
-        fit->Draw("SAME");
+        gStyle->SetOptFit(1110);
+        gStyle->SetOptStat(2210);
+        gStyle->SetStatFontSize(2);
+        if(ch==0){
+            gStyle->SetStatX(0.6);
+            gStyle->SetStatY(0.89);
 
-        leg = new TLegend(0.11, 0.78, 0.70, 0.89);
-        leg->SetHeader("Fit results, polynomial degree 5:","");
-        leg->AddEntry("-", Form("par[0]: %.4g +/- %.4g",fit->GetParameter(0), fit->GetParError(0)),"L");
-        leg->AddEntry("-", Form("par[1]: %.4g +/- %.4g",fit->GetParameter(1), fit->GetParError(1)), "L");
-        leg->AddEntry("-", Form("par[2]: %.4g +/- %.4g",fit->GetParameter(2), fit->GetParError(2)), "L");
-        leg->AddEntry("-", Form("par[3]: %.4g +/- %.4g",fit->GetParameter(3), fit->GetParError(2)), "L");
-        //leg->AddEntry("-", Form("par[4]: %.4g +/- %.4g",fit->GetParameter(4), fit->GetParError(2)), "L");
-        //leg->AddEntry("-", Form("par[5]: %.4g +/- %.4g",fit->GetParameter(5), fit->GetParError(2)), "L");
-        leg->Draw("SAME");
+        }
+        else if(ch==1 || ch==2){
+            gStyle->SetStatX(0.48);
+            gStyle->SetStatY(0.89);
+        }
+        else if(ch==3){
+            gStyle->SetStatX(0.89);
+        }
+
+        fits[ch] = new TF1("function", "pol5", -1.5*HALF_LEN_X, 1.5*HALF_LEN_X);
+        graph->Fit(fits[ch], "Q", "0");
+        fits[ch]->SetLineColor(kAzure-5);
+        fits[ch]->SetLineWidth(1);
+        fits[ch]->SetFillStyle(3002);
+        fits[ch]->SetFillColorAlpha(kAzure-5,0.5);
+        fits[ch]->Draw("SAME");
+
 
         canva->Draw();
 
-        if(EPE)
-        {
-            if (ch == 3) canva->Print("images/chargesEpE.pdf)","pdf");
-            else canva->Print("images/chargesEpE.pdf","pdf");
-        }
-        else{
-            if (ch == 3) canva->Print("images/charges.pdf)","pdf");
-            else canva->Print("images/charges.pdf","pdf");
-        }
+        if(EPE) canva->Print("images/chargesEpE.pdf","pdf");
+        else canva->Print("images/charges.pdf","pdf");
 
         graph->Clear();
         canva->Clear();
 
     }
 
-    delete leg;
-    delete fit;
     delete graph;
     delete canva;
+
+    return fits[1];
 
 }
 
