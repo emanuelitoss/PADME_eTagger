@@ -1,14 +1,16 @@
 #include "infos.h"
 
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TH1.h"
+#include "TF1.h"
 #include "TString.h"
 #include "TFile.h"
 #include "TTreeReader.h"
 #include "TCanvas.h"
 #include "TStyle.h"
 
-void HistoFillDeltaXperFile(TH1F* histogram, TF1* function, char * fileName,  double true_x){
+void HistoFillDeltaXperFileTimes(TH1F* histogram, TF1* function, char * fileName,  double true_x, vector <Double_t>* deltas){
     
     // reading objects
     TFile* myFile = TFile::Open(fileName);
@@ -52,6 +54,7 @@ void HistoFillDeltaXperFile(TH1F* histogram, TF1* function, char * fileName,  do
 
         reconstructed_x = function->Eval(min_timeDX-min_timeSX);
         histogram->Fill(reconstructed_x - true_x);
+        (*deltas).push_back(reconstructed_x - true_x);
 
     }
 
@@ -116,7 +119,7 @@ void HistoFillDeltaXRandomFile(TH1F* histogram, TF1* function, TString fileName)
     delete myFile;
 }
 
-void PlotHistogramDeltaX(TH1F* histo_deltaX, TString output_name){
+void PlotHistogramDeltaXTimes(TH1F* histo_deltaX, TString output_name){
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 4000);
     TF1* gauss_fit = new TF1();
@@ -153,5 +156,56 @@ void PlotHistogramDeltaX(TH1F* histo_deltaX, TString output_name){
   
     delete gauss_fit;
     delete canva;
+
+}
+
+void PlotDeltaPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltasQ, int openclosefile){
+
+    // check that I have couples of points.
+    int len = (*deltasT).size();
+    bool check_dimensions = (len==(*deltasQ).size());
+    if(!check_dimensions){
+        PrintColor("ERROR: Not coupled points", OBOLDRED);
+        return;
+    }
+
+    TH2F histogram = TH2F("hist","#deltax (time analysis) vs #deltax (charge analysis)",70,-HALF_LEN_X,HALF_LEN_X,70,-HALF_LEN_X,HALF_LEN_X);
+
+    // storing.
+    Double_t deltaxT[len], deltaxQ[len];
+    for(int i = 0; i<len; ++i)  histogram.Fill( (*deltasT)[i], (*deltasQ)[i] );
+
+    // plot.
+    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 2000, 1500);
+
+    histogram.SetXTitle("#deltax (times analysis) [mm]");
+    histogram.SetYTitle("#deltax (charges analysis) [mm]");
+    gStyle->SetStatH(0.1);
+    gStyle->SetStatX(0.89);
+    gStyle->SetStatY(0.89);
+
+    histogram.Draw("CONT4Z");
+    if(openclosefile == 0)  canva->Print("images/delta_positions_correlation.pdf(","pdf");
+    else canva->Print("images/delta_positions_correlation.pdf","pdf");
+    canva->Clear();
+
+    gStyle->SetStatX(0.95);
+    gStyle->SetStatY(0.85);
+
+    histogram.Draw("LEGO2");
+    histogram.SetXTitle("#deltax (times analysis) [mm]");
+    histogram.SetYTitle("#deltax (charges analysis) [mm]");
+    canva->Print("images/delta_positions_correlation.pdf","pdf");
+    canva->Clear();
+
+    histogram.Draw("SURF3");
+    histogram.SetXTitle("#deltax (times analysis) [mm]");
+    histogram.SetYTitle("#deltax (charges analysis) [mm]");
+    if(openclosefile==1) canva->Print("images/delta_positions_correlation.pdf)","pdf");
+    else canva->Print("images/delta_positions_correlation.pdf","pdf");
+    canva->Clear();
+
+    delete canva;
+
 
 }

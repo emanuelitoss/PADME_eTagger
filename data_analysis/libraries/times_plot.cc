@@ -92,7 +92,7 @@ void plotHisto_arrivalTimes(char * fileName, int openCloseFile, std::vector <std
     gStyle->SetOptStat(2210);
 
     gauss_fit = new TF1("fitting a line", "gaus", -HALF_LEN_X, HALF_LEN_X);
-    histograms[channel].Fit(gauss_fit, "0", "0");
+    histograms[channel].Fit(gauss_fit, "Q", "0");
     gauss_fit->SetLineColor(color[channel]);
     gauss_fit->SetLineWidth(1);
     gauss_fit->SetFillStyle(3002);
@@ -210,7 +210,7 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
       gStyle->SetEndErrorSize(8); //4 is the number of pixels
 
       gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
-      histograms[side].Fit(gauss_fit, "0", "0");
+      histograms[side].Fit(gauss_fit, "Q", "0");
       gauss_fit->SetLineColor(color[side]);
       gauss_fit->SetLineWidth(1);
       gauss_fit->SetFillStyle(3002);
@@ -242,7 +242,7 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
   gStyle->SetEndErrorSize(8); //4 is the number of pixels
 
   gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
-  histogram_differences.Fit(gauss_fit, "0", "0");
+  histogram_differences.Fit(gauss_fit, "Q", "0");
   gauss_fit->SetLineColor(mycolor);
   gauss_fit->SetLineWidth(1);
   gauss_fit->SetFillStyle(3002);

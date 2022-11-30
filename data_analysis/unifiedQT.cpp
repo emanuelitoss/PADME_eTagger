@@ -108,8 +108,8 @@ int main(int argc, char** argv){
     vector <Double_t> * deltasT = new vector <Double_t> {};
     vector <Double_t> * deltasQ = new vector <Double_t> {};
 
-    TH1F* histo_deltaXT = new TH1F("histo_delta_x","Histogram of x_{rec} - x_{true} from time analysis", nbins, -HALF_LEN_X, HALF_LEN_X);
-    TH1F* histo_deltaXQ = new TH1F("histo_delta_x","Histogram of x_{rec} - x_{true} from charge analysis", nbins, -HALF_LEN_X, HALF_LEN_X);
+    TH1F* histo_deltaXT = new TH1F("histo_delta_x(T)","Histogram of x_{rec} - x_{true} from time analysis", nbins, -HALF_LEN_X, HALF_LEN_X);
+    TH1F* histo_deltaXQ = new TH1F("histo_delta_x(Q)","Histogram of x_{rec} - x_{true} from charge analysis", nbins, -HALF_LEN_X, HALF_LEN_X);
 
     // inverting a line function >> Applied only to time-position function.
     // for the charge-position function I use an other method

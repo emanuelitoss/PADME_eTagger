@@ -66,9 +66,8 @@ void AddCharges(char * fileName, vector <vector <double_t> >* charge_means, vect
         (*charge_means)[ch].push_back(MeanCharges[ch]);
         (*charge_stdDevs)[ch].push_back(ErrCharges[ch]);
 
-        if (ch == 0) cout << "\n\tRight side:\t";
-        else cout << "\tLeft side:\t";
-        cout << "Mean = " << MeanCharges[ch] << ",\t StdDev = " << ErrCharges[ch] << endl;
+        if (ch == 0) cout << "\n\tRight side:\t" << "Mean = " << MeanCharges[ch] << ",\t StdDev = " << ErrCharges[ch] << endl;
+        else cout << "\tLeft side:\t" << "Mean = " << MeanCharges[ch] << ",\t StdDev = " << ErrCharges[ch] << endl;
     }
 
     cout << endl;
@@ -350,6 +349,139 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
 
     return fits[1];
 
+}
+
+
+void HistoFillDeltaXRandomFileCharges(TH1F* histogram, TF1* function, TString fileName){
+        
+    // reading objects
+    TFile* myFile = TFile::Open(fileName);
+
+    TTreeReader readerQ = TTreeReader();
+    readerQ.SetTree("charges", myFile);
+
+    TTreeReader readerX = TTreeReader();
+    readerX.SetTree("positions", myFile);
+    TTreeReaderValue <Double_t> position = TTreeReaderValue <Double_t>(readerX,"X_position");
+
+    std::vector < TTreeReaderValue <Double_t> > charges;
+    for (int channel = 0; channel < numberOfChannels; ++channel)
+    {
+      // readers
+      std::string ChannelName = std::to_string(channel+1);
+      std::string dirNameS = "Charges[" + ChannelName + "]";
+      const char* dirName = dirNameS.c_str();
+      charges.push_back(TTreeReaderValue<Double_t>(readerQ,dirName));
+    }
+
+    double_t q = 0, chargeSX = 0, chargeDX = 0;
+    double_t reconstructed_x, true_x;
+
+    while(readerQ.Next() && readerX.Next())
+    {
+
+        chargeSX = 0;
+        chargeDX = 0;
+
+        true_x = *position;
+
+        for (int channel = 0; channel < numberOfChannels; channel++)
+        {
+            q = *charges[channel];
+            
+            if(channel < numberOfChannels/2) chargeDX+=q;
+            else chargeSX+=q;
+        }
+
+        reconstructed_x = function->GetX(chargeDX-chargeSX);
+        histogram->Fill(reconstructed_x - true_x);
+
+    }
+
+    myFile->Close();
+    delete myFile;
+}
+
+void PlotHistogramDeltaXCharges(TH1F* histogram, TString output_name){
+
+    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 4000);
+    TF1* gauss_fit = new TF1();
+
+    canva->SetGrid();
+
+    histogram->Draw("E1 P");
+    histogram->GetXaxis()->SetTitle("Length [mm]");
+    histogram->GetYaxis()->SetTitle("Number of events");
+    histogram->SetLineColor(kBlack);
+    histogram->SetLineWidth((Width_t)1.5);
+
+    gStyle->Reset();
+    gStyle->SetEndErrorSize(8);
+    gStyle->SetOptFit(1110);
+    gStyle->SetOptStat(2210);
+    gStyle->SetStatX(0.89);
+    gStyle->SetStatY(0.89);
+    gStyle->SetStatW(0.3);
+    gStyle->SetStatH(0.7);
+    
+    gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
+    histogram->Fit(gauss_fit, "Q", "0");
+    gauss_fit->SetLineColor(kAzure-5);
+    gauss_fit->SetLineWidth(1);
+    gauss_fit->SetFillStyle(3002);
+    gauss_fit->SetFillColorAlpha(kAzure-5,0.5);
+    gauss_fit->Draw("C SAME");
+    
+    canva->Print(TString(output_name),"pdf");
+    canva->Clear();
+  
+    delete gauss_fit;
+    delete canva;
+
+}
+
+void HistoFillDeltaXperFileCharges(TH1F* histogram, TF1* correlation_function, char* fileName, double true_x, vector <Double_t>* deltas){
+    
+    // reading objects
+    TFile* myFile = TFile::Open(fileName);
+    TTreeReader reader = TTreeReader();
+    reader.SetTree("charges", myFile);
+    std::vector < TTreeReaderValue <Double_t> > charges;
+
+    for (int channel = 0; channel < numberOfChannels; ++channel)
+    {
+      // readers
+      std::string ChannelName = std::to_string(channel+1);
+      std::string dirNameS = "Charges[" + ChannelName + "]";
+      const char* dirName = dirNameS.c_str();
+      charges.push_back(TTreeReaderValue<Double_t>(reader,dirName));
+    }
+
+    double_t q = 0, chargeSX = 0, chargeDX = 0;
+    double_t reconstructed_x;
+
+    while(reader.Next())
+    {
+
+        chargeSX = OFFSET;
+        chargeDX = OFFSET;
+
+        for (int channel = 0; channel < numberOfChannels; channel++)
+        {
+            q = *charges[channel];
+
+            if(channel < numberOfChannels/2) chargeDX+=q;
+            else chargeSX +=q;
+            
+        }
+
+        reconstructed_x = correlation_function->GetX(chargeDX-chargeSX);
+        histogram->Fill(reconstructed_x - true_x);
+        (*deltas).push_back(reconstructed_x - true_x);
+
+    }
+
+    return;
 }
 
 #endif
