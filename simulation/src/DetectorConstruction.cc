@@ -297,7 +297,7 @@ void DetectorConstruction::OpticalSurfaceTagger_Vacuum(G4VPhysicalVolume* Tagger
   G4double sigma_alpha = 0.001;
   opPlasticSurface->SetModel(unified);
   opPlasticSurface->SetType(dielectric_dielectric);
-  opPlasticSurface->SetFinish(polishedfrontpainted);
+  opPlasticSurface->SetFinish(polishedbackpainted); //polishedfrontpainted - polishedbackpainted
   opPlasticSurface->SetSigmaAlpha(sigma_alpha);
 
   // // To re-get this surface use the following:
@@ -319,7 +319,7 @@ void DetectorConstruction::OpticalSurfaceTagger_Vacuum(G4VPhysicalVolume* Tagger
                                    conversionFactor/(500.*nm)};
 
   G4double reflectivity[10] = {0.68, 0.84, 0.9, 0.93, 0.95, 0.955, 0.96, 0.96, 0.96, 0.96};
-  SurfaceTable->AddProperty("REFLECTIVITY", energies_photons, reflectivity, 10)->SetSpline(true);
+  SurfaceTable->AddProperty("RINDEX", energies_photons, reflectivity, 10)->SetSpline(true);
 
   // if(opticalSurface) opticalSurface->DumpInfo();
   // SurfaceTable->DumpTable();
