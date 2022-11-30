@@ -352,7 +352,7 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
 }
 
 
-void HistoFillDeltaXRandomFileCharges(TH1F* histogram, TF1* function, TString fileName){
+void HistoFillDeltaXRandomFileCharges(TH1F* histogram, TF1* function, TString fileName, vector <Double_t> * deltas){
         
     // reading objects
     TFile* myFile = TFile::Open(fileName);
@@ -395,6 +395,7 @@ void HistoFillDeltaXRandomFileCharges(TH1F* histogram, TF1* function, TString fi
 
         reconstructed_x = function->GetX(chargeDX-chargeSX);
         histogram->Fill(reconstructed_x - true_x);
+        deltas->push_back(reconstructed_x - true_x);
 
     }
 

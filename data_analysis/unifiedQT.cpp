@@ -63,6 +63,7 @@ int main(int argc, char** argv){
 
     for(int file_counter = 1; file_counter < argc; ++file_counter)
     {
+
         fileName = argv[file_counter];
 
         // filling charges. If EPE is true, the functions of charges are evaluated event per event.
@@ -140,15 +141,17 @@ int main(int argc, char** argv){
 
     /***************** TESTING OF THE DISTRIBUTION OF TRUE_X - RECO_X OVER RANDOM (x,y) DATA *****************/
 
+    deltasQ->clear();
     histo_deltaXQ->Clear();
     histo_deltaXQ = new TH1F("histo_dx_charge","Histogram of x_{rec} - x_{true}", nbins, -HALF_LEN_X, HALF_LEN_X);
-    HistoFillDeltaXRandomFileCharges(histo_deltaXQ, correlation_functionQ, "data_eTagRAND.root");
+    HistoFillDeltaXRandomFileCharges(histo_deltaXQ, correlation_functionQ, "data_eTagRAND.root", deltasQ);
     if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ, "images/chargesEpE.pdf)");
     else PlotHistogramDeltaXCharges(histo_deltaXQ, "images/charges.pdf)");
 
+    deltasT->clear();
     histo_deltaXT->Clear();
     histo_deltaXT = new TH1F("histo_dx_time","Histogram of x_{rec} - x_{true}", nbins, -HALF_LEN_X, HALF_LEN_X);
-    HistoFillDeltaXRandomFile(histo_deltaXT, correlation_functionT, "data_eTagRAND.root");
+    HistoFillDeltaXRandomFileTimes(histo_deltaXT, correlation_functionT, "data_eTagRAND.root", deltasT);
     PlotHistogramDeltaXTimes(histo_deltaXT, "images/t_vs_x.pdf)");
     
     /***************** DELTAX_CHARGES VS DELTAX_TIMES OVER RANDOM (x,y) DATA *****************/

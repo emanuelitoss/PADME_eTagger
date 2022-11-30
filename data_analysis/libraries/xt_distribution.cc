@@ -61,7 +61,7 @@ void HistoFillDeltaXperFileTimes(TH1F* histogram, TF1* function, char * fileName
     return;
 }
 
-void HistoFillDeltaXRandomFile(TH1F* histogram, TF1* function, TString fileName){
+void HistoFillDeltaXRandomFileTimes(TH1F* histogram, TF1* function, TString fileName, vector <Double_t> * deltas){
         
     // reading objects
     TFile* myFile = TFile::Open(fileName);
@@ -112,6 +112,7 @@ void HistoFillDeltaXRandomFile(TH1F* histogram, TF1* function, TString fileName)
 
         reconstructed_x = function->Eval(min_timeDX-min_timeSX);
         histogram->Fill(reconstructed_x - true_x);
+        deltas->push_back(reconstructed_x - true_x);
 
     }
 
