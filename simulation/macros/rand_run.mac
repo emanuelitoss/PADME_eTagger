@@ -1,0 +1,11 @@
+/run/initialize
+#
+/control/verbose 0
+/run/verbose 0
+#
+#/run/numberOfThreads 2
+#
+/PadmETag/Generation/SetRandomGeneration 1
+/PadmETag/OutputFile/SetName RAND
+
+/run/beamOn 1000

@@ -1,0 +1,11 @@
+/run/initialize
+#
+/control/verbose 0
+/run/verbose 0
+#
+#/run/numberOfThreads 2
+#
+/PadmETag/Generation/SetX 90
+/PadmETag/OutputFile/SetName +90
+
+/run/beamOn 1000
