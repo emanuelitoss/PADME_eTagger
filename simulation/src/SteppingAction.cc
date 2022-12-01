@@ -88,6 +88,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
 
       phot_energy = step->GetTrack()->GetKineticEnergy();
       IsPhotDetectedInSiPM = (PreStepPV == fDetConstruction->GetScintillator()) && (PostStepPV == fDetConstruction->GetSiPMs()[id]);
+      if(!IsPhotDetectedInSiPM) continue;
       IsPhotDetectedInSiPM = IsPhotDetectedInSiPM && ( ApplyDetectionEfficiency(phot_energy) );
 
       if (IsPhotDetectedInSiPM)
@@ -105,10 +106,11 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
         fEventAction->SetMinTimeIfLess(id, Global_arrival_time);
         fEventAction->SetDetectedPhoton(id);
 
-        // kill the photon in order to avoid double counting
-        step->GetTrack()->SetTrackStatus(fStopAndKill);
-
       }
+
+      // kill the photon in order to avoid double counting
+      step->GetTrack()->SetTrackStatus(fStopAndKill);
+
     }
   }
 }
