@@ -36,9 +36,7 @@
 
 RunData::RunData()
 : G4Run()
-{
-    for ( auto& edep : fEdep ) edep = 0.;
-}
+{}
 
 RunData::~RunData()
 {}
@@ -46,15 +44,6 @@ RunData::~RunData()
 void RunData::FillPerEvent(std::vector <G4double> charges, G4double x, G4double y)
 {
     auto analysisManager = G4AnalysisManager::Instance();
-
-    // accumulate statistic
-    // in the order od the histograms, ntuple columns declarations
-    for ( auto edep : fEdep )
-    {
-        analysisManager->FillH1(ID_ENERGY, edep);
-        analysisManager->FillNtupleDColumn(ID_ENERGY, 0, edep);
-    }
-    analysisManager->AddNtupleRow(0);
 
     for (int channel = 0; channel < 8; ++channel)
     {
@@ -71,7 +60,7 @@ void RunData::FillTimePerPhoton(G4int id, G4double time)
 {
     auto analysisManager = G4AnalysisManager::Instance();
     
-    analysisManager->FillH1(id + 1, time);
+    analysisManager->FillH1(id, time);
     analysisManager->FillNtupleDColumn(ID_TIMES, id, time);
     
     analysisManager->AddNtupleRow(ID_TIMES);

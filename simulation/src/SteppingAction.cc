@@ -56,7 +56,6 @@
 SteppingAction::SteppingAction(EventAction* eventAction, const DetectorConstruction* detConstruction)
 : G4UserSteppingAction(),
   fEventAction(eventAction),
-  fScoringVolume(nullptr),
   fnoise_generator(new CLHEP::MTwistEngine(), 0, NOISE_STD_DEV),
   fDetConstruction(detConstruction)
 {}
@@ -64,12 +63,6 @@ SteppingAction::SteppingAction(EventAction* eventAction, const DetectorConstruct
 SteppingAction::~SteppingAction(){}
 
 void SteppingAction::UserSteppingAction(const G4Step* step){
-
-  if (!fScoringVolume) {
-    const DetectorConstruction* detectorConstruction
-      = static_cast<const DetectorConstruction*> (G4RunManager::GetRunManager()->GetUserDetectorConstruction());
-    fScoringVolume = detectorConstruction->GetScoringVolume();   
-  }
 
   auto runData = static_cast<RunData*> (G4RunManager::GetRunManager()->GetNonConstCurrentRun());
 
@@ -84,20 +77,24 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
   G4double phot_energy = 0.*eV;
 
   if(IsOpticalPhoton){
+
+    // get the photon energy
+    phot_energy = step->GetTrack()->GetKineticEnergy();
+
+    // loop over SiPMs
     for(int id = 0; id < 8; ++id){
 
-      phot_energy = step->GetTrack()->GetKineticEnergy();
       IsPhotDetectedInSiPM = (PreStepPV == fDetConstruction->GetScintillator()) && (PostStepPV == fDetConstruction->GetSiPMs()[id]);
       if(!IsPhotDetectedInSiPM) continue;
+
       IsPhotDetectedInSiPM = IsPhotDetectedInSiPM && ( ApplyDetectionEfficiency(phot_energy) );
 
-      if (IsPhotDetectedInSiPM)
+      if(IsPhotDetectedInSiPM)
       {
-
         // get global time
         Global_arrival_time = step->GetTrack()->GetGlobalTime();
 
-        // adding noise
+        // add noise
         rndm_noise =  (fnoise_generator.fire())*ns;
 
         Global_arrival_time += rndm_noise;
@@ -105,7 +102,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
         runData->FillTimePerPhoton(id, Global_arrival_time);
         fEventAction->SetMinTimeIfLess(id, Global_arrival_time);
         fEventAction->SetDetectedPhoton(id);
-
       }
 
       // kill the photon in order to avoid double counting
@@ -136,7 +132,7 @@ G4bool SteppingAction::ApplyDetectionEfficiency(G4double photon_energy){
   G4bool check_right_bin = 0;
   G4int idx;
 
-  if(wavelength < 300.*nm || wavelength > 900.*nm) detection = 0;
+  if(wavelength < 300.*nm || wavelength >= 900.*nm) detection = 0;
   else{
 
     idx = (int)((wavelength-300*nm)/(25*nm));

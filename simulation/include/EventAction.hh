@@ -42,7 +42,7 @@ class EventAction : public G4UserEventAction
 
   public:
 
-  EventAction(RunAction* runAction);
+  EventAction();
   virtual ~EventAction();
   
   virtual void BeginOfEventAction(const G4Event* event);
@@ -55,7 +55,6 @@ class EventAction : public G4UserEventAction
   
   private:
 
-  RunAction* fRunAction;
   std::vector <G4double> min_times;
   std::vector <G4double> signals_charges;
   G4double position_x, position_y;

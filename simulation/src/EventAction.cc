@@ -40,9 +40,8 @@
 #include "Randomize.hh"
 #include <iomanip>
 
-EventAction::EventAction(RunAction* runAction)
-: G4UserEventAction(),
-  fRunAction(runAction)
+EventAction::EventAction()
+: G4UserEventAction()
 {
   min_times = {0.,0.,0.,0.,0.,0.,0.,0.};
   signals_charges = {0.,0.,0.,0.,0.,0.,0.,0.};
@@ -75,7 +74,6 @@ void EventAction::EndOfEventAction(const G4Event* event){
   auto runData = static_cast<RunData*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
 
   runData->FIllFirstTimes(min_times);
-
   runData->FillPerEvent(signals_charges, position_x, position_y);
 
 }

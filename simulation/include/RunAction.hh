@@ -47,11 +47,10 @@ class G4GenericMessenger;
 /// The computed dose is then printed on the screen.
 /// Moreover, it accumulates statistic and computes dispersion of the energy deposit
 
-#define ID_ENERGY 0
-#define ID_TIMES 1
-#define ID_ARRIVAL_TIMES 2
-#define ID_CHARGES 3
-#define ID_POSITIONS 4
+#define ID_TIMES 0
+#define ID_ARRIVAL_TIMES 1
+#define ID_CHARGES 2
+#define ID_POSITIONS 3
 
 class RunAction : public G4UserRunAction
 {
@@ -69,10 +68,6 @@ class RunAction : public G4UserRunAction
   private:
 
     void DefineCommands();
-
-    G4Accumulable<G4double> fEdep;
-    G4Accumulable<G4double> fEdep2;
-
     G4GenericMessenger* fMessenger;
 
     G4String OutputFileName = "";

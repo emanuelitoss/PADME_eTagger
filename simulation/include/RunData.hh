@@ -44,10 +44,6 @@
 /// It defines data members to hold the energy deposit and track lengths
 /// of charged particles in Absober and Gap layers.
 ///
-/// In order to reduce the number of data members a 2-dimensions array
-/// is introduced for each quantity:
-/// - fEdep[], fTrackLength[].
-///
 /// The data are collected step by step in SteppingAction, and
 /// the accumulated values are filled in histograms and entuple
 /// event by event in EventAction.
@@ -63,7 +59,6 @@ class RunData : public G4Run
         void FIllFirstTimes(std::vector <G4double> time);
 
     private:
-        std::array<G4double, 3> fEdep = { 0., 0., 0.};
 };
   
 #endif

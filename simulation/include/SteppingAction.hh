@@ -55,7 +55,7 @@ class SteppingAction : public G4UserSteppingAction{
 
   private:
     EventAction* fEventAction;
-    G4LogicalVolume* fScoringVolume;
+    //G4LogicalVolume* fScoringVolume;
     CLHEP::RandGauss fnoise_generator;
     const DetectorConstruction* fDetConstruction;
 
