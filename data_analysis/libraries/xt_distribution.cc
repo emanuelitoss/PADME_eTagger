@@ -186,8 +186,8 @@ void PlotDeltaPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltas
     gStyle->SetStatY(0.89);
 
     histogram.Draw("CONT4Z");
-    if(openclosefile == 0)  canva->Print("images/delta_positions_correlation.pdf(","pdf");
-    else canva->Print("images/delta_positions_correlation.pdf","pdf");
+    if(openclosefile == 0)  canva->Print("images/5delta_positions_correlation.pdf(","pdf");
+    else canva->Print("images/5delta_positions_correlation.pdf","pdf");
     canva->Clear();
 
     gStyle->SetStatX(0.95);
@@ -196,14 +196,14 @@ void PlotDeltaPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltas
     histogram.Draw("LEGO2");
     histogram.SetXTitle("#deltax (times analysis) [mm]");
     histogram.SetYTitle("#deltax (charges analysis) [mm]");
-    canva->Print("images/delta_positions_correlation.pdf","pdf");
+    canva->Print("images/5delta_positions_correlation.pdf","pdf");
     canva->Clear();
 
     histogram.Draw("SURF3");
     histogram.SetXTitle("#deltax (times analysis) [mm]");
     histogram.SetYTitle("#deltax (charges analysis) [mm]");
-    if(openclosefile==1) canva->Print("images/delta_positions_correlation.pdf)","pdf");
-    else canva->Print("images/delta_positions_correlation.pdf","pdf");
+    if(openclosefile==1) canva->Print("images/5delta_positions_correlation.pdf)","pdf");
+    else canva->Print("images/5delta_positions_correlation.pdf","pdf");
     canva->Clear();
 
     delete canva;

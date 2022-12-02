@@ -102,15 +102,15 @@ void plotHisto_arrivalTimes(char * fileName, int openCloseFile, std::vector <std
 
     if(channel == (int)(numberOfChannels/2 -1))
     {
-      if (openCloseFile % 2 == 0) canva->Print("images/Initial_t_singleSIPM.pdf(","pdf");
-      else canva->Print("images/Initial_t_singleSIPM.pdf","pdf");
+      if (openCloseFile % 2 == 0) canva->Print("images/1Initial_t_singleSIPM.pdf(","pdf");
+      else canva->Print("images/1Initial_t_singleSIPM.pdf","pdf");
       canva->Clear();
       canva->Divide(2,2);
     }
     else if(channel == numberOfChannels - 1)
     {
-      if (openCloseFile == 1 || openCloseFile == 2) canva->Print("images/Initial_t_singleSIPM.pdf)","pdf");
-      else canva->Print("images/Initial_t_singleSIPM.pdf","pdf");
+      if (openCloseFile == 1 || openCloseFile == 2) canva->Print("images/1Initial_t_singleSIPM.pdf)","pdf");
+      else canva->Print("images/1Initial_t_singleSIPM.pdf","pdf");
       canva->Clear();
     }
 
@@ -219,9 +219,9 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
         
     }
 
-  if(openCloseFile == 0) canva->Print("images/Initial_t.pdf(","pdf");
-  if(openCloseFile == 1) canva->Print("images/Initial_t.pdf)","pdf");
-  if(openCloseFile == 3 || openCloseFile == 2) canva->Print("images/Initial_t.pdf","pdf");
+  if(openCloseFile == 0) canva->Print("images/1Initial_t.pdf(","pdf");
+  if(openCloseFile == 1) canva->Print("images/1Initial_t.pdf)","pdf");
+  if(openCloseFile == 3 || openCloseFile == 2) canva->Print("images/1Initial_t.pdf","pdf");
 
   canva->Clear();
   gauss_fit->Clear();
@@ -249,9 +249,9 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
   gauss_fit->SetFillColorAlpha(mycolor,0.5);
   gauss_fit->Draw("SAME C");
 
-  if(openCloseFile == 0) canva->Print("images/initial_times_diff.pdf(","pdf");
-  if(openCloseFile == 1) canva->Print("images/initial_times_diff.pdf)","pdf");
-  if(openCloseFile == 3 || openCloseFile == 2) canva->Print("images/initial_times_diff.pdf","pdf");
+  if(openCloseFile == 0) canva->Print("images/1initial_times_diff.pdf(","pdf");
+  if(openCloseFile == 1) canva->Print("images/1initial_times_diff.pdf)","pdf");
+  if(openCloseFile == 3 || openCloseFile == 2) canva->Print("images/1initial_times_diff.pdf","pdf");
   
   /********** DELETE STUFF **********/
   

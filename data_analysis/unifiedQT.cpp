@@ -130,9 +130,9 @@ int main(int argc, char** argv){
     }
 
     // Plot histograms
-    if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ, "images/chargesEpE.pdf");
+    if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ, "images/3chargesEpE.pdf");
     else PlotHistogramDeltaXCharges(histo_deltaXQ, "images/charges.pdf");
-    PlotHistogramDeltaXTimes(histo_deltaXT, "images/t_vs_x.pdf");
+    PlotHistogramDeltaXTimes(histo_deltaXT, "images/2t_vs_x.pdf");
 
     /***************** DELTAX_CHARGES VS DELTAX_TIMES *****************/
 
@@ -145,14 +145,14 @@ int main(int argc, char** argv){
     histo_deltaXQ->Clear();
     histo_deltaXQ = new TH1F("histo_dx_charge","Histogram of x_{rec} - x_{true}", nbins, -HALF_LEN_X, HALF_LEN_X);
     HistoFillDeltaXRandomFileCharges(histo_deltaXQ, correlation_functionQ, "data_eTagRAND.root", deltasQ);
-    if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ, "images/chargesEpE.pdf)");
+    if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ, "images/3chargesEpE.pdf)");
     else PlotHistogramDeltaXCharges(histo_deltaXQ, "images/charges.pdf)");
 
     deltasT->clear();
     histo_deltaXT->Clear();
     histo_deltaXT = new TH1F("histo_dx_time","Histogram of x_{rec} - x_{true}", nbins, -HALF_LEN_X, HALF_LEN_X);
     HistoFillDeltaXRandomFileTimes(histo_deltaXT, correlation_functionT, "data_eTagRAND.root", deltasT);
-    PlotHistogramDeltaXTimes(histo_deltaXT, "images/t_vs_x.pdf)");
+    PlotHistogramDeltaXTimes(histo_deltaXT, "images/2t_vs_x.pdf)");
     
     /***************** DELTAX_CHARGES VS DELTAX_TIMES OVER RANDOM (x,y) DATA *****************/
 

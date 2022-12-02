@@ -95,8 +95,8 @@ void print_signals(char * fileName, int openCloseFile){
   }
 
   legend->Draw();
-  if(openCloseFile % 2 == 0)  canva->Print("images/signal_waveforms.pdf(","pdf");
-  else  canva->Print("images/signal_waveforms.pdf","pdf");
+  if(openCloseFile % 2 == 0)  canva->Print("images/0signal_waveforms.pdf(","pdf");
+  else  canva->Print("images/0signal_waveforms.pdf","pdf");
   
   canva->Clear();
 
@@ -119,7 +119,7 @@ void print_signals(char * fileName, int openCloseFile){
     canva->Update();
   }
 
-  canva->Print("images/signal_waveforms.pdf","pdf");
+  canva->Print("images/0signal_waveforms.pdf","pdf");
   canva->Clear();
 
   //2
@@ -139,8 +139,8 @@ void print_signals(char * fileName, int openCloseFile){
     canva->Update();
   }
 
-  if(openCloseFile == 1 || openCloseFile == 2)  canva->Print("images/signal_waveforms.pdf)","pdf");
-  else  canva->Print("images/signal_waveforms.pdf","pdf");
+  if(openCloseFile == 1 || openCloseFile == 2)  canva->Print("images/0signal_waveforms.pdf)","pdf");
+  else  canva->Print("images/0signal_waveforms.pdf","pdf");
 
   /************ CLOSE FILES ************/
 

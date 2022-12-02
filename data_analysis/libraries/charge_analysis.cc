@@ -255,7 +255,7 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
         graph->Clear();
     }
 
-    if(EPE) canva->Print("images/chargesEpE.pdf(","pdf");
+    if(EPE) canva->Print("images/3chargesEpE.pdf(","pdf");
     else canva->Print("images/charges.pdf(","pdf");
 
     delete exp_fit;
@@ -336,7 +336,7 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
 
         canva->Draw();
 
-        if(EPE) canva->Print("images/chargesEpE.pdf","pdf");
+        if(EPE) canva->Print("images/3chargesEpE.pdf","pdf");
         else canva->Print("images/charges.pdf","pdf");
 
         graph->Clear();

@@ -145,9 +145,9 @@ int main(int argc, char** argv){
         fit->SetLineWidth(1);
         fit->Draw("SAME");
 
-        if(ch == 0) canva->Print("images/time_vs_charge.pdf(","pdf");
-        else if (ch == len-1) canva->Print("images/time_vs_charge.pdf)","pdf");
-        else canva->Print("images/time_vs_charge.pdf","pdf");
+        if(ch == 0) canva->Print("images/4time_vs_charge.pdf(","pdf");
+        else if (ch == len-1) canva->Print("images/4time_vs_charge.pdf)","pdf");
+        else canva->Print("images/4time_vs_charge.pdf","pdf");
 
         graph->Clear();
         canva->Clear();

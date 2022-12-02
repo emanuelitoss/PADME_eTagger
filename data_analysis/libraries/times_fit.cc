@@ -72,7 +72,7 @@ TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
 
     line_fit->Draw("SAME");
 
-    canva->Print("images/t_vs_x.pdf(","pdf");
+    canva->Print("images/2t_vs_x.pdf(","pdf");
 
     delete graph;
     delete canva;
