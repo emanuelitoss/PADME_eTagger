@@ -14,7 +14,7 @@
 
 // settings
 #define nbins 50
-#define max_Time 50. //[ns]
+#define max_Time 25. //[ns]
 
 void print_signals(char * fileName, int openCloseFile){
 
