@@ -193,6 +193,7 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
     canva->Divide(2,1);
+    canva->SetGrid();
     const int color[2] = {kGreen+3, kOrange+9};
 
     TGraphErrors* graph = new TGraphErrors();
