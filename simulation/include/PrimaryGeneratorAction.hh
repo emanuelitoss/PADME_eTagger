@@ -83,7 +83,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4double fInitial_X = 0.;
     G4double fInitial_Y = 0.;
 
-    G4bool randomic_generation = 0.;
+    G4bool randomic_generation = false;
+    G4bool randomic_generation_onlyY = false;
 
 };
 

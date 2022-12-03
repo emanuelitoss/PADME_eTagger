@@ -54,7 +54,9 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fParticleGun(nullptr),
   fEnvelope(nullptr),
   fTagger(nullptr),
-  fMessenger(nullptr)
+  fMessenger(nullptr),
+  randomic_generation(false),
+  randomic_generation_onlyY(false)
 {
   G4int n_particle = 1;
   fParticleGun  = new G4ParticleGun(n_particle);
@@ -112,6 +114,7 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
     fInitial_X = 100*(G4UniformRand()-0.5)*(2-EPS);
     fInitial_Y = 100*(G4UniformRand()-0.5)*(2-EPS);
   }
+  else if(randomic_generation_onlyY) fInitial_Y = 100*(G4UniformRand()-0.5)*(2-EPS);
 
   fParticleGun->SetParticlePosition(G4ThreeVector(max_x*fInitial_X/100., max_y*fInitial_Y/100., initial_z));
 
@@ -119,15 +122,22 @@ void PrimaryGeneratorAction::ParticleKinematicsGenerator(){
 
 void PrimaryGeneratorAction::DefineCommands() {
   
-  // Define /B5/detector command directory using generic messenger class
+  // Define command directory using generic messenger class
   fMessenger = new G4GenericMessenger(this, "/PadmETag/Generation/", "Primary generator");
 
-  // position Y
+  // Random generation on both x & y
   auto& setRandomGeneration
   = fMessenger->DeclareProperty("SetRandomGeneration",randomic_generation);
   setRandomGeneration.SetParameterName("RandomGenerationBool", true);
   setRandomGeneration.SetCandidates("0 1");
   setRandomGeneration.SetDefaultValue("0");
+
+  // Random generation ONLY y
+  auto& setRandomGenerationY
+  = fMessenger->DeclareProperty("SetRandomGenerationY",randomic_generation_onlyY);
+  setRandomGenerationY.SetParameterName("RandomGenerationBoolY", true);
+  setRandomGenerationY.SetCandidates("0 1");
+  setRandomGenerationY.SetDefaultValue("0");
 
   // position X
   auto& setXcommand
