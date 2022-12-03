@@ -15,7 +15,7 @@
 TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <std::vector <double> >* stdDevs2, std::vector <double> positions_x){
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3800, 3500);
-    const int color[2] = {kGreen+3, kOrange+9};
+    const int color[2] = {kAzure-5, kOrange+9};
 
     canva->SetGrid();
 
@@ -42,7 +42,7 @@ TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
     graph->SetTitle(Ttitle);
     graph->GetXaxis()->CenterTitle();
     graph->GetYaxis()->CenterTitle();
-    graph->GetXaxis()->SetTitle("position x [mm]");
+    graph->GetXaxis()->SetTitle("Position x [mm]");
     graph->GetYaxis()->SetTitle("Time [ns]");
 
     // markers
@@ -59,7 +59,7 @@ TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
     line_fit->SetLineColor(color[1]);
     line_fit->SetLineWidth(1);
     line_fit->SetFillStyle(3002);
-    line_fit->SetFillColorAlpha(color[0],0.9);
+    line_fit->SetFillColorAlpha(color[0],0.5);
     
     gStyle->SetOptFit(1110);
     gStyle->SetOptStat(2210);
