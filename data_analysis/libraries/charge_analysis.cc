@@ -231,7 +231,7 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
         else gStyle->SetStatX(0.92);
 
         // axis
-        string title = "Total charges vs Beam position (x,0)";
+        string title = "Total charges vs Beam position x";
         TString Ttitle = title;
         graph->SetTitle(Ttitle);
         graph->GetXaxis()->CenterTitle();
@@ -271,7 +271,7 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
 
     TString name[4] = {"Charges sum", "Charges difference", "Charges ratio", "Charges ratio"};
-    TString yAxisName[4] = {"Sum N_{DX} + N_{SX}", "Difference N_{DX} - N_{SX}", "Ratio N_{DX} / N_{SX}", "Ratio N_{SX} / N_{DX}"};
+    TString yAxisName[4] = {"Sum N_{DX} + N_{SX} of detected #gamma", "Difference N_{DX} - N_{SX} of detected #gamma", "Ratio N_{DX} / N_{SX} of detected #gamma", "Ratio N_{SX} / N_{DX} of detected #gamma"};
 
     TGraphErrors* graph = new TGraphErrors();
 
