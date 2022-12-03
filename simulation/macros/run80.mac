@@ -6,6 +6,7 @@
 #/run/numberOfThreads 2
 #
 /PadmETag/Generation/SetX 80
+/PadmETag/Generation/SetRandomGenerationY 1
 /PadmETag/OutputFile/SetName +80
 
 /run/beamOn 1000
