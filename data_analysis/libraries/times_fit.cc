@@ -37,7 +37,7 @@ TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
     graph = new TGraphErrors(noOfPoints, x, y, dx, dy);
 
     // axis
-    std::string title = "Beam position (x,0) vs D_time of first detected #gamma (of the two sides)";
+    std::string title = "Beam position x vs D_time of first detected #gamma (of the two sides)";
     TString Ttitle = title;
     graph->SetTitle(Ttitle);
     graph->GetXaxis()->CenterTitle();
