@@ -24,6 +24,11 @@ using namespace std;
 #define min_time -2.0 //[ns] (range for plots)
 #define OFFSET 8 //[ns] >> I do not have times >~ 8 ns
 
+#define OPTION_Q_DIFFERENCE 0
+#define OPTION_Q_RATIO 1
+#define OPTION_DELTA_POSITION 0
+#define OPTION_POSITION 1
+
 #define ORESET   "\033[0m"
 #define OBLACK   "\033[30m"      /* Black */
 #define ORED     "\033[31m"      /* Red */

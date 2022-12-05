@@ -10,7 +10,7 @@
 #include "TCanvas.h"
 #include "TStyle.h"
 
-void HistoFillDeltaXperFileTimes(TH1F* histogram, TF1* function, char * fileName,  double true_x, vector <Double_t>* deltas){
+void HistoFillDeltaXperFileTimes(TH1F* histogram, TF1* function, char * fileName,  double true_x, vector <Double_t>* deltas, int my_option){
     
     // reading objects
     TFile* myFile = TFile::Open(fileName);
@@ -53,8 +53,17 @@ void HistoFillDeltaXperFileTimes(TH1F* histogram, TF1* function, char * fileName
         }
 
         reconstructed_x = function->Eval(min_timeDX-min_timeSX);
-        histogram->Fill(reconstructed_x - true_x);
-        (*deltas).push_back(reconstructed_x - true_x);
+        
+        if(my_option == OPTION_DELTA_POSITION)
+        {
+            histogram->Fill(reconstructed_x - true_x);
+            (*deltas).push_back(reconstructed_x - true_x);
+        }
+        else if(my_option == OPTION_POSITION)
+        {
+            histogram->Fill(reconstructed_x);
+            (*deltas).push_back(reconstructed_x);
+        }
 
     }
 
@@ -160,7 +169,7 @@ void PlotHistogramDeltaXTimes(TH1F* histo_deltaX, TString output_name){
 
 }
 
-void PlotDeltaPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltasQ, int openclosefile){
+void PlotPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltasQ, int openclosefile, int option_diff_ratio){
 
     // check that I have couples of points.
     int len = (*deltasT).size();
@@ -171,6 +180,15 @@ void PlotDeltaPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltas
     }
 
     TH2F histogram = TH2F("hist","#deltax (time analysis) vs #deltax (charge analysis)",70,-HALF_LEN_X,HALF_LEN_X,70,-HALF_LEN_X,HALF_LEN_X);
+    
+    if(option_diff_ratio == OPTION_Q_DIFFERENCE){
+        histogram.SetName("hist_diff");
+        histogram.SetTitle("#deltax (time analysis) vs #deltax (charge differences analysis)");
+    }
+    else if(option_diff_ratio == OPTION_Q_RATIO){
+        histogram.SetName("hist_ratio");
+        histogram.SetTitle("#deltax (time analysis) vs #deltax (charge ratios analysis)");
+    }
 
     // storing.
     Double_t deltaxT[len], deltaxQ[len];
@@ -186,7 +204,7 @@ void PlotDeltaPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltas
     gStyle->SetStatY(0.89);
 
     histogram.Draw("CONT4Z");
-    if(openclosefile == 0)  canva->Print("images/5delta_positions_correlation.pdf(","pdf");
+    if(openclosefile == OPEN_OUTPUT || openclosefile == SINGLE_OUTPUT)  canva->Print("images/5delta_positions_correlation.pdf(","pdf");
     else canva->Print("images/5delta_positions_correlation.pdf","pdf");
     canva->Clear();
 
@@ -196,13 +214,7 @@ void PlotDeltaPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltas
     histogram.Draw("LEGO2");
     histogram.SetXTitle("#deltax (times analysis) [mm]");
     histogram.SetYTitle("#deltax (charges analysis) [mm]");
-    canva->Print("images/5delta_positions_correlation.pdf","pdf");
-    canva->Clear();
-
-    histogram.Draw("SURF3");
-    histogram.SetXTitle("#deltax (times analysis) [mm]");
-    histogram.SetYTitle("#deltax (charges analysis) [mm]");
-    if(openclosefile==1) canva->Print("images/5delta_positions_correlation.pdf)","pdf");
+    if(openclosefile == CLOSE_OUTPUT || openclosefile == SINGLE_OUTPUT) canva->Print("images/5delta_positions_correlation.pdf)","pdf");
     else canva->Print("images/5delta_positions_correlation.pdf","pdf");
     canva->Clear();
 

@@ -56,7 +56,8 @@ int main(int argc, char** argv){
         = new std::vector <std::vector <double> > {{}, {}, {}, {}, {}, {}, {}, {}};
 
     // fitting functions for (x,chargeDX-chargeSX) and (x,timeDX-timeSX)
-    TF1* correlation_functionQ;
+    TF1* correlation_functionQ_difference;
+    TF1* correlation_functionQ_ratio;
     TF1* correlation_functionT;
 
     /***************** FILLING ARRAYS *****************/
@@ -91,26 +92,33 @@ int main(int argc, char** argv){
 
     }
 
-    /***************** PRINTING PROGRESS AND FIRST PLOTS *****************/
+    /***************** PRINTING PROGRESS AND FIRST PLOTS, SAVING FITTING FUNCTIONS *****************/
+
+    /***** CHARGES *****/
 
     // if I'm not acting through "event per event" method, I evaluate functions of charges at the end
     if(!EPE) AddFunctionsOfCharges(charges_means, charges_stdDevs, charges_functions_means, charges_functions_stdDevs);
     PlotCharges(charges_means, charges_stdDevs, positions_x, EPE);
-    correlation_functionQ = PlotChargesFunctions(charges_functions_means, charges_functions_stdDevs, positions_x, EPE);
+    correlation_functionQ_difference = PlotChargesFunctions(charges_functions_means, charges_functions_stdDevs, positions_x, EPE, OPTION_Q_DIFFERENCE);
+    correlation_functionQ_ratio = PlotChargesFunctions(charges_functions_means, charges_functions_stdDevs, positions_x, EPE, OPTION_Q_RATIO);
+
+    /***** TIMES *****/
 
     // Print means and errors for time analysis on the shell interface
     PrintFitResults(times_means8, times_stdDevs8, argv);
     PrintFitResults2(times_means2, times_stdDevs2, argv);
     correlation_functionT = PlotFitResults2(times_means2, times_stdDevs2, positions_x);
 
-    /***************** RECONSTRUCTION OF THE DISTRIBUTION OF TRUE_X - RECO_X ("delta_x") *****************/
+    /***************** DEFINITIONS FOR X_T VS X_Q ANALYSIS *****************/
 
     // I prepare a vector of doublet delta_x(charge analysis), delta_x(time analysis)
     vector <Double_t> * deltasT = new vector <Double_t> {};
-    vector <Double_t> * deltasQ = new vector <Double_t> {};
+    vector <Double_t> * deltasQ_diff = new vector <Double_t> {};
+    vector <Double_t> * deltasQ_ratio = new vector <Double_t> {};
 
     TH1F* histo_deltaXT = new TH1F("histo_delta_x(T)","Histogram of x_{rec} - x_{true} from time analysis", nbins, -HALF_LEN_X, HALF_LEN_X);
-    TH1F* histo_deltaXQ = new TH1F("histo_delta_x(Q)","Histogram of x_{rec} - x_{true} from charge analysis", nbins, -HALF_LEN_X, HALF_LEN_X);
+    TH1F* histo_deltaXQ_diff = new TH1F("histo_delta_x(Q)_differences","Histogram of x_{rec} - x_{true} from charge differences", nbins, -HALF_LEN_X, HALF_LEN_X);
+    TH1F* histo_deltaXQ_ratio = new TH1F("histo_delta_x(Q)_ratios","Histogram of x_{rec} - x_{true} from charge ratios", nbins, -HALF_LEN_X, HALF_LEN_X);
 
     // inverting a line function >> Applied only to time-position function.
     // for the charge-position function I use an other method
@@ -121,32 +129,64 @@ int main(int argc, char** argv){
     correlation_functionT->SetParameter(0, -quote/coefficient);
     correlation_functionT->SetParameter(1, 1./coefficient);
 
-    // fill histograms
+    /***************** DISTRIBUTION OF TRUE_X - RECO_X WITH PREVIOUS DATA *****************/
+
+    // evaluate delta_x and fill the histograms
     for(int file_counter = 1; file_counter < argc; ++file_counter)
     {
         fileName = argv[file_counter];
-        HistoFillDeltaXperFileCharges(histo_deltaXQ, correlation_functionQ, fileName, positions_x[file_counter-1], deltasQ);
-        HistoFillDeltaXperFileTimes(histo_deltaXT, correlation_functionT, fileName, positions_x[file_counter-1], deltasT);
+        HistoFillDeltaXperFileCharges(histo_deltaXQ_diff, correlation_functionQ_difference, fileName, positions_x[file_counter-1], deltasQ_diff, OPTION_Q_DIFFERENCE, OPTION_DELTA_POSITION);
+        HistoFillDeltaXperFileCharges(histo_deltaXQ_ratio, correlation_functionQ_ratio, fileName, positions_x[file_counter-1], deltasQ_ratio, OPTION_Q_RATIO, OPTION_DELTA_POSITION);
+        HistoFillDeltaXperFileTimes(histo_deltaXT, correlation_functionT, fileName, positions_x[file_counter-1], deltasT, OPTION_DELTA_POSITION);
     }
 
-    // Plot histograms
-    if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ, "images/3chargesEpE.pdf");
-    else PlotHistogramDeltaXCharges(histo_deltaXQ, "images/charges.pdf");
+    // plot the histograms
+    if(EPE){
+        PlotHistogramDeltaXCharges(histo_deltaXQ_diff, "images/3chargesEpE.pdf");
+        PlotHistogramDeltaXCharges(histo_deltaXQ_ratio, "images/3chargesEpE.pdf");
+    }
+    else{
+        PlotHistogramDeltaXCharges(histo_deltaXQ_diff, "images/charges.pdf");
+        PlotHistogramDeltaXCharges(histo_deltaXQ_ratio, "images/charges.pdf");
+    }
     PlotHistogramDeltaXTimes(histo_deltaXT, "images/2t_vs_x.pdf");
 
-    /***************** DELTAX_CHARGES VS DELTAX_TIMES *****************/
+    /***************** X_CHARGES VS X_TIMES SCATTERPLOT *****************/
+
+    deltasQ_diff->clear();
+    deltasQ_ratio->clear();
+    deltasT->clear();
+
+    for(int file_counter = 1; file_counter < argc; ++file_counter)
+    {
+        fileName = argv[file_counter];
+        HistoFillDeltaXperFileCharges(histo_deltaXQ_diff, correlation_functionQ_difference, fileName, positions_x[file_counter-1], deltasQ_diff, OPTION_Q_DIFFERENCE, OPTION_POSITION);
+        HistoFillDeltaXperFileCharges(histo_deltaXQ_ratio, correlation_functionQ_ratio, fileName, positions_x[file_counter-1], deltasQ_ratio, OPTION_Q_RATIO, OPTION_POSITION);
+        HistoFillDeltaXperFileTimes(histo_deltaXT, correlation_functionT, fileName, positions_x[file_counter-1], deltasT, OPTION_POSITION);
+    }
 
     // Plot delta_x(times) vs delta_x(charges) 2D histogram
-    PlotDeltaPositionsQT(deltasT, deltasQ, OPEN_OUTPUT);
+    PlotPositionsQT(deltasT, deltasQ_diff, SINGLE_OUTPUT, OPTION_Q_DIFFERENCE);
+    // PlotPositionsQT(deltasT, deltasQ_ratio, ADD_OUTPUT, OPTION_Q_RATIO);
 
-    /***************** TESTING OF THE DISTRIBUTION OF TRUE_X - RECO_X OVER RANDOM (x,y) DATA *****************/
+    /***************** TESTING OF THE CORRELATION X_T vs X_Q OVER RANDOM (x,y) DATA *****************/
 
-    deltasQ->clear();
-    histo_deltaXQ->Clear();
-    histo_deltaXQ = new TH1F("histo_dx_charge","Histogram of x_{rec} - x_{true}", nbins, -HALF_LEN_X, HALF_LEN_X);
-    HistoFillDeltaXRandomFileCharges(histo_deltaXQ, correlation_functionQ, "data_eTagRAND.root", deltasQ);
-    if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ, "images/3chargesEpE.pdf)");
-    else PlotHistogramDeltaXCharges(histo_deltaXQ, "images/charges.pdf)");
+    // Here I append to previous histograms, other tests.
+    // I use randomic (x,y) data to obtain a simulated realistic reconstruction
+
+    deltasQ_diff->clear();
+    histo_deltaXQ_diff->Clear();
+    histo_deltaXQ_diff = new TH1F("histo_dx_charge_differences","Histogram of x_{rec} - x_{true} (differences)", nbins, -HALF_LEN_X, HALF_LEN_X);
+    HistoFillDeltaXRandomFileCharges(histo_deltaXQ_diff, correlation_functionQ_difference, "data_eTagRAND.root", deltasQ_diff);
+    if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ_diff, "images/3chargesEpE.pdf");
+    else PlotHistogramDeltaXCharges(histo_deltaXQ_diff, "images/charges.pdf");
+
+    deltasQ_ratio->clear();
+    histo_deltaXQ_ratio->Clear();
+    histo_deltaXQ_ratio = new TH1F("histo_dx_charge_ratios","Histogram of x_{rec} - x_{true} (ratios)", nbins, -HALF_LEN_X, HALF_LEN_X);
+    HistoFillDeltaXRandomFileCharges(histo_deltaXQ_ratio, correlation_functionQ_ratio, "data_eTagRAND.root", deltasQ_ratio);
+    if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ_ratio, "images/3chargesEpE.pdf)");
+    else PlotHistogramDeltaXCharges(histo_deltaXQ_ratio, "images/charges.pdf)");
 
     deltasT->clear();
     histo_deltaXT->Clear();
@@ -156,17 +196,25 @@ int main(int argc, char** argv){
     
     /***************** DELTAX_CHARGES VS DELTAX_TIMES OVER RANDOM (x,y) DATA *****************/
 
-    // Plot delta_x(times) vs delta_x(charges) 2D histogram
-    PlotDeltaPositionsQT(deltasT, deltasQ, CLOSE_OUTPUT);
+    // COMMENTO MIO: Aggiustare ed inserire le posizioni ricostruite, non le delta!
+    // deltasT->clear();
+    // deltasQ_diff->clear();
+    // deltasQ_ratio->clear();
+    // plot delta_x(times) vs delta_x(charges) 2D histogram
+    // PlotPositionsQT(deltasT, deltasQ_diff, ADD_OUTPUT);
+    // PlotPositionsQT(deltasT, deltasQ_ratio, CLOSE_OUTPUT);
 
     /***************** DELETE STUFF & EXIT *****************/
 
-    delete histo_deltaXQ;
+    delete histo_deltaXQ_ratio;
+    delete histo_deltaXQ_diff;
     delete histo_deltaXT;
-    delete deltasQ;
+    delete deltasQ_ratio;
+    delete deltasQ_diff;
     delete deltasT;
     delete correlation_functionT;
-    delete correlation_functionQ;
+    delete correlation_functionQ_ratio;
+    delete correlation_functionQ_difference;
     delete times_stdDevs8;
     delete times_means8;
     delete times_stdDevs2;

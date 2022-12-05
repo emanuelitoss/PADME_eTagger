@@ -265,7 +265,7 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
 
 }
 
-TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <double_t> >* fstdDevs, vector <double_t> positions_x, bool EPE){
+TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <double_t> >* fstdDevs, vector <double_t> positions_x, bool EPE, int ratioQ_or_differenceQ){
     
     vector <TF1*> fits = {nullptr, nullptr, nullptr, nullptr};
 
@@ -337,8 +337,10 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
 
         canva->Draw();
 
-        if(EPE) canva->Print("images/3chargesEpE.pdf","pdf");
-        else canva->Print("images/charges.pdf","pdf");
+        if(ratioQ_or_differenceQ == OPTION_Q_DIFFERENCE){
+            if(EPE) canva->Print("images/3chargesEpE.pdf","pdf");
+            else canva->Print("images/charges.pdf","pdf");
+        }
 
         graph->Clear();
         canva->Clear();
@@ -348,8 +350,12 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
     delete graph;
     delete canva;
 
-    return fits[1];
-
+    if(ratioQ_or_differenceQ == OPTION_Q_DIFFERENCE) return fits[1];
+    else if(ratioQ_or_differenceQ == OPTION_Q_RATIO) return fits[2];
+    else{
+        PrintColor("Error: Not able to return difference or ratio of charges fit. You need to insert a right value", OBOLDRED);
+        return nullptr;
+    }
 }
 
 
@@ -442,7 +448,7 @@ void PlotHistogramDeltaXCharges(TH1F* histogram, TString output_name){
 
 }
 
-void HistoFillDeltaXperFileCharges(TH1F* histogram, TF1* correlation_function, char* fileName, double true_x, vector <Double_t>* deltas){
+void HistoFillDeltaXperFileCharges(TH1F* histogram, TF1* correlation_function, char* fileName, double true_x, vector <Double_t>* deltas, int option_Qdiff_or_Qratio, int my_option){
     
     // reading objects
     TFile* myFile = TFile::Open(fileName);
@@ -477,9 +483,19 @@ void HistoFillDeltaXperFileCharges(TH1F* histogram, TF1* correlation_function, c
             
         }
 
-        reconstructed_x = correlation_function->GetX(chargeDX-chargeSX);
-        histogram->Fill(reconstructed_x - true_x);
-        (*deltas).push_back(reconstructed_x - true_x);
+        if(option_Qdiff_or_Qratio == OPTION_Q_DIFFERENCE) reconstructed_x = correlation_function->GetX(chargeDX-chargeSX);        
+        if(option_Qdiff_or_Qratio == OPTION_Q_RATIO) reconstructed_x = correlation_function->GetX(chargeDX/chargeSX);
+        
+        if(my_option == OPTION_DELTA_POSITION)
+        {
+            histogram->Fill(reconstructed_x - true_x);
+            (*deltas).push_back(reconstructed_x - true_x);
+        }
+        else if(my_option == OPTION_POSITION)
+        {
+            histogram->Fill(reconstructed_x);
+            (*deltas).push_back(reconstructed_x);            
+        }
 
     }
 
