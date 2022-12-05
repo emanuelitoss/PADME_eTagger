@@ -139,7 +139,7 @@ void print_signals(char * fileName, int openCloseFile){
     canva->Update();
   }
 
-  if(openCloseFile == 1 || openCloseFile == 2)  canva->Print("images/0signal_waveforms.pdf)","pdf");
+  if(openCloseFile == CLOSE_OUTPUT || openCloseFile == SINGLE_OUTPUT)  canva->Print("images/0signal_waveforms.pdf)","pdf");
   else  canva->Print("images/0signal_waveforms.pdf","pdf");
 
   /************ CLOSE FILES ************/
