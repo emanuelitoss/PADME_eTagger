@@ -77,6 +77,14 @@ void SteppingAction::UserSteppingAction(const G4Step* step){
   G4double phot_energy = 0.*eV;
 
   if(IsOpticalPhoton){
+  
+    //G4StepPoint* endPoint   = step->GetPostStepPoint();
+    //G4StepPoint* startPoint = step->GetPreStepPoint();
+    //const G4VProcess* pds = endPoint->GetProcessDefinedStep();
+    //if(pds->GetProcessName() && (pds->GetProcessName()!="Transportation") )
+    //{
+    //  G4cout << "Endpoint = " << endPoint->GetPosition() << "\t\t" << pds->GetProcessName() << endl;
+    //}
 
     // get the photon energy
     phot_energy = step->GetTrack()->GetKineticEnergy();
