@@ -72,6 +72,9 @@ void AddCharges(char * fileName, vector <vector <double_t> >* charge_means, vect
 
     cout << endl;
 
+    myFile->Close();
+    delete myFile;
+
 }
 
 void AddChargesEPE(char * fileName, vector <vector <double_t> >* charge_means, vector <vector <double_t> >* charge_stdDevs,
@@ -88,8 +91,8 @@ void AddChargesEPE(char * fileName, vector <vector <double_t> >* charge_means, v
     vector < vector <double_t> > charges_for_side = {{}, {}};
     vector < vector <double_t> > charges_for_side_err = {{}, {}};
     // sum dx+sx, difference dx-sx, ratio dx/sx, ratio sx/dx
-    vector < vector <double_t> > charges_functions = {{}, {}, {}, {}};
-    vector < vector <double_t> > charges_functions_err = {{}, {}, {}, {}};
+    vector < vector <double_t> > charges_functions = {{}, {}, {}, {}, {}};
+    vector < vector <double_t> > charges_functions_err = {{}, {}, {}, {}, {}};
 
     for (int channel = 0; channel < numberOfChannels; ++channel)
     {
@@ -122,6 +125,7 @@ void AddChargesEPE(char * fileName, vector <vector <double_t> >* charge_means, v
         charges_functions[1].push_back(chargeDX-chargeSX);
         charges_functions[2].push_back(chargeDX/chargeSX);
         charges_functions[3].push_back(chargeSX/chargeDX);
+        charges_functions[4].push_back((chargeDX-chargeSX)/(chargeDX+chargeSX));
 
     }
 
@@ -142,7 +146,7 @@ void AddChargesEPE(char * fileName, vector <vector <double_t> >* charge_means, v
         else cout << "\tLeft side:\t";
     }
 
-    for(int func_idx = 0; func_idx < 4; ++func_idx)
+    for(int func_idx = 0; func_idx < 5; ++func_idx)
     {
         (*functions)[func_idx].push_back( Mean(charges_functions[func_idx]) );
         (*functions_err)[func_idx].push_back( StdDeviation(charges_functions[func_idx]) );
@@ -150,14 +154,17 @@ void AddChargesEPE(char * fileName, vector <vector <double_t> >* charge_means, v
 
     cout << endl;
 
+    myFile->Close();
+    delete myFile;
+
 }
 
 void AddFunctionsOfCharges(vector <vector <double_t> >* means, vector <vector <double_t> >* errs, vector <vector <double_t> >* functions, vector <vector <double_t> >* functions_err){
 
     Int_t numMeasures = (*means)[0].size();
-    const int sum_idx = 0, diff_idx = 1, ratio_DS_idx = 2, ratio_SD_idx = 3;
-    double_t err = 0;
-    double_t val1, val2, err1, err2;
+    const int sum_idx = 0, diff_idx = 1, ratio_DS_idx = 2, ratio_SD_idx = 3, diffonsum = 4;
+    double_t err = 0., err_app;
+    double_t val1, val2, err1, err2, app;
 
     for(int meas = 0; meas < numMeasures; ++meas)
     {
@@ -185,7 +192,16 @@ void AddFunctionsOfCharges(vector <vector <double_t> >* means, vector <vector <d
         err = (val2/val1)*sqrt( pow(err1/val1,2) + pow(err2/val2,2) );
         (*functions_err)[ratio_SD_idx].push_back(err);
 
+        // charge difference on sum
+        (*functions)[diffonsum].push_back((val1 - val2)/(val1 + val2));
+        app = val1/val2;
+        err_app = app*sqrt( pow(err1/val1,2) + pow(err2/val2,2) );
+        err = (2/pow((val1/val2 +1),2))*err_app;
+        (*functions_err)[diffonsum].push_back(err);
+
     }
+
+    return;
     
 }
 
@@ -271,15 +287,15 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3300);
 
-    TString name[4] = {"Charges sum", "Charges difference", "Charges ratio", "Charges ratio"};
-    TString yAxisName[4] = {"Sum N_{DX} + N_{SX} of detected #gamma", "Difference N_{DX} - N_{SX} of detected #gamma", "Ratio N_{DX} / N_{SX} of detected #gamma", "Ratio N_{SX} / N_{DX} of detected #gamma"};
+    TString name[5] = {"Charges sum", "Charges difference", "Charges ratio", "Charges ratio", "Charges function"};
+    TString yAxisName[5] = {"Sum N_{DX} + N_{SX} of detected #gamma", "Difference N_{DX} - N_{SX} of detected #gamma", "Ratio N_{DX} / N_{SX} of detected #gamma", "Ratio N_{SX} / N_{DX} of detected #gamma", "function #frac{N_{DX}-N_{SX}}{N_{DX}+N_{SX}}"};
 
     TGraphErrors* graph = new TGraphErrors();
 
     int noOfPoints = positions_x.size();
     double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
 
-    for(int ch = 0; ch < 4; ++ch)
+    for(int ch = 0; ch < 5; ++ch)
     {
         canva->SetGrid();
 
@@ -325,6 +341,10 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
         else if(ch==3){
             gStyle->SetStatX(0.89);
         }
+        else if(ch==4){
+            gStyle->SetStatX(0.48);
+            gStyle->SetStatY(0.89);
+        }
 
         fits[ch] = new TF1("function", "pol5", -1.5*HALF_LEN_X, 1.5*HALF_LEN_X);
         graph->Fit(fits[ch], "Q", "0");
@@ -333,7 +353,6 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
         fits[ch]->SetFillStyle(3002);
         fits[ch]->SetFillColorAlpha(kAzure-5,0.5);
         fits[ch]->Draw("SAME");
-
 
         canva->Draw();
 
@@ -351,7 +370,7 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
     delete canva;
 
     if(ratioQ_or_differenceQ == OPTION_Q_DIFFERENCE) return fits[1];
-    else if(ratioQ_or_differenceQ == OPTION_Q_RATIO) return fits[2];
+    else if(ratioQ_or_differenceQ == OPTION_Q_DOS) return fits[4];
     else{
         PrintColor("Error: Not able to return difference or ratio of charges fit. You need to insert a right value", OBOLDRED);
         return nullptr;
@@ -476,6 +495,7 @@ void PlotHistogramDeltaXChargesSpecial(TH1F* histogram, TString output_name, vec
     gauss_fit->SetLineWidth(1);
     gauss_fit->SetFillStyle(3002);
     gauss_fit->SetFillColorAlpha(kAzure-5,0.5);
+    gauss_fit->SetObjectStat(true);
     gauss_fit->Draw("C SAME");
     
     sigmas->push_back(gauss_fit->GetParameter(2));
@@ -525,7 +545,7 @@ void HistoFillDeltaXperFileCharges(TH1F* histogram, TF1* correlation_function, c
         }
 
         if(option_Qdiff_or_Qratio == OPTION_Q_DIFFERENCE) reconstructed_x = correlation_function->GetX(chargeDX-chargeSX);        
-        if(option_Qdiff_or_Qratio == OPTION_Q_RATIO) reconstructed_x = correlation_function->GetX(chargeDX/chargeSX);
+        if(option_Qdiff_or_Qratio == OPTION_Q_DOS) reconstructed_x = correlation_function->GetX((chargeDX-chargeSX)/(chargeDX+chargeSX));
         
         if(my_option == OPTION_DELTA_POSITION)
         {
@@ -539,6 +559,9 @@ void HistoFillDeltaXperFileCharges(TH1F* histogram, TF1* correlation_function, c
         }
 
     }
+    
+    myFile->Close();
+    delete myFile;
 
     return;
 }

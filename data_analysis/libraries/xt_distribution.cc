@@ -67,6 +67,9 @@ void HistoFillDeltaXperFileTimes(TH1F* histogram, TF1* function, char * fileName
 
     }
 
+    myFile->Close();
+    delete myFile;
+
     return;
 }
 
@@ -148,13 +151,8 @@ void PlotHistogramDeltaXTimes(TH1F* histo_deltaX, TString output_name){
     gStyle->SetOptStat(2210);
     gStyle->SetStatFontSize(0.03);
     gStyle->SetStatFont(42);
-    //gStyle->SetLegendFillColor(0);
-    //gStyle->SetTitleFillColor(0);
-    //gStyle->SetFillColor(0);
-    //gStyle->SetPadBorderSize(0.);
     gStyle->SetLineWidth(1);
-    //gStyle->SetDrawBorder(false);
-    
+
     gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
     histo_deltaX->Fit(gauss_fit, "L Q", "0");
     gauss_fit->SetLineColor(kAzure-5);
@@ -214,7 +212,7 @@ void PlotHistogramDeltaXTimesSpecial(TH1F* histo_deltaX, TString output_name, ve
 }
 
 
-void PlotPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltasQ, int openclosefile, int option_diff_ratio){
+void PlotPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltasQ, int openclosefile, int option_diff_dos){
 
     // check that I have couples of points.
     int len = (*deltasT).size();
@@ -226,13 +224,13 @@ void PlotPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltasQ, in
 
     TH2F histogram = TH2F("hist","#deltax (time analysis) vs #deltax (charge analysis)",70,-HALF_LEN_X,HALF_LEN_X,70,-HALF_LEN_X,HALF_LEN_X);
     
-    if(option_diff_ratio == OPTION_Q_DIFFERENCE){
+    if(option_diff_dos == OPTION_Q_DIFFERENCE){
         histogram.SetName("hist_diff");
         histogram.SetTitle("#deltax (time analysis) vs #deltax (charge differences analysis)");
     }
-    else if(option_diff_ratio == OPTION_Q_RATIO){
-        histogram.SetName("hist_ratio");
-        histogram.SetTitle("#deltax (time analysis) vs #deltax (charge ratios analysis)");
+    else if(option_diff_dos == OPTION_Q_DOS){
+        histogram.SetName("hist_dos");
+        histogram.SetTitle("#deltax (time analysis) vs #deltax (charges special function analysis)");
     }
 
     // storing.
@@ -305,8 +303,8 @@ void PlotSigmaCorrections(vector <Double_t> * sigmaT_vec, vector <Double_t> * si
     graphQ->GetXaxis()->SetTitle("position [mm]");
     graphQ->GetYaxis()->SetTitle("uncertainty sigma(x)");
 
-    graphT->Draw("ap");
-    graphQ->Draw("SAME ap");
+    graphT->Draw("AC*");
+    graphQ->Draw("CP");
 
     gStyle->SetLegendTextSize(0.03);
     canva->BuildLegend();
@@ -317,5 +315,6 @@ void PlotSigmaCorrections(vector <Double_t> * sigmaT_vec, vector <Double_t> * si
     delete fitT;
     delete graphQ;
     delete graphT;
+    delete canva;
 
 }

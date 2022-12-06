@@ -25,7 +25,7 @@ using namespace std;
 #define OFFSET 8 //[ns] >> I do not have times >~ 8 ns
 
 #define OPTION_Q_DIFFERENCE 0
-#define OPTION_Q_RATIO 1
+#define OPTION_Q_DOS 1
 #define OPTION_DELTA_POSITION 0
 #define OPTION_POSITION 1
 

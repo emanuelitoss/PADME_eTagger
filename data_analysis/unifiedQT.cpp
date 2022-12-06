@@ -39,9 +39,9 @@ int main(int argc, char** argv){
 
     // 4 functions of previous charges f(Q_dx,Q,sx) at each position x
     vector <vector <double_t> >* charges_functions_means
-        = new vector <vector <double_t> > {{}, {}, {}, {}};
+        = new vector <vector <double_t> > {{}, {}, {}, {}, {}};
     vector <vector <double_t> >* charges_functions_stdDevs
-        = new vector <vector <double_t> > {{}, {}, {}, {}};
+        = new vector <vector <double_t> > {{}, {}, {}, {}, {}};
 
     // 2 arrays, one for each side of SiPMs, containing means and errors on initial times at each position x
     std::vector <std::vector <double> >* times_means2
@@ -55,9 +55,9 @@ int main(int argc, char** argv){
     std::vector <std::vector <double> >* times_stdDevs8
         = new std::vector <std::vector <double> > {{}, {}, {}, {}, {}, {}, {}, {}};
 
-    // fitting functions for (x,chargeDX-chargeSX) and (x,timeDX-timeSX)
+    // fitting functions
     TF1* correlation_functionQ_difference;
-    TF1* correlation_functionQ_ratio;
+    TF1* correlation_functionQ_diffonsum;
     TF1* correlation_functionT;
 
     /***************** FILLING ARRAYS *****************/
@@ -100,7 +100,7 @@ int main(int argc, char** argv){
     if(!EPE) AddFunctionsOfCharges(charges_means, charges_stdDevs, charges_functions_means, charges_functions_stdDevs);
     PlotCharges(charges_means, charges_stdDevs, positions_x, EPE);
     correlation_functionQ_difference = PlotChargesFunctions(charges_functions_means, charges_functions_stdDevs, positions_x, EPE, OPTION_Q_DIFFERENCE);
-    correlation_functionQ_ratio = PlotChargesFunctions(charges_functions_means, charges_functions_stdDevs, positions_x, EPE, OPTION_Q_RATIO);
+    correlation_functionQ_diffonsum = PlotChargesFunctions(charges_functions_means, charges_functions_stdDevs, positions_x, EPE, OPTION_Q_DOS);
 
     /***** TIMES *****/
 
@@ -114,11 +114,11 @@ int main(int argc, char** argv){
     // I prepare a vector of doublet delta_x(charge analysis), delta_x(time analysis)
     vector <Double_t> * deltasT = new vector <Double_t> {};
     vector <Double_t> * deltasQ_diff = new vector <Double_t> {};
-    vector <Double_t> * deltasQ_ratio = new vector <Double_t> {};
+    vector <Double_t> * deltasQ_dos = new vector <Double_t> {};
 
     TH1F* histo_deltaXT = new TH1F("histo_delta_x(T)","Histogram of x_{rec} - x_{true} from time analysis", nbins, -HALF_LEN_X, HALF_LEN_X);
-    TH1F* histo_deltaXQ_diff = new TH1F("histo_delta_x(Q)_differences","Histogram of x_{rec} - x_{true} from charge differences", nbins, -HALF_LEN_X, HALF_LEN_X);
-    TH1F* histo_deltaXQ_ratio = new TH1F("histo_delta_x(Q)_ratios","Histogram of x_{rec} - x_{true} from charge ratios", nbins, -HALF_LEN_X, HALF_LEN_X);
+    TH1F* histo_deltaXQ_diff = new TH1F("histo_delta_x(Q)_differences","Histogram of x_{rec} - x_{true} from charges differences", nbins, -HALF_LEN_X, HALF_LEN_X);
+    TH1F* histo_deltaXQ_dos = new TH1F("histo_delta_x(Q)_sFunct","Histogram of x_{rec} - x_{true} from charges sFunction", nbins, -HALF_LEN_X, HALF_LEN_X);
 
     // inverting a line function >> Applied only to time-position function.
     // for the charge-position function I use an other method
@@ -129,14 +129,14 @@ int main(int argc, char** argv){
     correlation_functionT->SetParameter(0, -quote/coefficient);
     correlation_functionT->SetParameter(1, 1./coefficient);
 
-    /***************** DISTRIBUTION OF TRUE_X - RECO_X WITH PREVIOUS DATA *****************/
-
+    /***************** DISTRIBUTION OF TRUE_X - RECO_X WITH PREVIOUS DATA (GLOBAL) *****************/
+    
     // evaluate delta_x and fill the histograms
     for(int file_counter = 1; file_counter < argc; ++file_counter)
     {
         fileName = argv[file_counter];
         HistoFillDeltaXperFileCharges(histo_deltaXQ_diff, correlation_functionQ_difference, fileName, positions_x[file_counter-1], deltasQ_diff, OPTION_Q_DIFFERENCE, OPTION_DELTA_POSITION);
-        HistoFillDeltaXperFileCharges(histo_deltaXQ_ratio, correlation_functionQ_ratio, fileName, positions_x[file_counter-1], deltasQ_ratio, OPTION_Q_RATIO, OPTION_DELTA_POSITION);
+        HistoFillDeltaXperFileCharges(histo_deltaXQ_dos, correlation_functionQ_diffonsum, fileName, positions_x[file_counter-1], deltasQ_dos, OPTION_Q_DOS, OPTION_DELTA_POSITION);
         HistoFillDeltaXperFileTimes(histo_deltaXT, correlation_functionT, fileName, positions_x[file_counter-1], deltasT, OPTION_DELTA_POSITION);
     }
 
@@ -144,30 +144,80 @@ int main(int argc, char** argv){
     PlotHistogramDeltaXTimes(histo_deltaXT, "images/2t_vs_x.pdf");
     if(EPE){
         PlotHistogramDeltaXCharges(histo_deltaXQ_diff, "images/3chargesEpE.pdf");
-        PlotHistogramDeltaXCharges(histo_deltaXQ_ratio, "images/3chargesEpE.pdf");
+        PlotHistogramDeltaXCharges(histo_deltaXQ_dos, "images/3chargesEpE.pdf");
     }
     else{
         PlotHistogramDeltaXCharges(histo_deltaXQ_diff, "images/charges.pdf");
-        PlotHistogramDeltaXCharges(histo_deltaXQ_ratio, "images/charges.pdf");
+        PlotHistogramDeltaXCharges(histo_deltaXQ_dos, "images/charges.pdf");
     }
 
-    /***************** X_CHARGES VS X_TIMES SCATTERPLOT *****************/
+    /***************** X_CHARGES VS X_TIMES SCATTERPLOT (BISECT. I-III) *****************/
 
     deltasQ_diff->clear();
-    deltasQ_ratio->clear();
+    deltasQ_dos->clear();
     deltasT->clear();
 
     for(int file_counter = 1; file_counter < argc; ++file_counter)
     {
         fileName = argv[file_counter];
         HistoFillDeltaXperFileCharges(histo_deltaXQ_diff, correlation_functionQ_difference, fileName, positions_x[file_counter-1], deltasQ_diff, OPTION_Q_DIFFERENCE, OPTION_POSITION);
-        HistoFillDeltaXperFileCharges(histo_deltaXQ_ratio, correlation_functionQ_ratio, fileName, positions_x[file_counter-1], deltasQ_ratio, OPTION_Q_RATIO, OPTION_POSITION);
+        HistoFillDeltaXperFileCharges(histo_deltaXQ_dos, correlation_functionQ_diffonsum, fileName, positions_x[file_counter-1], deltasQ_dos, OPTION_Q_DOS, OPTION_POSITION);
         HistoFillDeltaXperFileTimes(histo_deltaXT, correlation_functionT, fileName, positions_x[file_counter-1], deltasT, OPTION_POSITION);
     }
 
     // Plot delta_x(times) vs delta_x(charges) 2D histogram
-    PlotPositionsQT(deltasT, deltasQ_diff, SINGLE_OUTPUT, OPTION_Q_DIFFERENCE);
-    // PlotPositionsQT(deltasT, deltasQ_ratio, ADD_OUTPUT, OPTION_Q_RATIO);
+    PlotPositionsQT(deltasT, deltasQ_diff, OPEN_OUTPUT, OPTION_Q_DIFFERENCE);
+    PlotPositionsQT(deltasT, deltasQ_dos, ADD_OUTPUT, OPTION_Q_DOS);
+
+    /***************** DISTRIBUTION OF TRUE_X - RECO_X WITH PREVIOUS DATA (LOCAL: x-dependent) *****************/
+                    /***************** BY CONSIDERING ONLY CHARGES DIFFERENCE *****************/
+
+    vector <Double_t> * sigmas_from_Tanalysis = new vector <Double_t> {};
+    vector <Double_t> * err_sigmas_from_Tanalysis = new vector <Double_t> {};
+    vector <Double_t> * sigmas_from_Qanalysis = new vector <Double_t> {};
+    vector <Double_t> * err_sigmas_from_Qanalysis = new vector <Double_t> {};
+    TString length_name, histoTitle;
+    Double_t sigmaT, sigmaQ, sigmaT_err, sigmaQ_err;
+
+    // evaluate delta_x and fill the histograms
+    for(int file_counter = 1; file_counter < argc; ++file_counter)
+    {
+        length_name = TString(std::to_string(int(positions_x[file_counter-1])));
+
+        histoTitle = "Histogram of x_{rec} - x_{true} (charges analysis - differences) at " +  length_name + " mm";
+        deltasQ_diff->clear();
+        histo_deltaXQ_diff->Clear();
+        histo_deltaXQ_diff = new TH1F("histo_dx_charge_differences", histoTitle, nbins, -HALF_LEN_X, HALF_LEN_X);
+
+        histoTitle = "Histogram of x_{rec} - x_{true} (charges analysis - Sfunction) at " +  length_name + " mm";
+        deltasQ_dos->clear();
+        histo_deltaXQ_dos->Clear();
+        histo_deltaXQ_diff = new TH1F("histo_dx_charge_Sfunction", histoTitle, nbins, -HALF_LEN_X, HALF_LEN_X);
+        
+        histoTitle = "Histogram of x_{rec} - x_{true} from times analysis at " +  length_name + " mm";
+        deltasT->clear();
+        histo_deltaXT->Clear();
+        histo_deltaXT = new TH1F("histo_dx_time", histoTitle, nbins, -HALF_LEN_X, HALF_LEN_X);
+
+        fileName = argv[file_counter];
+        HistoFillDeltaXperFileCharges(histo_deltaXQ_diff, correlation_functionQ_difference, fileName, positions_x[file_counter-1], deltasQ_diff, OPTION_Q_DIFFERENCE, OPTION_DELTA_POSITION);
+        //HistoFillDeltaXperFileCharges(histo_deltaXQ_dos, correlation_functionQ_diffonsum, fileName, positions_x[file_counter-1], deltasQ_dos, OPTION_Q_DOS, OPTION_DELTA_POSITION);
+        HistoFillDeltaXperFileTimes(histo_deltaXT, correlation_functionT, fileName, positions_x[file_counter-1], deltasT, OPTION_DELTA_POSITION);
+
+        // plot the histograms
+        PlotHistogramDeltaXTimesSpecial(histo_deltaXT, "images/2t_vs_x.pdf", sigmas_from_Tanalysis, err_sigmas_from_Tanalysis);
+        if(EPE){
+            PlotHistogramDeltaXChargesSpecial(histo_deltaXQ_diff, "images/3chargesEpE.pdf", sigmas_from_Qanalysis, err_sigmas_from_Qanalysis);
+            //PlotHistogramDeltaXChargesSpecial(histo_deltaXQ_dos, "images/3chargesEpE.pdf", sigmas_from_Qanalysis, err_sigmas_from_Qanalysis);
+        }
+        else{
+            PlotHistogramDeltaXChargesSpecial(histo_deltaXQ_diff, "images/charges.pdf", sigmas_from_Qanalysis, err_sigmas_from_Qanalysis);
+            //PlotHistogramDeltaXChargesSpecial(histo_deltaXQ_dos, "images/charges.pdf", sigmas_from_Qanalysis, err_sigmas_from_Qanalysis);
+        }
+    }
+
+    PlotSigmaCorrections(sigmas_from_Tanalysis, sigmas_from_Qanalysis, err_sigmas_from_Tanalysis, err_sigmas_from_Qanalysis, positions_x, "images/5delta_positions_correlation.pdf)");
+    PrintColor("ERROR", OBOLDRED);
 
     /***************** TESTING OF THE CORRELATION X_T vs X_Q OVER RANDOM (x,y) DATA *****************/
 
@@ -176,21 +226,21 @@ int main(int argc, char** argv){
 
     deltasQ_diff->clear();
     histo_deltaXQ_diff->Clear();
-    histo_deltaXQ_diff = new TH1F("histo_dx_charge_differences","Histogram of x_{rec} - x_{true} (charges analysis - differences)", nbins, -HALF_LEN_X, HALF_LEN_X);
+    histo_deltaXQ_diff = new TH1F("histo_dx_charge_differences","Histogram of x_{rec} - x_{true} (charges analysis - differences) (over random data)", nbins, -HALF_LEN_X, HALF_LEN_X);
     HistoFillDeltaXRandomFileCharges(histo_deltaXQ_diff, correlation_functionQ_difference, "data_eTagRAND.root", deltasQ_diff);
     if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ_diff, "images/3chargesEpE.pdf");
     else PlotHistogramDeltaXCharges(histo_deltaXQ_diff, "images/charges.pdf");
 
-    deltasQ_ratio->clear();
-    histo_deltaXQ_ratio->Clear();
-    histo_deltaXQ_ratio = new TH1F("histo_dx_charge_ratios","Histogram of x_{rec} - x_{true} (charges analysis - ratios)", nbins, -HALF_LEN_X, HALF_LEN_X);
-    HistoFillDeltaXRandomFileCharges(histo_deltaXQ_ratio, correlation_functionQ_ratio, "data_eTagRAND.root", deltasQ_ratio);
-    if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ_ratio, "images/3chargesEpE.pdf)");
-    else PlotHistogramDeltaXCharges(histo_deltaXQ_ratio, "images/charges.pdf)");
+    deltasQ_dos->clear();
+    histo_deltaXQ_dos->Clear();
+    histo_deltaXQ_dos = new TH1F("histo_dx_charge_Sfunction","Histogram of x_{rec} - x_{true} (charges analysis - sFunction) (over random data)", nbins, -HALF_LEN_X, HALF_LEN_X);
+    HistoFillDeltaXRandomFileCharges(histo_deltaXQ_dos, correlation_functionQ_diffonsum, "data_eTagRAND.root", deltasQ_dos);
+    if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ_dos, "images/3chargesEpE.pdf)");
+    else PlotHistogramDeltaXCharges(histo_deltaXQ_dos, "images/charges.pdf)");
 
     deltasT->clear();
     histo_deltaXT->Clear();
-    histo_deltaXT = new TH1F("histo_dx_time","Histogram of x_{rec} - x_{true} from times analysis", nbins, -HALF_LEN_X, HALF_LEN_X);
+    histo_deltaXT = new TH1F("histo_dx_time","Histogram of x_{rec} - x_{true} from times analysis (over random data)", nbins, -HALF_LEN_X, HALF_LEN_X);
     HistoFillDeltaXRandomFileTimes(histo_deltaXT, correlation_functionT, "data_eTagRAND.root", deltasT);
     PlotHistogramDeltaXTimes(histo_deltaXT, "images/2t_vs_x.pdf)");
     
@@ -199,21 +249,25 @@ int main(int argc, char** argv){
     // COMMENTO MIO: Aggiustare ed inserire le posizioni ricostruite, non le delta!
     // deltasT->clear();
     // deltasQ_diff->clear();
-    // deltasQ_ratio->clear();
+    // deltasQ_dos->clear();
     // plot delta_x(times) vs delta_x(charges) 2D histogram
     // PlotPositionsQT(deltasT, deltasQ_diff, ADD_OUTPUT);
-    // PlotPositionsQT(deltasT, deltasQ_ratio, CLOSE_OUTPUT);
+    // PlotPositionsQT(deltasT, deltasQ_dos, CLOSE_OUTPUT);
 
     /***************** DELETE STUFF & EXIT *****************/
 
-    delete histo_deltaXQ_ratio;
+    delete err_sigmas_from_Qanalysis;
+    delete sigmas_from_Qanalysis;
+    delete err_sigmas_from_Tanalysis;
+    delete sigmas_from_Tanalysis;
+    delete histo_deltaXQ_dos;
     delete histo_deltaXQ_diff;
     delete histo_deltaXT;
-    delete deltasQ_ratio;
+    delete deltasQ_dos;
     delete deltasQ_diff;
     delete deltasT;
     delete correlation_functionT;
-    delete correlation_functionQ_ratio;
+    delete correlation_functionQ_diffonsum;
     delete correlation_functionQ_difference;
     delete times_stdDevs8;
     delete times_means8;

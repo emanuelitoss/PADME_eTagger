@@ -14,13 +14,14 @@
 
 TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <std::vector <double> >* stdDevs2, std::vector <double> positions_x){
 
+    TF1* line_fit = new TF1();
+
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3800, 3500);
     const int color[2] = {kAzure-5, kOrange+9};
 
     canva->SetGrid();
 
-    auto graph = new TGraphErrors();
-    TF1* line_fit = new TF1();
+    TGraphErrors* graph = new TGraphErrors();
 
     int noOfPoints = positions_x.size();
     double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
