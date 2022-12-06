@@ -12,10 +12,12 @@
 
 int main(int argc, char** argv){
 
+    PrintSignalExample("data_eTag+40.root");
+
     char* fileName;
 
     if(argc == 2) print_signals(argv[1], SINGLE_OUTPUT);
-    else
+    else if (argc > 2)
     {
 
         for(int file_counter = 1; file_counter < argc; ++file_counter)
@@ -29,6 +31,7 @@ int main(int argc, char** argv){
 
         }
     }
+    else return EXIT_FAILURE;
 
     return EXIT_SUCCESS;
 }

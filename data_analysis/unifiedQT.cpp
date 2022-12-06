@@ -141,6 +141,7 @@ int main(int argc, char** argv){
     }
 
     // plot the histograms
+    PlotHistogramDeltaXTimes(histo_deltaXT, "images/2t_vs_x.pdf");
     if(EPE){
         PlotHistogramDeltaXCharges(histo_deltaXQ_diff, "images/3chargesEpE.pdf");
         PlotHistogramDeltaXCharges(histo_deltaXQ_ratio, "images/3chargesEpE.pdf");
@@ -149,7 +150,6 @@ int main(int argc, char** argv){
         PlotHistogramDeltaXCharges(histo_deltaXQ_diff, "images/charges.pdf");
         PlotHistogramDeltaXCharges(histo_deltaXQ_ratio, "images/charges.pdf");
     }
-    PlotHistogramDeltaXTimes(histo_deltaXT, "images/2t_vs_x.pdf");
 
     /***************** X_CHARGES VS X_TIMES SCATTERPLOT *****************/
 
@@ -176,21 +176,21 @@ int main(int argc, char** argv){
 
     deltasQ_diff->clear();
     histo_deltaXQ_diff->Clear();
-    histo_deltaXQ_diff = new TH1F("histo_dx_charge_differences","Histogram of x_{rec} - x_{true} (differences)", nbins, -HALF_LEN_X, HALF_LEN_X);
+    histo_deltaXQ_diff = new TH1F("histo_dx_charge_differences","Histogram of x_{rec} - x_{true} (charges analysis - differences)", nbins, -HALF_LEN_X, HALF_LEN_X);
     HistoFillDeltaXRandomFileCharges(histo_deltaXQ_diff, correlation_functionQ_difference, "data_eTagRAND.root", deltasQ_diff);
     if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ_diff, "images/3chargesEpE.pdf");
     else PlotHistogramDeltaXCharges(histo_deltaXQ_diff, "images/charges.pdf");
 
     deltasQ_ratio->clear();
     histo_deltaXQ_ratio->Clear();
-    histo_deltaXQ_ratio = new TH1F("histo_dx_charge_ratios","Histogram of x_{rec} - x_{true} (ratios)", nbins, -HALF_LEN_X, HALF_LEN_X);
+    histo_deltaXQ_ratio = new TH1F("histo_dx_charge_ratios","Histogram of x_{rec} - x_{true} (charges analysis - ratios)", nbins, -HALF_LEN_X, HALF_LEN_X);
     HistoFillDeltaXRandomFileCharges(histo_deltaXQ_ratio, correlation_functionQ_ratio, "data_eTagRAND.root", deltasQ_ratio);
     if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ_ratio, "images/3chargesEpE.pdf)");
     else PlotHistogramDeltaXCharges(histo_deltaXQ_ratio, "images/charges.pdf)");
 
     deltasT->clear();
     histo_deltaXT->Clear();
-    histo_deltaXT = new TH1F("histo_dx_time","Histogram of x_{rec} - x_{true}", nbins, -HALF_LEN_X, HALF_LEN_X);
+    histo_deltaXT = new TH1F("histo_dx_time","Histogram of x_{rec} - x_{true} from times analysis", nbins, -HALF_LEN_X, HALF_LEN_X);
     HistoFillDeltaXRandomFileTimes(histo_deltaXT, correlation_functionT, "data_eTagRAND.root", deltasT);
     PlotHistogramDeltaXTimes(histo_deltaXT, "images/2t_vs_x.pdf)");
     

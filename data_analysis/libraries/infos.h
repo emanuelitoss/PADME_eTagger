@@ -20,7 +20,7 @@ using namespace std;
 #define numberOfChannels 8
 #define HALF_LEN_X 300 // [mm]
 #define HALF_LEN_Y 22.5 // [mm]
-#define max_time 7. //[ns] (range for plots)
+#define max_time 10. //[ns] (range for plots)
 #define min_time -2.0 //[ns] (range for plots)
 #define OFFSET 8 //[ns] >> I do not have times >~ 8 ns
 

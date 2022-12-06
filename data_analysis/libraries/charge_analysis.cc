@@ -423,7 +423,7 @@ void PlotHistogramDeltaXCharges(TH1F* histogram, TString output_name){
     histogram->SetLineColor(kBlack);
     histogram->SetLineWidth((Width_t)1.5);
 
-    gStyle->Reset();
+    //gStyle->Reset();
     gStyle->SetEndErrorSize(8);
     gStyle->SetOptFit(1110);
     gStyle->SetOptStat(2210);

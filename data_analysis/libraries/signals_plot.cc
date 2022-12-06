@@ -11,10 +11,11 @@
 #include "TF1.h"
 #include "TObjString.h"
 #include "TStyle.h"
+#include "TPaveText.h"
 
 // settings
 #define nbins 50
-#define max_Time 25. //[ns]
+#define max_Time 35. //[ns]
 
 void print_signals(char * fileName, int openCloseFile){
 
@@ -41,7 +42,7 @@ void print_signals(char * fileName, int openCloseFile){
     const char* histoName = histoNameS.c_str();
     std::string histoTitleS = "noOfPhotons[" + ChannelName + "]";
     const char* histoTitle = histoTitleS.c_str();
-    histograms.push_back(TH1F(histoName, histoTitle, nbins, 0, max_Time));
+    histograms.push_back(TH1F(histoName, histoTitle, int(nbins*1.5), -1.5, max_Time));
 
   }
 
@@ -104,6 +105,7 @@ void print_signals(char * fileName, int openCloseFile){
 
   //1
   canva->Divide(1,4);
+  gStyle->SetOptStat(1);
 
   for (int channel = 0; channel < 4; channel++)
   {
@@ -146,6 +148,107 @@ void print_signals(char * fileName, int openCloseFile){
 
   myFile->Close();
 
+  delete legend;
+  delete canva;
+  delete reader;
+  delete myFile;
+
+}
+
+void PrintSignalExample(TString fileName){
+
+  // open a new file
+  TFile* myFile = TFile::Open(fileName);
+
+  /******* READERS & HISTOS INITIALIZATION *******/
+
+  TTreeReader* reader = new TTreeReader("generic_times", myFile);
+  std::vector< TTreeReaderValue<Double_t> > times;
+
+  std::vector <TH1F> histograms;
+
+  for (int channel = 0; channel < numberOfChannels; ++channel){
+
+    std::string ChannelName = std::to_string(channel+1);
+    
+    std::string dirNameS = "PhotonsTime[" + ChannelName + "]";
+    const char* dirName = dirNameS.c_str();
+    times.push_back(TTreeReaderValue<Double_t>(*reader,dirName));
+
+    // histograms initialization
+    std::string histoNameS = "histogram[" + ChannelName + "]";
+    const char* histoName = histoNameS.c_str();
+    std::string histoTitleS = "noOfPhotons[" + ChannelName + "]";
+    const char* histoTitle = histoTitleS.c_str();
+    histograms.push_back(TH1F(histoName, histoTitle, int(nbins*1.5), -1.5, max_Time));
+
+  }
+
+  /************ REMOVE ZEROS AND FILL HISTOS ************/
+
+  double_t time = 0;
+
+  while(reader->Next()){
+    for (int channel = 0; channel < numberOfChannels; channel++){
+      time = *times[channel];      
+      if(time != 0) histograms[channel].Fill(time); 
+    }
+  }
+  
+  /************ PLOT ************/
+  
+  TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3400, 1400);
+  canva->SetGrid();
+  canva->SetTitle("Example of two signals");
+
+  TLegend* legend = new TLegend(0.7, 0.6, 0.9, 0.9);
+
+  legend->AddEntry(&histograms[1], "A right SiPM", "lf");
+  legend->AddEntry(&histograms[5], "A left SiPM", "lf");
+
+  histograms[1].GetXaxis()->SetTitle("Time [ns]");
+  histograms[1].GetYaxis()->SetTitle("Number of detected photons");
+  histograms[1].SetLineColor(kBlack);
+  gStyle->SetEndErrorSize(8);
+  histograms[1].Draw("E1 SAME");
+  histograms[1].SetFillColorAlpha(kOrange+9, 0.4);
+  histograms[1].SetFillStyle(3002);
+  histograms[1].Draw("SAME");
+
+  histograms[5].GetXaxis()->SetTitle("Time [ns]");
+  histograms[5].GetYaxis()->SetTitle("Number of detected photons");
+  histograms[5].SetLineColor(kBlack);
+  gStyle->SetEndErrorSize(8);
+  histograms[5].Draw("E1 SAME");
+  histograms[5].SetFillColorAlpha(kGreen+3, 0.4);
+  histograms[5].SetFillStyle(3002);
+  histograms[5].Draw("SAME");
+  canva->Update();
+
+  legend->SetHeader("Two SiPMs signals", "C");
+  legend->SetTextSize(0.04);
+  legend->Draw();
+
+  TPaveText* pt  = (TPaveText*)gPad->FindObject("title");
+  TPaveText* ptn = new TPaveText(pt->GetX1(), pt->GetY1(), pt->GetX2(), pt->GetY2(),"");
+
+  ptn->AddText("Example of two signals");
+  ptn->SetBorderSize(0);
+  ptn->SetFillColor(0);
+  ptn->SetTextFont(42);
+  ptn->Draw();
+
+  gStyle->SetTitle("Example of two signals");
+  gStyle->SetOptStat(0);
+
+  canva->Print("images/signal_example.pdf","pdf");
+  canva->Clear();
+
+  /************ CLOSE FILES ************/
+
+  myFile->Close();
+
+  delete ptn;
   delete legend;
   delete canva;
   delete reader;
