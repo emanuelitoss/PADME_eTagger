@@ -136,7 +136,7 @@ void PlotHistogramDeltaXTimes(TH1F* histo_deltaX, TString output_name){
 
     canva->SetGrid();
 
-    histo_deltaX->Draw("EP");
+    histo_deltaX->Draw("E1 P");
     histo_deltaX->GetXaxis()->SetTitle("Length [mm]");
     histo_deltaX->GetYaxis()->SetTitle("Number of events");
     histo_deltaX->SetLineColor(kBlack);
@@ -171,6 +171,48 @@ void PlotHistogramDeltaXTimes(TH1F* histo_deltaX, TString output_name){
     delete canva;
 
 }
+
+
+void PlotHistogramDeltaXTimesSpecial(TH1F* histo_deltaX, TString output_name, vector <Double_t> * sigmas, vector <Double_t> * err_sigmas){
+
+    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 4000);
+    TF1* gauss_fit = new TF1();
+
+    canva->SetGrid();
+
+    histo_deltaX->Draw("E1 P");
+    histo_deltaX->GetXaxis()->SetTitle("Length [mm]");
+    histo_deltaX->GetYaxis()->SetTitle("Number of events");
+    histo_deltaX->SetLineColor(kBlack);
+    histo_deltaX->SetLineWidth((Width_t)1.5);
+    
+    gStyle->SetEndErrorSize(8);
+    gStyle->SetOptFit(1110);
+    gStyle->SetOptStat(2210);
+    gStyle->SetStatFontSize(0.03);
+    gStyle->SetStatFont(42);
+    gStyle->SetLineWidth(1);
+    
+    gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
+    histo_deltaX->Fit(gauss_fit, "L Q", "0");
+    gauss_fit->SetLineColor(kAzure-5);
+    gauss_fit->SetLineWidth(1);
+    gauss_fit->SetFillStyle(3002);
+    gauss_fit->SetFillColorAlpha(kAzure-5,0.5);
+    gauss_fit->SetObjectStat(true);
+    gauss_fit->Draw("C SAME");
+
+    sigmas->push_back(gauss_fit->GetParameter(2));
+    err_sigmas->push_back(gauss_fit->GetParError(2));
+    
+    canva->Print(TString(output_name),"pdf");
+    canva->Clear();
+  
+    delete gauss_fit;
+    delete canva;
+
+}
+
 
 void PlotPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltasQ, int openclosefile, int option_diff_ratio){
 
@@ -223,5 +265,57 @@ void PlotPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltasQ, in
 
     delete canva;
 
+
+}
+
+void PlotSigmaCorrections(vector <Double_t> * sigmaT_vec, vector <Double_t> * sigmaQ_vec, vector <Double_t> * err_sigmaT_vec, vector <Double_t> * err_sigmaQ_vec, vector <double_t> positions_vec, TString filename){
+
+    Int_t size = positions_vec.size();
+    double sigma_t[size], sigma_q[size], err_sigma_t[size], err_sigma_q[size], positions[size], zeros[size];
+
+    for(int i=0; i<size; ++i){
+        sigma_t[i] = (*sigmaT_vec)[i];
+        sigma_q[i] = (*sigmaQ_vec)[i];
+        err_sigma_t[i] = (*err_sigmaT_vec)[i];
+        err_sigma_q[i] = (*err_sigmaQ_vec)[i];
+        positions[i] = positions_vec[i];
+        zeros[i] = 0;
+    }
+
+    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 2000, 1500);
+    canva->SetGrid();
+    
+    TGraphErrors* graphT = new TGraphErrors(size, positions, sigma_t, zeros, err_sigma_t);
+    TGraphErrors* graphQ = new TGraphErrors(size, positions, sigma_q, zeros, err_sigma_q);
+    
+    TF1* fitT = new TF1();
+    TF1* fitQ = new TF1();
+
+    graphT->SetMarkerStyle(kDot);
+    graphT->SetMarkerColor(kBlue-1);
+    graphT->SetMarkerSize(7.);
+    graphT->SetName("Sigma_x from times");
+    graphT->GetXaxis()->SetTitle("position [mm]");
+    graphT->GetYaxis()->SetTitle("uncertainty sigma(x)");
+
+    graphQ->SetMarkerStyle(kDot);
+    graphQ->SetMarkerColor(kYellow-1);
+    graphQ->SetMarkerSize(7.);
+    graphQ->SetName("Sigma_x from charges");
+    graphQ->GetXaxis()->SetTitle("position [mm]");
+    graphQ->GetYaxis()->SetTitle("uncertainty sigma(x)");
+
+    graphT->Draw("ap");
+    graphQ->Draw("SAME ap");
+
+    gStyle->SetLegendTextSize(0.03);
+    canva->BuildLegend();
+
+    canva->Print(filename,"pdf");
+
+    delete fitQ;
+    delete fitT;
+    delete graphQ;
+    delete graphT;
 
 }

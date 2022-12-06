@@ -191,7 +191,7 @@ void AddFunctionsOfCharges(vector <vector <double_t> >* means, vector <vector <d
 
 void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >* stdDevs, vector <double_t> positions_x, bool EPE){
 
-    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
+    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3200);
     canva->Divide(2,1);
     canva->SetGrid();
     const int color[2] = {kGreen+3, kOrange+9};
@@ -269,7 +269,7 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
     
     vector <TF1*> fits = {nullptr, nullptr, nullptr, nullptr};
 
-    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
+    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3300);
 
     TString name[4] = {"Charges sum", "Charges difference", "Charges ratio", "Charges ratio"};
     TString yAxisName[4] = {"Sum N_{DX} + N_{SX} of detected #gamma", "Difference N_{DX} - N_{SX} of detected #gamma", "Ratio N_{DX} / N_{SX} of detected #gamma", "Ratio N_{SX} / N_{DX} of detected #gamma"};
@@ -409,7 +409,7 @@ void HistoFillDeltaXRandomFileCharges(TH1F* histogram, TF1* function, TString fi
     myFile->Close();
     delete myFile;
 }
-
+ 
 void PlotHistogramDeltaXCharges(TH1F* histogram, TString output_name){
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 4000);
@@ -440,6 +440,47 @@ void PlotHistogramDeltaXCharges(TH1F* histogram, TString output_name){
     gauss_fit->SetFillColorAlpha(kAzure-5,0.5);
     gauss_fit->Draw("C SAME");
     
+    canva->Print(TString(output_name),"pdf");
+    canva->Clear();
+  
+    delete gauss_fit;
+    delete canva;
+
+}
+
+void PlotHistogramDeltaXChargesSpecial(TH1F* histogram, TString output_name, vector <Double_t> * sigmas, vector <Double_t> * err_sigmas){
+
+    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 4000);
+    TF1* gauss_fit = new TF1();
+
+    canva->SetGrid();
+
+    histogram->Draw("E1 P");
+    histogram->GetXaxis()->SetTitle("Length [mm]");
+    histogram->GetYaxis()->SetTitle("Number of events");
+    histogram->SetLineColor(kBlack);
+    histogram->SetLineWidth((Width_t)1.5);
+
+    //gStyle->Reset();
+    gStyle->SetEndErrorSize(8);
+    gStyle->SetOptFit(1110);
+    gStyle->SetOptStat(2210);
+    gStyle->SetStatX(0.89);
+    gStyle->SetStatY(0.89);
+    gStyle->SetStatW(0.3);
+    gStyle->SetStatH(0.7);
+    
+    gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
+    histogram->Fit(gauss_fit, "Q", "0");
+    gauss_fit->SetLineColor(kAzure-5);
+    gauss_fit->SetLineWidth(1);
+    gauss_fit->SetFillStyle(3002);
+    gauss_fit->SetFillColorAlpha(kAzure-5,0.5);
+    gauss_fit->Draw("C SAME");
+    
+    sigmas->push_back(gauss_fit->GetParameter(2));
+    err_sigmas->push_back(gauss_fit->GetParError(2));
+
     canva->Print(TString(output_name),"pdf");
     canva->Clear();
   
