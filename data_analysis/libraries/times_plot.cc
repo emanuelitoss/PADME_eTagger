@@ -86,6 +86,8 @@ void plotHisto_arrivalTimes(char * fileName, int openCloseFile, std::vector <std
     histograms[channel].GetYaxis()->SetTitle("Number of events");
     histograms[channel].SetLineColor(kBlack);
     histograms[channel].SetLineWidth((Width_t)1.5);
+    histograms[channel].SetFillStyle(3002);
+    histograms[channel].SetFillColorAlpha(color[channel],0.5);
 
     gStyle->SetEndErrorSize(8); //4 is the number of pixels
     gStyle->SetOptFit(1110);
@@ -95,8 +97,6 @@ void plotHisto_arrivalTimes(char * fileName, int openCloseFile, std::vector <std
     histograms[channel].Fit(gauss_fit, "Q", "0");
     gauss_fit->SetLineColor(color[channel]);
     gauss_fit->SetLineWidth(1);
-    gauss_fit->SetFillStyle(3002);
-    gauss_fit->SetFillColorAlpha(color[channel],0.5);
     gauss_fit->Draw("SAME C");
 
 
@@ -137,7 +137,7 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
     // to manipulate and save data
     std::vector <std::vector <Double_t> > min_times = {{}, {}};
     std::vector < TH1F > histograms;
-    TH1F histogram_differences = TH1F("histogram[DX -SX]", "difference t(dx)-t(sx)", nbins, -max_time, max_time);
+    TH1F histogram_differences = TH1F("histogram[DX -SX]", "differences t_{DX}-t_{SX}", nbins, -max_time, max_time);
 
     for (int channel = 0; channel < numberOfChannels; ++channel)
     {
@@ -206,6 +206,7 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
       histograms[side].GetYaxis()->SetTitle("Number of events");
       histograms[side].SetLineColor(kBlack);
       histograms[side].SetLineWidth((Width_t)1.5);
+      histograms[side].SetFillColorAlpha(color[side],0.4);
 
       gStyle->SetEndErrorSize(8); //4 is the number of pixels
 
@@ -213,8 +214,6 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
       histograms[side].Fit(gauss_fit, "Q", "0");
       gauss_fit->SetLineColor(color[side]);
       gauss_fit->SetLineWidth(1);
-      gauss_fit->SetFillStyle(3002);
-      gauss_fit->SetFillColorAlpha(color[side],0.5);
       gauss_fit->Draw("SAME C");
         
     }
@@ -229,7 +228,7 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
   /********** PLOT HISTOGRAM DIFFERENCES BETWEEN SIDES OF SiPMs **********/
 
   //canva = new TCanvas("canva2", "canvas for plotting", 3800, 3800);
-  const int mycolor = kRed+2;
+  const int mycolor = kGray;
 
   // histograms
   histogram_differences.Draw("");
@@ -238,15 +237,14 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
   histogram_differences.GetYaxis()->SetTitle("Number of events");
   histogram_differences.SetLineColor(kBlack);
   histogram_differences.SetLineWidth((Width_t)1.5);
+  histogram_differences.SetFillColorAlpha(mycolor,0.5);
 
   gStyle->SetEndErrorSize(8); //4 is the number of pixels
 
   gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
   histogram_differences.Fit(gauss_fit, "Q", "0");
-  gauss_fit->SetLineColor(mycolor);
+  gauss_fit->SetLineColor(kRed+2);
   gauss_fit->SetLineWidth(1);
-  gauss_fit->SetFillStyle(3002);
-  gauss_fit->SetFillColorAlpha(mycolor,0.5);
   gauss_fit->Draw("SAME C");
 
   if(openCloseFile == 0) canva->Print("images/1initial_times_diff.pdf(","pdf");
