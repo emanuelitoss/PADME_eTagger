@@ -95,8 +95,7 @@ int main(int argc, char** argv){
     /****************** SCATTER PLOT ******************/
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3500);
-    TGraph* graph = new TGraph();
-    TF1* fit = new TF1();
+    TF1* fit = nullptr;
 
     const int len = time_points.size();
     const int color[] = {kGreen+3, kOrange+9, kAzure-5, kAzure-5};
@@ -117,7 +116,7 @@ int main(int argc, char** argv){
 
         canva->SetGrid();
 
-        graph = new TGraph(noOfPoints, x, y);
+        TGraph* graph = new TGraph(noOfPoints, x, y);
 
         gStyle->SetOptFit(1110);
         gStyle->SetOptStat(2210);
@@ -151,12 +150,13 @@ int main(int argc, char** argv){
 
         graph->Clear();
         canva->Clear();
+
+        delete graph;
     }
 
     /****************** CLOSE & EXIT ******************/
 
     delete fit;
-    delete graph;
     delete canva;
 
     myFile->Close();

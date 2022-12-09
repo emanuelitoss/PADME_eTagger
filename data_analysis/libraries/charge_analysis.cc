@@ -12,9 +12,6 @@ using namespace std;
 #include "TF1.h"
 #include "TStyle.h"
 
-#ifndef charge_analysis_h
-#define charge_analysis_h
-
 void AddCharges(char * fileName, vector <vector <double_t> >* charge_means, vector <vector <double_t> >* charge_stdDevs){
     
     // reading objects
@@ -142,8 +139,6 @@ void AddChargesEPE(char * fileName, vector <vector <double_t> >* charge_means, v
         (*charge_means)[ch].push_back(MeanCharges[ch]);
         (*charge_stdDevs)[ch].push_back(ErrCharges[ch]);
 
-        if (ch == 0) cout << "\n\tRight side:\t";
-        else cout << "\tLeft side:\t";
     }
 
     for(int func_idx = 0; func_idx < 5; ++func_idx)
@@ -205,15 +200,20 @@ void AddFunctionsOfCharges(vector <vector <double_t> >* means, vector <vector <d
     
 }
 
-void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >* stdDevs, vector <double_t> positions_x, bool EPE){
+void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >* stdDevs, vector <double_t> positions_x, TString output_file_name){
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3200);
     canva->Divide(2,1);
     canva->SetGrid();
     const int color[2] = {kGreen+3, kOrange+9};
 
-    TGraphErrors* graph = new TGraphErrors();
-    TF1* exp_fit = new TF1();
+    TF1 exp_fitDX = TF1("exponential+offset", "[0] + [1]*exp(x*[2])", -HALF_LEN_X, HALF_LEN_X);
+    TF1 exp_fitSX = TF1("exponential+offset", "[0] + [1]*exp(x*[2])", -HALF_LEN_X, HALF_LEN_X);
+    vector <TF1> fits = {exp_fitDX, exp_fitSX};
+
+    TGraphErrors graph1 = TGraphErrors();
+    TGraphErrors graph2 = TGraphErrors();
+    vector <TGraphErrors> graphs = {graph1, graph2};
 
     int noOfPoints = positions_x.size();
     double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
@@ -231,66 +231,60 @@ void PlotCharges(vector <vector <double_t> >* means, vector <vector <double_t> >
             dy[entry] = (*stdDevs)[ch][entry];
         }
 
-        graph = new TGraphErrors(noOfPoints, x, y, dx, dy);
-        if(ch == 0) graph->SetTitle("DX SiPMs");
-        else graph->SetTitle("SX SiPMs");
+        graphs[ch] = TGraphErrors(noOfPoints, x, y, dx, dy);
+        if(ch == 0) graphs[ch].SetTitle("DX SiPMs");
+        else graphs[ch].SetTitle("SX SiPMs");
 
         // markers
-        graph->SetMarkerStyle(kCircle);
-        graph->SetMarkerColor(color[ch]);
-        graph->SetMarkerSize(2.);
-        graph->SetDrawOption("AP");
+        graphs[ch].SetMarkerStyle(kCircle);
+        graphs[ch].SetMarkerColor(color[ch]);
+        graphs[ch].SetMarkerSize(2.);
+        graphs[ch].SetDrawOption("AP");
 
         gStyle->SetEndErrorSize(8);
         gStyle->SetOptFit(1110);
         gStyle->SetOptStat(2210);
+        gStyle->SetStatFontSize(45);
         if(ch == 0) gStyle->SetStatX(0.5);
         else gStyle->SetStatX(0.92);
 
         // axis
         string title = "Total charges vs Beam position x";
         TString Ttitle = title;
-        graph->SetTitle(Ttitle);
-        graph->GetXaxis()->CenterTitle();
-        graph->GetYaxis()->CenterTitle();
-        graph->GetXaxis()->SetTitle("position x [mm]");
-        graph->GetYaxis()->SetTitle("Number of detected #gamma");
+        graphs[ch].SetTitle(Ttitle);
+        graphs[ch].GetXaxis()->CenterTitle();
+        graphs[ch].GetYaxis()->CenterTitle();
+        graphs[ch].GetXaxis()->SetTitle("position x [mm]");
+        graphs[ch].GetYaxis()->SetTitle("Number of detected #gamma");
 
-        graph->Draw();
+        graphs[ch].Draw();
 
         // exponential fit
-        //syntax: TF1(const char* name, const char* formula, Double_t xmin = 0, Double_t xmax = 1)
-        exp_fit = new TF1("exponential+offset", "[0] + [1]*exp(x*[2])", -HALF_LEN_X, HALF_LEN_X);
-        graph->Fit(exp_fit, "Q", "0");
-        exp_fit->SetLineColor(color[ch]);
-        exp_fit->SetLineWidth(1);
-        exp_fit->SetFillStyle(3002);
-        exp_fit->SetFillColorAlpha(color[ch],0.5);
-        exp_fit->Draw("SAME");
+        graphs[ch].Fit(&(fits[ch]), "Q", "0");
+        fits[ch].SetLineColor(color[ch]);
+        fits[ch].SetLineWidth(1);
+        fits[ch].SetFillStyle(3002);
+        fits[ch].SetFillColorAlpha(color[ch],0.5);
+        fits[ch].Draw("SAME");
+        graphs[ch].PaintStats(&fits[ch]);
 
         canva->Update();
-        graph->Clear();
     }
 
-    if(EPE) canva->Print("images/3chargesEpE.pdf(","pdf");
-    else canva->Print("images/charges.pdf(","pdf");
+    canva->Print(output_file_name,"pdf");
 
-    delete exp_fit;
-    delete graph;
     delete canva;
 
 }
 
-TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <double_t> >* fstdDevs, vector <double_t> positions_x, bool EPE, int ratioQ_or_differenceQ){
+void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <double_t> >* fstdDevs, vector <double_t> positions_x, bool EPE, int ratioQ_or_differenceQ, TF1* returning_function){
     
-    vector <TF1*> fits = {nullptr, nullptr, nullptr, nullptr};
+    vector <TF1*> fits = {};
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3300);
 
-    TString name[5] = {"Charges sum", "Charges difference", "Charges ratio", "Charges ratio", "Charges function"};
+    TString name[5] = {"Charges sum", "Charges difference", "Charges ratio", "Charges ratio", "Charges sFunction"};
     TString yAxisName[5] = {"Sum N_{DX} + N_{SX} of detected #gamma", "Difference N_{DX} - N_{SX} of detected #gamma", "Ratio N_{DX} / N_{SX} of detected #gamma", "Ratio N_{SX} / N_{DX} of detected #gamma", "function #frac{N_{DX}-N_{SX}}{N_{DX}+N_{SX}}"};
-
-    TGraphErrors* graph = new TGraphErrors();
 
     int noOfPoints = positions_x.size();
     double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
@@ -307,28 +301,29 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
             dy[entry] = (*fstdDevs)[ch][entry];
         }
 
-        graph = new TGraphErrors(noOfPoints, x, y, dx, dy);
-        graph->SetTitle(name[ch]);
+        TGraphErrors graph = TGraphErrors(noOfPoints, x, y, dx, dy);
+        graph.SetTitle(name[ch]);
         
         // markers
-        graph->SetMarkerStyle(20);
-        graph->SetMarkerColor(kAzure-5);
-        graph->SetMarkerSize(4.);
-        graph->SetDrawOption("AP");
+        graph.SetMarkerStyle(20);
+        graph.SetMarkerColor(kAzure-5);
+        graph.SetMarkerSize(4.);
+        graph.SetDrawOption("AP");
         gStyle->SetEndErrorSize(8);
 
         // axis
-        graph->SetTitle(name[ch]);
-        graph->GetXaxis()->CenterTitle();
-        graph->GetYaxis()->CenterTitle();
-        graph->GetXaxis()->SetTitle("position x [mm]");
-        graph->GetYaxis()->SetTitle(yAxisName[ch]);
+        graph.SetTitle(name[ch]);
+        graph.GetXaxis()->CenterTitle();
+        graph.GetYaxis()->CenterTitle();
+        graph.GetXaxis()->SetTitle("position x [mm]");
+        graph.GetYaxis()->SetTitle(yAxisName[ch]);
      
-        graph->Draw();
+        graph.Draw();
 
         gStyle->SetOptFit(1110);
         gStyle->SetOptStat(2210);
-        gStyle->SetStatFontSize(2);
+        gStyle->SetStatFontSize(65);
+
         if(ch==0){
             gStyle->SetStatX(0.6);
             gStyle->SetStatY(0.89);
@@ -346,14 +341,15 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
             gStyle->SetStatY(0.89);
         }
 
-        fits[ch] = new TF1("function", "pol5", -1.5*HALF_LEN_X, 1.5*HALF_LEN_X);
-        graph->Fit(fits[ch], "Q", "0");
+        fits.push_back(new TF1("function", "pol5", -2*HALF_LEN_X, 2*HALF_LEN_X));
+        //graph.Fit("pol5", "Q", "0", -1.5*HALF_LEN_X, 1.5*HALF_LEN_X);
+        graph.Fit(fits[ch], "Q", "0");
         fits[ch]->SetLineColor(kAzure-5);
         fits[ch]->SetLineWidth(1);
         fits[ch]->SetFillStyle(3002);
         fits[ch]->SetFillColorAlpha(kAzure-5,0.5);
         fits[ch]->Draw("SAME");
-
+        
         canva->Draw();
 
         if(ratioQ_or_differenceQ == OPTION_Q_DIFFERENCE){
@@ -361,24 +357,22 @@ TF1* PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
             else canva->Print("images/charges.pdf","pdf");
         }
 
-        graph->Clear();
+        if( (ratioQ_or_differenceQ == OPTION_Q_DIFFERENCE) && ch== 1)    graph.Fit(returning_function, "Q", "0");
+        else if( (ratioQ_or_differenceQ == OPTION_Q_DOS) && ch== 4)  graph.Fit(returning_function, "Q", "0");
+        
+        graph.Clear();
         canva->Clear();
 
     }
 
-    delete graph;
+    for(int ch = 0; ch < 5; ++ch) delete fits[ch];
     delete canva;
-
-    if(ratioQ_or_differenceQ == OPTION_Q_DIFFERENCE) return fits[1];
-    else if(ratioQ_or_differenceQ == OPTION_Q_DOS) return fits[4];
-    else{
-        PrintColor("Error: Not able to return difference or ratio of charges fit. You need to insert a right value", OBOLDRED);
-        return nullptr;
-    }
+    
+    return;
 }
 
 
-void HistoFillDeltaXRandomFileCharges(TH1F* histogram, TF1* function, TString fileName, vector <Double_t> * deltas){
+void HistoFillDeltaXRandomFileCharges(TH1F* histogram, TF1* function, TString fileName, vector <Double_t> * deltas, int my_option){
         
     // reading objects
     TFile* myFile = TFile::Open(fileName);
@@ -419,7 +413,8 @@ void HistoFillDeltaXRandomFileCharges(TH1F* histogram, TF1* function, TString fi
             else chargeSX+=q;
         }
 
-        reconstructed_x = function->GetX(chargeDX-chargeSX);
+        if(my_option == OPTION_Q_DIFFERENCE) reconstructed_x = function->GetX(chargeDX-chargeSX);
+        else if(my_option == OPTION_Q_DOS) reconstructed_x = function->GetX((chargeDX-chargeSX)/(chargeDX+chargeSX));
         histogram->Fill(reconstructed_x - true_x);
         deltas->push_back(reconstructed_x - true_x);
 
@@ -432,15 +427,8 @@ void HistoFillDeltaXRandomFileCharges(TH1F* histogram, TF1* function, TString fi
 void PlotHistogramDeltaXCharges(TH1F* histogram, TString output_name){
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 4000);
-    TF1* gauss_fit = new TF1();
 
     canva->SetGrid();
-
-    histogram->Draw("E1 P");
-    histogram->GetXaxis()->SetTitle("Length [mm]");
-    histogram->GetYaxis()->SetTitle("Number of events");
-    histogram->SetLineColor(kBlack);
-    histogram->SetLineWidth((Width_t)1.5);
 
     //gStyle->Reset();
     gStyle->SetEndErrorSize(8);
@@ -448,31 +436,38 @@ void PlotHistogramDeltaXCharges(TH1F* histogram, TString output_name){
     gStyle->SetOptStat(2210);
     gStyle->SetStatX(0.89);
     gStyle->SetStatY(0.89);
-    gStyle->SetStatW(0.3);
+    gStyle->SetStatW(0.1);
     gStyle->SetStatH(0.7);
+    gStyle->SetStatFont(42);
+    gStyle->SetStatFontSize(0.02);
+    gStyle->SetLineWidth(1);
     
-    gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
-    histogram->Fit(gauss_fit, "Q", "0");
-    gauss_fit->SetLineColor(kAzure-5);
-    gauss_fit->SetLineWidth(1);
-    gauss_fit->SetFillStyle(3002);
-    gauss_fit->SetFillColorAlpha(kAzure-5,0.5);
-    gauss_fit->Draw("C SAME");
+    histogram->Draw("E1 P");
+    histogram->GetXaxis()->SetTitle("Length [mm]");
+    histogram->GetYaxis()->SetTitle("Number of events");
+    histogram->SetLineColor(kBlack);
+    histogram->SetLineWidth((Width_t)1.5);
+    
+    TF1 gauss_fit = TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
+    histogram->Fit(&gauss_fit, "Q", "0");
+    gauss_fit.SetLineColor(kAzure-5);
+    gauss_fit.SetLineWidth(1);
+    gauss_fit.SetFillStyle(3002);
+    gauss_fit.SetFillColorAlpha(kAzure-5,0.5);
+    gauss_fit.Draw("C SAME");
     
     canva->Print(TString(output_name),"pdf");
     canva->Clear();
   
-    delete gauss_fit;
     delete canva;
 
 }
 
-void PlotHistogramDeltaXChargesSpecial(TH1F* histogram, TString output_name, vector <Double_t> * sigmas, vector <Double_t> * err_sigmas){
+void PlotHistogramDeltaXChargesSpecial(TH1F* histogram, TF1* gauss_fit, TString output_name, vector <Double_t> * sigmas, vector <Double_t> * err_sigmas){
 
-    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 4000);
-    TF1* gauss_fit = new TF1();
+    TCanvas canva = TCanvas("canva", "canvas for plotting", 4000, 4000);
 
-    canva->SetGrid();
+    canva.SetGrid();
 
     histogram->Draw("E1 P");
     histogram->GetXaxis()->SetTitle("Length [mm]");
@@ -484,13 +479,16 @@ void PlotHistogramDeltaXChargesSpecial(TH1F* histogram, TString output_name, vec
     gStyle->SetEndErrorSize(8);
     gStyle->SetOptFit(1110);
     gStyle->SetOptStat(2210);
+    gStyle->SetStatFont(42);
+    gStyle->SetStatFontSize(0.02);
+    gStyle->SetLineWidth(1);
     gStyle->SetStatX(0.89);
     gStyle->SetStatY(0.89);
-    gStyle->SetStatW(0.3);
+    gStyle->SetStatW(0.1);
     gStyle->SetStatH(0.7);
-    
-    gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
+
     histogram->Fit(gauss_fit, "Q", "0");
+    // histogram->Fit("gaus", "Q", "0", -HALF_LEN_X, HALF_LEN_X);
     gauss_fit->SetLineColor(kAzure-5);
     gauss_fit->SetLineWidth(1);
     gauss_fit->SetFillStyle(3002);
@@ -501,11 +499,8 @@ void PlotHistogramDeltaXChargesSpecial(TH1F* histogram, TString output_name, vec
     sigmas->push_back(gauss_fit->GetParameter(2));
     err_sigmas->push_back(gauss_fit->GetParError(2));
 
-    canva->Print(TString(output_name),"pdf");
-    canva->Clear();
-  
-    delete gauss_fit;
-    delete canva;
+    canva.Print(TString(output_name),"pdf");
+    canva.Clear();
 
 }
 
@@ -565,5 +560,3 @@ void HistoFillDeltaXperFileCharges(TH1F* histogram, TF1* correlation_function, c
 
     return;
 }
-
-#endif

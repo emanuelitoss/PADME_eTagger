@@ -12,16 +12,14 @@
 #include "TObjString.h"
 #include "TStyle.h"
 
-TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <std::vector <double> >* stdDevs2, std::vector <double> positions_x){
+TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <std::vector <double> >* stdDevs2, std::vector <double> positions_x, TString output_file_name){
 
-    TF1* line_fit = new TF1();
+    TF1* line_fit = new TF1("fitting a line", "pol1", -HALF_LEN_X, HALF_LEN_X);
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3800, 3500);
     const int color[2] = {kAzure-5, kOrange+9};
 
     canva->SetGrid();
-
-    TGraphErrors* graph = new TGraphErrors();
 
     int noOfPoints = positions_x.size();
     double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
@@ -35,7 +33,7 @@ TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
         dy[entry] = sqrt((*stdDevs2)[0][entry]*(*stdDevs2)[0][entry] + (*stdDevs2)[1][entry]*(*stdDevs2)[1][entry]);
     }
     
-    graph = new TGraphErrors(noOfPoints, x, y, dx, dy);
+    TGraphErrors* graph = new TGraphErrors(noOfPoints, x, y, dx, dy);
 
     // axis
     std::string title = "Beam position x vs D_time of first detected #gamma (of the two sides)";
@@ -55,8 +53,7 @@ TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
     gStyle->SetEndErrorSize(8);
 
     // linear fit
-    line_fit = new TF1("fitting a line", "pol1", -HALF_LEN_X, HALF_LEN_X);
-    graph->Fit(line_fit, "Q L", "0");
+    graph->Fit(line_fit, "Q", "0");
     line_fit->SetLineColor(color[1]);
     line_fit->SetLineWidth(1);
     line_fit->SetFillStyle(3002);
@@ -73,7 +70,7 @@ TF1* PlotFitResults2(std::vector <std::vector <double> >* means2, std::vector <s
 
     line_fit->Draw("SAME");
 
-    canva->Print("images/2t_vs_x.pdf(","pdf");
+    canva->Print(output_file_name,"pdf");
 
     delete graph;
     delete canva;

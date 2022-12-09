@@ -67,7 +67,7 @@ void plotHisto_arrivalTimes(char * fileName, int openCloseFile, std::vector <std
   /********** PLOT HISTOGRAM OF EACH SiPM **********/
 
   TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3200, 3800);
-  TF1* gauss_fit = new TF1();
+  vector <TF1* > fits = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
   const int color[8] = {kBlue+3, kBlue+3, kBlue+3, kBlue+3, kOrange+9, kOrange+9, kOrange+9, kOrange+9};
 
   canva->Divide(2,2);
@@ -93,11 +93,11 @@ void plotHisto_arrivalTimes(char * fileName, int openCloseFile, std::vector <std
     gStyle->SetOptFit(1110);
     gStyle->SetOptStat(2210);
 
-    gauss_fit = new TF1("fitting a line", "gaus", -HALF_LEN_X, HALF_LEN_X);
-    histograms[channel].Fit(gauss_fit, "Q", "0");
-    gauss_fit->SetLineColor(color[channel]);
-    gauss_fit->SetLineWidth(1);
-    gauss_fit->Draw("SAME C");
+    fits[channel] = new TF1("fitting a line", "gaus", -HALF_LEN_X, HALF_LEN_X);
+    histograms[channel].Fit(fits[channel], "Q", "0");
+    fits[channel]->SetLineColor(color[channel]);
+    fits[channel]->SetLineWidth(1);
+    fits[channel]->Draw("SAME C");
 
 
     if(channel == (int)(numberOfChannels/2 -1))
@@ -116,9 +116,10 @@ void plotHisto_arrivalTimes(char * fileName, int openCloseFile, std::vector <std
 
   }
 
+  for(int channel = 0; channel < numberOfChannels; channel++) delete fits[channel];
+
   myFile->Close();
 
-  delete gauss_fit;
   delete canva;
   delete myFile;
 
@@ -187,7 +188,7 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
     /********** PLOT HISTOGRAM OF EACH SIDE OF SiPMs **********/
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 3800, 3800);
-    TF1* gauss_fit = new TF1();
+    vector <TF1* > fits = {nullptr, nullptr};
     const int color[8] = {kBlue+3, kOrange+9};
 
     canva->Divide(2,1);
@@ -210,11 +211,11 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
 
       gStyle->SetEndErrorSize(8); //4 is the number of pixels
 
-      gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
-      histograms[side].Fit(gauss_fit, "Q", "0");
-      gauss_fit->SetLineColor(color[side]);
-      gauss_fit->SetLineWidth(1);
-      gauss_fit->Draw("SAME C");
+      fits[side] = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
+      histograms[side].Fit(fits[side], "Q", "0");
+      fits[side]->SetLineColor(color[side]);
+      fits[side]->SetLineWidth(1);
+      fits[side]->Draw("SAME C");
         
     }
 
@@ -222,8 +223,9 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
   if(openCloseFile == 1) canva->Print("images/1Initial_t.pdf)","pdf");
   if(openCloseFile == 3 || openCloseFile == 2) canva->Print("images/1Initial_t.pdf","pdf");
 
+  for(int side = 0; side < 2; ++side) delete fits[side];
+
   canva->Clear();
-  gauss_fit->Clear();
   
   /********** PLOT HISTOGRAM DIFFERENCES BETWEEN SIDES OF SiPMs **********/
 
@@ -241,7 +243,7 @@ void plotHisto_arrivalTimes2(char * fileName, int openCloseFile, std::vector <st
 
   gStyle->SetEndErrorSize(8); //4 is the number of pixels
 
-  gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
+  TF1* gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
   histogram_differences.Fit(gauss_fit, "Q", "0");
   gauss_fit->SetLineColor(kRed+2);
   gauss_fit->SetLineWidth(1);

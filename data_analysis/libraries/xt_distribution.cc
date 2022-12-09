@@ -9,6 +9,7 @@
 #include "TTreeReader.h"
 #include "TCanvas.h"
 #include "TStyle.h"
+#include "TGraphErrors.h"
 
 void HistoFillDeltaXperFileTimes(TH1F* histogram, TF1* function, char * fileName,  double true_x, vector <Double_t>* deltas, int my_option){
     
@@ -135,9 +136,20 @@ void HistoFillDeltaXRandomFileTimes(TH1F* histogram, TF1* function, TString file
 void PlotHistogramDeltaXTimes(TH1F* histo_deltaX, TString output_name){
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 4000);
-    TF1* gauss_fit = new TF1();
 
     canva->SetGrid();
+
+    //gStyle->Reset();
+    gStyle->SetEndErrorSize(8);
+    gStyle->SetOptFit(1110);
+    gStyle->SetOptStat(2210);
+    gStyle->SetStatFont(42);
+    gStyle->SetStatFontSize(0.02);
+    gStyle->SetLineWidth(1);
+    gStyle->SetStatX(0.89);
+    gStyle->SetStatY(0.89);
+    gStyle->SetStatW(0.1);
+    gStyle->SetStatH(0.7);
 
     histo_deltaX->Draw("E1 P");
     histo_deltaX->GetXaxis()->SetTitle("Length [mm]");
@@ -145,38 +157,28 @@ void PlotHistogramDeltaXTimes(TH1F* histo_deltaX, TString output_name){
     histo_deltaX->SetLineColor(kBlack);
     histo_deltaX->SetLineWidth((Width_t)1.5);
     
-    //gStyle->Reset();
-    gStyle->SetEndErrorSize(8);
-    gStyle->SetOptFit(1110);
-    gStyle->SetOptStat(2210);
-    gStyle->SetStatFontSize(0.03);
-    gStyle->SetStatFont(42);
-    gStyle->SetLineWidth(1);
-
-    gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
-    histo_deltaX->Fit(gauss_fit, "L Q", "0");
-    gauss_fit->SetLineColor(kAzure-5);
-    gauss_fit->SetLineWidth(1);
-    gauss_fit->SetFillStyle(3002);
-    gauss_fit->SetFillColorAlpha(kAzure-5,0.5);
-    gauss_fit->SetObjectStat(true);
-    gauss_fit->Draw("C SAME");
+    TF1 gauss_fit = TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
+    histo_deltaX->Fit(&gauss_fit, "L Q", "0");
+    gauss_fit.SetLineColor(kAzure-5);
+    gauss_fit.SetLineWidth(1);
+    gauss_fit.SetFillStyle(3002);
+    gauss_fit.SetFillColorAlpha(kAzure-5,0.5);
+    gauss_fit.SetObjectStat(true);
+    gauss_fit.Draw("C SAME");
     
     canva->Print(TString(output_name),"pdf");
     canva->Clear();
   
-    delete gauss_fit;
     delete canva;
 
 }
 
 
-void PlotHistogramDeltaXTimesSpecial(TH1F* histo_deltaX, TString output_name, vector <Double_t> * sigmas, vector <Double_t> * err_sigmas){
+void PlotHistogramDeltaXTimesSpecial(TH1F* histo_deltaX, TF1* gauss_fit, TString output_name, vector <Double_t> * sigmas, vector <Double_t> * err_sigmas){
 
-    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 4000);
-    TF1* gauss_fit = new TF1();
+    TCanvas canva = TCanvas("canva", "canvas for plotting", 4000, 4000);
 
-    canva->SetGrid();
+    canva.SetGrid();
 
     histo_deltaX->Draw("E1 P");
     histo_deltaX->GetXaxis()->SetTitle("Length [mm]");
@@ -191,7 +193,6 @@ void PlotHistogramDeltaXTimesSpecial(TH1F* histo_deltaX, TString output_name, ve
     gStyle->SetStatFont(42);
     gStyle->SetLineWidth(1);
     
-    gauss_fit = new TF1("fitting a gaussian", "gaus", -HALF_LEN_X, HALF_LEN_X);
     histo_deltaX->Fit(gauss_fit, "L Q", "0");
     gauss_fit->SetLineColor(kAzure-5);
     gauss_fit->SetLineWidth(1);
@@ -203,11 +204,8 @@ void PlotHistogramDeltaXTimesSpecial(TH1F* histo_deltaX, TString output_name, ve
     sigmas->push_back(gauss_fit->GetParameter(2));
     err_sigmas->push_back(gauss_fit->GetParError(2));
     
-    canva->Print(TString(output_name),"pdf");
-    canva->Clear();
-  
-    delete gauss_fit;
-    delete canva;
+    canva.Print(TString(output_name),"pdf");
+    canva.Clear();
 
 }
 
@@ -280,41 +278,35 @@ void PlotSigmaCorrections(vector <Double_t> * sigmaT_vec, vector <Double_t> * si
         zeros[i] = 0;
     }
 
-    TCanvas* canva = new TCanvas("canva", "canvas for plotting", 2000, 1500);
-    canva->SetGrid();
+    TCanvas canva = new TCanvas("canva", "canvas for plotting", 2000, 1500);
+    canva.SetGrid();
     
-    TGraphErrors* graphT = new TGraphErrors(size, positions, sigma_t, zeros, err_sigma_t);
-    TGraphErrors* graphQ = new TGraphErrors(size, positions, sigma_q, zeros, err_sigma_q);
+    TGraphErrors graphT = TGraphErrors(size, positions, sigma_t, zeros, err_sigma_t);
+    TGraphErrors graphQ = TGraphErrors(size, positions, sigma_q, zeros, err_sigma_q);
     
-    TF1* fitT = new TF1();
-    TF1* fitQ = new TF1();
+    TF1 fitT = TF1();
+    TF1 fitQ = TF1();
 
-    graphT->SetMarkerStyle(kDot);
-    graphT->SetMarkerColor(kBlue-1);
-    graphT->SetMarkerSize(7.);
-    graphT->SetName("Sigma_x from times");
-    graphT->GetXaxis()->SetTitle("position [mm]");
-    graphT->GetYaxis()->SetTitle("uncertainty sigma(x)");
+    graphT.SetMarkerStyle(kDot);
+    graphT.SetMarkerColor(kBlue-1);
+    graphT.SetMarkerSize(2.);
+    graphT.SetName("Sigma_x from times");
+    graphT.GetXaxis()->SetTitle("position [mm]");
+    graphT.GetYaxis()->SetTitle("uncertainty #sigma(x_{reco})");
 
-    graphQ->SetMarkerStyle(kDot);
-    graphQ->SetMarkerColor(kYellow-1);
-    graphQ->SetMarkerSize(7.);
-    graphQ->SetName("Sigma_x from charges");
-    graphQ->GetXaxis()->SetTitle("position [mm]");
-    graphQ->GetYaxis()->SetTitle("uncertainty sigma(x)");
+    graphQ.SetMarkerStyle(kDot);
+    graphQ.SetMarkerColor(kYellow-1);
+    graphQ.SetMarkerSize(2.);
+    graphQ.SetName("Sigma_x from charges");
+    graphQ.GetXaxis()->SetTitle("position [mm]");
+    graphQ.GetYaxis()->SetTitle("uncertainty #sigma(x_{reco})");
 
-    graphT->Draw("AC*");
-    graphQ->Draw("CP");
+    graphT.Draw("AC*");
+    graphQ.Draw("CP");
 
     gStyle->SetLegendTextSize(0.03);
-    canva->BuildLegend();
+    canva.BuildLegend();
 
-    canva->Print(filename,"pdf");
-
-    delete fitQ;
-    delete fitT;
-    delete graphQ;
-    delete graphT;
-    delete canva;
+    canva.Print(filename,"pdf");
 
 }
