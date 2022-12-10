@@ -77,10 +77,10 @@ int main(int argc, char** argv){
 
         charge_points[0].push_back(charge_dx);
         charge_points[1].push_back(charge_sx);
-        charge_points[2].push_back(charge_dx - charge_sx);
+        charge_points[2].push_back((charge_dx-charge_sx)/(charge_dx+charge_sx));
         time_points[0].push_back(time_dx);
         time_points[1].push_back(time_sx);
-        time_points[2].push_back(time_dx - time_sx);
+        time_points[2].push_back(time_dx-time_sx);
     }
 
     // check the right behavior of the program & data
@@ -138,7 +138,7 @@ int main(int argc, char** argv){
         graph->Draw("ap");
         
         if(ch<2) fit = new TF1("exponential function", "[1] + [2]*exp(-[3]*x)", graph->GetXaxis()->GetXmin(), graph->GetXaxis()->GetXmax());
-        else fit = new TF1("Poly3", "pol3", graph->GetXaxis()->GetXmin(), graph->GetXaxis()->GetXmax());
+        else fit = new TF1("Poly3", "pol5", graph->GetXaxis()->GetXmin(), graph->GetXaxis()->GetXmax());
         graph->Fit(fit, "Q", "0");
         fit->SetLineColor(kBlack);
         fit->SetLineWidth(1);
