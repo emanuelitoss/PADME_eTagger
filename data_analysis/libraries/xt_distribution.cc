@@ -2,6 +2,7 @@
 
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TF2.h"
 #include "TH1.h"
 #include "TF1.h"
 #include "TString.h"
@@ -10,8 +11,9 @@
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TGraphErrors.h"
+#include "TMultiGraph.h"
 
-void HistoFillDeltaXperFileTimes(TH1F* histogram, TF1* function, char * fileName,  double true_x, vector <Double_t>* deltas, int my_option){
+void HistoFillDeltaXperFileTimes(TH1F* histogram, TF1* function, TString fileName,  double true_x, vector <Double_t>* deltas, int my_option){
     
     // reading objects
     TFile* myFile = TFile::Open(fileName);
@@ -220,15 +222,15 @@ void PlotPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltasQ, in
         return;
     }
 
-    TH2F histogram = TH2F("hist","#deltax (time analysis) vs #deltax (charge analysis)",70,-HALF_LEN_X,HALF_LEN_X,70,-HALF_LEN_X,HALF_LEN_X);
+    TH2F histogram = TH2F("hist","x_{reco} (time analysis) vs x_{reco} (charge analysis)",70,-HALF_LEN_X,HALF_LEN_X,70,-HALF_LEN_X,HALF_LEN_X);
     
     if(option_diff_dos == OPTION_Q_DIFFERENCE){
         histogram.SetName("hist_diff");
-        histogram.SetTitle("#deltax (time analysis) vs #deltax (charge differences analysis)");
+        histogram.SetTitle("x_{reco} from #Deltat vs x_{reco} from #DeltaQ");
     }
     else if(option_diff_dos == OPTION_Q_DOS){
         histogram.SetName("hist_dos");
-        histogram.SetTitle("#deltax (time analysis) vs #deltax (charges special function analysis)");
+        histogram.SetTitle("x_{reco} from #Deltat vs x_{reco} from f(Q_{DX},Q_{SX})");
     }
 
     // storing.
@@ -238,23 +240,54 @@ void PlotPositionsQT(vector <Double_t >* deltasT,vector <Double_t >* deltasQ, in
     // plot.
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 2000, 1500);
 
-    histogram.SetXTitle("x (times analysis) [mm]");
-    histogram.SetYTitle("x (charges analysis) [mm]");
-    gStyle->SetStatH(0.1);
-    gStyle->SetStatX(0.42);
-    gStyle->SetStatY(0.89);
+    /********** FANCY HISTOGRAM LEVEL CURVES **********/
+    histogram.SetXTitle("x_{reco} (times analysis) [mm]");
+    histogram.SetYTitle("x_{reco} (charges analysis) [mm]");
+    histogram.SetMarkerStyle(kDot);
+    histogram.SetMarkerSize(3.);
+    histogram.SetMarkerColor(kBlack);
+    gStyle->SetStatH(0.22);
+    gStyle->SetStatW(0.10);
+    gStyle->SetStatX(0.89);
+    gStyle->SetStatY(0.53);
+    gStyle->SetStatFontSize(0.02);
+    histogram.Draw("");
 
-    histogram.Draw("CONT4Z");
+    cout << OBOLDWHITE << "\nCovariance matrix:\n" << ORESET << endl;
+    cout << OWHITE << "\tCovariance = " << histogram.GetCovariance() << "\n"
+        << "\tVariance x = " << histogram.GetStdDev(1) << "\n"
+        << "\tVariance y = " << histogram.GetStdDev(2) << "\n"
+        << "\tCorrelation function = " << histogram.GetCorrelationFactor() << ORESET << endl;
+
+    TF1 fitting_function = TF1("Line","pol1",-HALF_LEN_X, HALF_LEN_X);
+    histogram.Fit(&fitting_function, "", "");
+    fitting_function.SetLineColor(kRed+1);
+    fitting_function.SetLineWidth(1);
+    fitting_function.Draw("SAME E1");
+
     if(openclosefile == OPEN_OUTPUT || openclosefile == SINGLE_OUTPUT)  canva->Print("images/5delta_positions_correlation.pdf(","pdf");
     else canva->Print("images/5delta_positions_correlation.pdf","pdf");
+    
     canva->Clear();
 
+    /********** FANCY HISTOGRAM LEVEL CURVES **********/
+    histogram.SetXTitle("x_{reco} (times analysis) [mm]");
+    histogram.SetYTitle("x_{reco} (charges analysis) [mm]");
+    gStyle->SetStatH(0.35);
+    gStyle->SetStatW(0.1);
+    gStyle->SetStatX(0.25);
+    gStyle->SetStatY(0.89);
+    histogram.Draw("CONT4Z");
+
+    canva->Print("images/5delta_positions_correlation.pdf","pdf");
+    canva->Clear();
+
+    /********** FANCY HISTOGRAM 3D **********/
+    histogram.SetXTitle("x_{reco} (times analysis) [mm]");
+    histogram.SetYTitle("x_{reco} (charges analysis) [mm]");
     gStyle->SetStatX(0.99);
     gStyle->SetStatY(0.85);
-
     histogram.Draw("LEGO2");
-    histogram.SetXTitle("#deltax (times analysis) [mm]");
-    histogram.SetYTitle("#deltax (charges analysis) [mm]");
     if(openclosefile == CLOSE_OUTPUT || openclosefile == SINGLE_OUTPUT) canva->Print("images/5delta_positions_correlation.pdf)","pdf");
     else canva->Print("images/5delta_positions_correlation.pdf","pdf");
     canva->Clear();
@@ -280,33 +313,41 @@ void PlotSigmaCorrections(vector <Double_t> * sigmaT_vec, vector <Double_t> * si
 
     TCanvas canva = new TCanvas("canva", "canvas for plotting", 2000, 1500);
     canva.SetGrid();
-    
+
+    TMultiGraph* mg = new TMultiGraph();
+    mg->SetTitle("Error #sigma_{x}(x_{reco}) on reconstruction of x in function of x_{reco}");
+
     TGraphErrors graphT = TGraphErrors(size, positions, sigma_t, zeros, err_sigma_t);
     TGraphErrors graphQ = TGraphErrors(size, positions, sigma_q, zeros, err_sigma_q);
     
     TF1 fitT = TF1();
     TF1 fitQ = TF1();
 
-    graphT.SetMarkerStyle(kDot);
-    graphT.SetMarkerColor(kBlue-1);
-    graphT.SetMarkerSize(2.);
-    graphT.SetName("Sigma_x from times");
-    graphT.GetXaxis()->SetTitle("position [mm]");
-    graphT.GetYaxis()->SetTitle("uncertainty #sigma(x_{reco})");
+    gStyle->SetEndErrorSize(4);
+    gStyle->SetLegendTextSize(0.02);
 
-    graphQ.SetMarkerStyle(kDot);
-    graphQ.SetMarkerColor(kYellow-1);
-    graphQ.SetMarkerSize(2.);
-    graphQ.SetName("Sigma_x from charges");
-    graphQ.GetXaxis()->SetTitle("position [mm]");
-    graphQ.GetYaxis()->SetTitle("uncertainty #sigma(x_{reco})");
+    graphT.SetMarkerStyle(kFullTriangleUp);
+    graphT.SetMarkerColor(kBlack);
+    graphT.SetMarkerSize(0.6);
+    graphT.SetLineColor(kBlue-3);
+    graphT.SetTitle("Sigma_x from times analysis");
+    mg->Add(&graphT);
+    
+    graphQ.SetMarkerStyle(kFullSquare);
+    graphQ.SetMarkerColor(kBlack);
+    graphQ.SetMarkerSize(0.4);
+    graphQ.SetLineColor(kRed-3);
+    graphQ.SetTitle("Sigma_x from charges analysis");
+    mg->Add(&graphQ);
 
-    graphT.Draw("AC*");
-    graphQ.Draw("CP");
+    mg->GetXaxis()->SetTitle("position [mm]");
+    mg->GetYaxis()->SetTitle("uncertainty #sigma(x_{reco}) [mm]");
+    mg->Draw("ALP");
 
-    gStyle->SetLegendTextSize(0.03);
-    canva.BuildLegend();
+    canva.BuildLegend(0.55, 0.35, 0.89, 0.50);
 
     canva.Print(filename,"pdf");
+
+    delete mg;
 
 }

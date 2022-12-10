@@ -283,8 +283,8 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
 
     TCanvas* canva = new TCanvas("canva", "canvas for plotting", 4000, 3300);
 
-    TString name[5] = {"Charges sum", "Charges difference", "Charges ratio", "Charges ratio", "Charges sFunction"};
-    TString yAxisName[5] = {"Sum N_{DX} + N_{SX} of detected #gamma", "Difference N_{DX} - N_{SX} of detected #gamma", "Ratio N_{DX} / N_{SX} of detected #gamma", "Ratio N_{SX} / N_{DX} of detected #gamma", "function #frac{N_{DX}-N_{SX}}{N_{DX}+N_{SX}}"};
+    TString name[5] = {"Charges sum", "Charges difference", "Charges ratio", "Charges ratio", "Charges function f = #frac{N_{DX}-N_{SX}}{N_{DX}+N_{SX}}"};
+    TString yAxisName[5] = {"Sum N_{DX} + N_{SX} of detected #gamma", "Difference N_{DX} - N_{SX} of detected #gamma", "Ratio N_{DX} / N_{SX} of detected #gamma", "Ratio N_{SX} / N_{DX} of detected #gamma", "function f(N_{DX},N_{SX})"};
 
     int noOfPoints = positions_x.size();
     double x[noOfPoints], y[noOfPoints], dx[noOfPoints], dy[noOfPoints];
@@ -310,6 +310,7 @@ void PlotChargesFunctions(vector <vector <double_t> >* fmeans, vector <vector <d
         graph.SetMarkerSize(4.);
         graph.SetDrawOption("AP");
         gStyle->SetEndErrorSize(8);
+        gStyle->SetTitleFontSize(0.03);
 
         // axis
         graph.SetTitle(name[ch]);
@@ -504,7 +505,7 @@ void PlotHistogramDeltaXChargesSpecial(TH1F* histogram, TF1* gauss_fit, TString 
 
 }
 
-void HistoFillDeltaXperFileCharges(TH1F* histogram, TF1* correlation_function, char* fileName, double true_x, vector <Double_t>* deltas, int option_Qdiff_or_Qratio, int my_option){
+void HistoFillDeltaXperFileCharges(TH1F* histogram, TF1* correlation_function, TString fileName, double true_x, vector <Double_t>* deltas, int option_Qdiff_or_Qratio, int my_option){
     
     // reading objects
     TFile* myFile = TFile::Open(fileName);

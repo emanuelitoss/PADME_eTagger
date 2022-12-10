@@ -110,7 +110,7 @@ int main(int argc, char** argv){
     PlotChargesFunctions(charges_functions_means, charges_functions_stdDevs, positions_x, EPE, OPTION_Q_DIFFERENCE, correlation_functionQ_difference);
     PlotChargesFunctions(charges_functions_means, charges_functions_stdDevs, positions_x, EPE, OPTION_Q_DOS, correlation_functionQ_diffonsum);
 
-    PrintColor("\n\tCHECK 1: GRAPHS PRINTED, FITTING FUNCTIONS EVALUATED\n", OBOLDCYAN);
+    PrintColor("\n\tCHECK 1: GRAPHS PRINTED, FITTING FUNCTIONS EVALUATED\n", OBOLDWHITE);
 
     /***************** DEFINITIONS FOR X_T VS X_Q ANALYSIS *****************/
 
@@ -154,7 +154,7 @@ int main(int argc, char** argv){
         PlotHistogramDeltaXCharges(histo_deltaXQ_dos, "images/charges.pdf");
     }
 
-    PrintColor("\n\tCHECK 2: GLOBAL DISTRIBUTIONS DELTA_X PRINTED\n", OBOLDCYAN);
+    PrintColor("\n\tCHECK 2: GLOBAL DISTRIBUTIONS DELTA_X PRINTED\n", OBOLDWHITE);
 
     /***************** X_CHARGES VS X_TIMES SCATTERPLOT (BISECT. I-III) *****************/
 
@@ -170,11 +170,15 @@ int main(int argc, char** argv){
         HistoFillDeltaXperFileTimes(histo_deltaXT, correlation_functionT, fileName, positions_x[file_counter-1], deltasT, OPTION_POSITION);
     }
 
+    HistoFillDeltaXperFileCharges(histo_deltaXQ_diff, correlation_functionQ_difference, "data_eTagRAND.root", 0, deltasQ_diff, OPTION_Q_DIFFERENCE, OPTION_POSITION);
+    HistoFillDeltaXperFileCharges(histo_deltaXQ_dos, correlation_functionQ_diffonsum, "data_eTagRAND.root", 0, deltasQ_dos, OPTION_Q_DOS, OPTION_POSITION);
+    HistoFillDeltaXperFileTimes(histo_deltaXT, correlation_functionT, "data_eTagRAND.root", 0, deltasT, OPTION_POSITION);
+
     // Plot delta_x(times) vs delta_x(charges) 2D histogram
     PlotPositionsQT(deltasT, deltasQ_diff, OPEN_OUTPUT, OPTION_Q_DIFFERENCE);
     PlotPositionsQT(deltasT, deltasQ_dos, ADD_OUTPUT, OPTION_Q_DOS);
 
-    PrintColor("\n\tCHECK 3: SCATTERPLOT PRINTED\n", OBOLDCYAN);
+    PrintColor("\n\tCHECK 3: SCATTERPLOT PRINTED\n", OBOLDWHITE);
 
     /***************** DISTRIBUTION OF TRUE_X - RECO_X WITH PREVIOUS DATA (LOCAL: x-dependent) *****************/
                     /***************** BY CONSIDERING ONLY CHARGES DIFFERENCE *****************/
@@ -199,7 +203,7 @@ int main(int argc, char** argv){
         histo_deltaXQ_diff->SetName("histo_dx_charge_differences");
         histo_deltaXQ_diff->SetTitle(histoTitle);
 
-        histoTitle = "Histogram of x_{rec} - x_{true} (charges analysis - Sfunction) at " +  length_name + " mm";
+        histoTitle = "Histogram of x_{rec} - x_{true} (charges analysis through f(N_{DX},N_{SX})) at " +  length_name + " mm";
         deltasQ_dos->clear();
         histo_deltaXQ_dos->Reset();
         histo_deltaXQ_dos->SetAxisRange(-HALF_LEN_X, HALF_LEN_X);
@@ -233,7 +237,7 @@ int main(int argc, char** argv){
 
     PlotSigmaCorrections(sigmas_from_Tanalysis, sigmas_from_Qanalysis, err_sigmas_from_Tanalysis, err_sigmas_from_Qanalysis, positions_x, "images/5delta_positions_correlation.pdf)");
     
-    PrintColor("\n\tCHECK 4: LOCAL DELTA_X PRINTED AND FITTED\n", OBOLDCYAN);
+    PrintColor("\n\tCHECK 4: LOCAL DELTA_X PRINTED AND FITTED\n", OBOLDWHITE);
 
     /***************** TESTING OF THE CORRELATION X_T vs X_Q OVER RANDOM (x,y) DATA *****************/
 
@@ -252,7 +256,7 @@ int main(int argc, char** argv){
     deltasQ_dos->clear();
     histo_deltaXQ_dos->Reset();
     histo_deltaXQ_dos->SetName("histo_dx_charge_Sfunction");
-    histo_deltaXQ_dos->SetTitle("Histogram of x_{rec} - x_{true} (charges analysis - sFunction) (over random data)");
+    histo_deltaXQ_dos->SetTitle("Histogram of x_{rec} - x_{true} through f(N_{DX},N_{SX}) (random data");
     histo_deltaXQ_dos->SetAxisRange(-HALF_LEN_X, HALF_LEN_X);
     HistoFillDeltaXRandomFileCharges(histo_deltaXQ_dos, correlation_functionQ_diffonsum, "data_eTagRAND.root", deltasQ_dos, OPTION_Q_DOS);
     if(EPE) PlotHistogramDeltaXCharges(histo_deltaXQ_dos, "images/3chargesEpE.pdf)");
@@ -261,22 +265,12 @@ int main(int argc, char** argv){
     deltasT->clear();
     histo_deltaXT->Reset();
     histo_deltaXT->SetName("histo_dx_time");
-    histo_deltaXT->SetTitle("Histogram of x_{rec} - x_{true} from times analysis (over random data)");
+    histo_deltaXT->SetTitle("Histogram of x_{rec} - x_{true} through times analysis (random data)");
     histo_deltaXT->SetAxisRange(-HALF_LEN_X, HALF_LEN_X);
     HistoFillDeltaXRandomFileTimes(histo_deltaXT, correlation_functionT, "data_eTagRAND.root", deltasT);
     PlotHistogramDeltaXTimes(histo_deltaXT, "images/2t_vs_x.pdf)");
 
-    PrintColor("\n\tCHECK 5: FUNCTIONS TESTED OVER RANDOM DATA\n", OBOLDCYAN);
-    
-    /***************** DELTAX_CHARGES VS DELTAX_TIMES OVER RANDOM (x,y) DATA *****************/
-
-    // COMMENTO MIO: Aggiustare ed inserire le posizioni ricostruite, non le delta!
-    // deltasT->clear();
-    // deltasQ_diff->clear();
-    // deltasQ_dos->clear();
-    // plot delta_x(times) vs delta_x(charges) 2D histogram
-    // PlotPositionsQT(deltasT, deltasQ_diff, ADD_OUTPUT);
-    // PlotPositionsQT(deltasT, deltasQ_dos, CLOSE_OUTPUT);
+    PrintColor("\n\tCHECK 5: FUNCTIONS TESTED OVER RANDOM DATA\n", OBOLDWHITE);
 
     /***************** DELETE STUFF & EXIT *****************/
     
